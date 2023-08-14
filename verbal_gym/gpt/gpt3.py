@@ -11,4 +11,3 @@ class GPT35(AbstractGPT):
 
     def __init__(self):
         super(AbstractGPT, self).__init__(deployment_name="gpt-35-turbo")
-
