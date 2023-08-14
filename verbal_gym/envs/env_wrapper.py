@@ -1,5 +1,6 @@
 import gym
 
+
 class VerbalGymWrapper(gym.Wrapper):
     """
         This is basic example wrapper that turns a gym environment into a verbal
