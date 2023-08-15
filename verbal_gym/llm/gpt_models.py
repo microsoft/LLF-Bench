@@ -37,5 +37,5 @@ class GPT(LLM):
         messages = [{"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_prompt}]
         temperature = temperature or self.temperature
-        response, info = call_model(self.messages, temperature=temperature, **self.spec)
+        response, info = call_model(messages, temperature=temperature, **self.spec)
         return response, info

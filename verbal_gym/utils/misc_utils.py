@@ -9,3 +9,7 @@ def print_color(message, color=None):
         'cyan': '\033[96m'
     }
     print(f"{colors.get(color, '')}{message}\033[0m")  # Default to no color if invalid color is provided
+
+import re
+def extract_number(string):
+    return re.findall(r'\d+', string)
