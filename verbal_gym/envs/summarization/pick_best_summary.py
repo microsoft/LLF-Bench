@@ -1,6 +1,6 @@
 import pdb
 
-from verbal_gym.gpt.gpt3 import GPT3
+from verbal_gym.gpt.gpt import GPT3
 
 
 class PickBestSummary:
