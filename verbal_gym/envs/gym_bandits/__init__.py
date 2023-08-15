@@ -26,4 +26,3 @@ for environment in environments:
         entry_point='verbal_gym.envs.gym_bandits:make_verbal_env',
         kwargs={'env_name': environment},
     )
-    print('Registered , verbal-{}'.format(environment))

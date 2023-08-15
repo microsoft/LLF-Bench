@@ -14,5 +14,8 @@ setup(
         "gym==0.25.2",
         # "Cython==0.29.36",
         "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits"
-    ]
+    ],
+    extras_require={'gpt': ['openai']
+    }
+
 )
