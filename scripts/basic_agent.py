@@ -33,8 +33,7 @@ def main(args):
     llm = GPT(system_prompt)
     gpt_agent = BasicAgent(llm, action_range, verbose=True)
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes)
-    print('Baisc agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()))
-
+    print('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()))
 
     random_agent = RandomAgent(action_range[0], action_range[1]-1)
     scores = evaluate_agent(random_agent, env, horizon=horizon, n_episodes=n_episodes)
