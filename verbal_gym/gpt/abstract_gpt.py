@@ -13,13 +13,80 @@ class AbstractGPT:
         self.base_url = os.getenv("GCR_GPT_URL")
         self.url = self.base_url + "/openai/deployments/" + deployment_name + "/completions?api-version=2022-12-01"
 
-    def get_logprobs(self, prompt, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
+    def get_logprobs(self, prompt, MAX_WAITTIME_SEC=300):
         """
-            Get logprobabilities of a given text
+            Get log-probabilities of the given prompt
         """
-        raise NotImplementedError()
+        response = self.call_gpt(prompt,
+                                 max_tokens=0,
+                                 logprobs=1,
+                                 temperature=0.0,
+                                 echo=True,
+                                 MAX_WAITTIME_SEC=MAX_WAITTIME_SEC)
+
+        # GPT does not compute logprob of the first token
+        first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
+        assert first_tk_logprob == 0 or first_tk_logprob is None
+        logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+
+        return logprob
+
+    def generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
+        """
+            Call GPT in a retrying mode
+
+            :param max_tokens: Maximum number of tokens to generate
+            :param logprobs: None if dont want logprobs to be returned, otherwise,
+                             an integer k to return the top-k logprobs
+            :param echo: A boolean which if True returns logprobs also of the prompt, otherwise,
+                        return logprobs (if not None) only for the generation
+            :param MAX_WAITTIME_SEC: Maximum time to wait if failure occurs before re-trying
+
+            returns: text, info
+
+            where text is the generation and info is a dictionary where info["total_logprobs"] is the total logprobs of
+            the entire text if echo is True, otherwise, only of the generation.
+        """
+
+        response = self.call_gpt(prompt,
+                                 max_tokens=max_tokens,
+                                 logprobs=logprobs,
+                                 temperature=temperature,
+                                 echo=echo,
+                                 MAX_WAITTIME_SEC=MAX_WAITTIME_SEC)
+
+        text = response["choices"][0]["text"]
+
+        if echo:
+            # GPT does not compute logprob of the first token
+            first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
+            assert first_tk_logprob == 0 or first_tk_logprob is None
+            logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+        else:
+            logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
+
+        info = {
+            "logprob": logprob,
+            "echo": echo
+        }
+
+        return text, info
 
     def call_gpt(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
+        """
+            Call GPT in a retrying mode
+
+            :param max_tokens: Maximum number of tokens to generate
+            :param logprobs: None if dont want logprobs to be returned, otherwise,
+                             an integer k to return the top-k logprobs
+            :param echo: A boolean which if True returns logprobs also of the prompt, otherwise,
+                        return logprobs (if not None) only for the generation
+            :param MAX_WAITTIME_SEC: Maximum time to wait if failure occurs before re-trying
+
+            returns: response
+
+            where response is a dictionary returned by GPT call.
+        """
 
         sleep_time = 1.0
         response = None
@@ -31,7 +98,9 @@ class AbstractGPT:
                                           logprobs=logprobs,
                                           temperature=temperature,
                                           echo=echo)
-            except:
+                break
+            except Exception as e:
+                print("Error ", e)
                 sleep_time = min(sleep_time, MAX_WAITTIME_SEC)
                 time.sleep(sleep_time)
                 sleep_time = 2 * sleep_time
@@ -64,6 +133,5 @@ class AbstractGPT:
                           )
 
         response = json.loads(r.text)
-        formatted_response = json.dumps(response, indent=4)
 
-        return formatted_response["choices"][0]
+        return response
