@@ -55,7 +55,6 @@ class BasicAgent(Agent):
         self.history = []
 
     def act(self, obs, feedback, **kwargs):
-
         history_prompt=''
         if len(self.history)>0:
             self.history[-1]['feedback'] = feedback

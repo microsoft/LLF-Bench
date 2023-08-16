@@ -21,7 +21,6 @@ def main(args):
     """
     print_color('System: {}'.format(system_prompt), "blue")
 
-
     # Create the environment
     env = gym.make(args.env_name)
     set_seed(args.seed, env)
@@ -32,11 +31,11 @@ def main(args):
    # TODO should save the stdout
     llm = GPT(system_prompt)
     gpt_agent = BasicAgent(llm, action_range, verbose=True)
-    scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes)
+    scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()))
 
     random_agent = RandomAgent(action_range[0], action_range[1]-1)
-    scores = evaluate_agent(random_agent, env, horizon=horizon, n_episodes=n_episodes)
+    scores = evaluate_agent(random_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print('Random agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()))
 
 
@@ -47,6 +46,7 @@ def get_parser():
     parser.add_argument('--horizon', type=int, default=10)
     parser.add_argument('--env_name',type=str, default='verbal-BanditTenArmedRandomRandom-v0')
     parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--n_workers', type=int, default=1)
     return parser
 
 if __name__=='__main__':

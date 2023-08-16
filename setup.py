@@ -13,9 +13,13 @@ setup(
     install_requires=[
         "gym==0.25.2",
         # "Cython==0.29.36",
-        "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits"
+        "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits",
     ],
-    extras_require={'gpt': ['openai']
+    extras_require={
+        'gpt': ['openai'],
+        'ray': ['ray>=1.5',\
+                'numpy<1.24.0' # this is for compatibility with ray (due to pickle)
+                ]
     }
 
 )

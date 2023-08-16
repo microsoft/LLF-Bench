@@ -1,26 +1,34 @@
 import numpy as np
 import random
 
-def rollout(agent, env, horizon):
+def rollout(agent, env, *, horizon, log_data=False):
     """ A basic agent evaluation loop. """
     docstring = env.docstring
     agent.reset(docstring)
 
-    obs = env.reset()
+    observation = env.reset()
     info = {}
     sum_of_rewards = 0.0
+    data = dict(observations=[observation], actions=[], rewards=[], dones=[], infos=[])
     for i in range(horizon):
         feedback = info.get('feedback', None)
-        action = agent.act(obs, feedback)
+        action = agent.act(observation, feedback)
         observation, reward, done, info = env.step(action)
+        if log_data:
+            for k in data.keys():
+                data[k].append(locals(k))
         sum_of_rewards += reward
-    return sum_of_rewards
+    return sum_of_rewards, data
 
-def evaluate_agent(agent, env, horizon, n_episodes):
+def evaluate_agent(agent, env, *, horizon, n_episodes, n_workers=1):
     """ Evaluate an agent with n_episodes rollouts. """
-    scores = []
-    for i in range(n_episodes):
-        scores.append(rollout(agent, env, horizon=horizon))
+    if n_workers > 1:
+        import ray
+        ray_rollout = ray.remote(lambda: rollout(agent, env, horizon=horizon)[0])
+        scores = [ray_rollout.remote() for _ in range(n_episodes)]
+        scores = ray.get(scores)
+    else:
+        scores = [rollout(agent, env, horizon=horizon)[0] for _ in range(n_episodes)]
     scores = np.array(scores)
     return scores
 
