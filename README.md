@@ -18,6 +18,11 @@ Install the repo.
 
     pip install -e.
 or
-    pip install -e.[#BENCHMARK]
+    pip install -e.[#option1,#option2,etc.]
 
-where #BENCHMARK denotes the name of the benchmark (which requires separate installation steps, due to version conflicts.)
+Some valid options:
+
+    ray: for using parallel evaluation.
+    openai: for using openai ChatCompletion backend.
+
+For example, to use openai+ray, install the repo by `pip install -e.[openai,ray]`.
