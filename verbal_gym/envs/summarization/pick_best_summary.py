@@ -1,7 +1,7 @@
 import pdb
 import random
 
-from verbal_gym.gpt.gpt import GPT3
+from gpt.gpt import GPT3
 
 
 class PickBestSummary:
@@ -40,10 +40,10 @@ class PickBestSummary:
 
         # Prompts for summary generation
         self.good_summary_prompt = "You are given the article below. \n Article: %s. \n Write a good, " \
-                                   "high-quality summary capturing the essential points of the article."
+                                   "high-quality summary capturing the essential points of the article. Summary:"
 
         self.bad_summary_prompt = "You are given the article below. \n Article: %s. \n Write a bad, " \
-                                  "low-quality, garbage summary of the article which has many factual errors.."
+                                  "low-quality, garbage summary of the article which has many factual errors. Summary:"
 
         self.feedback_prompt = "Article: %s\n Summary: %s \n. You are provided an article and its summary above. " \
                                "Provide a feedback for the quality of this summary describing any positive features " \
@@ -98,15 +98,10 @@ class PickBestSummary:
         bad_prompt = self.bad_summary_prompt % self.current_article
         for _ in range(0, num_bad_summaries):
 
-            generation, info = self.summary_generator_llm.generate(prompt=bad_prompt,
-                                                                   max_tokens=self.summary_max_tokens,
-                                                                   logprobs=None,
-                                                                   temperature=1.0)
-
-            if generation != generation[:len(bad_prompt)]:
-                raise AssertionError(f"{generation} should start with {bad_prompt}")
-
-            summary = generation[len(bad_prompt):]
+            summary, info = self.summary_generator_llm.generate(prompt=bad_prompt,
+                                                                max_tokens=self.summary_max_tokens,
+                                                                logprobs=None,
+                                                                temperature=1.0)
 
             if self.reward_type == self.LOGPROB:
                 # Compute logprob of the summary under the new summary
@@ -121,6 +116,8 @@ class PickBestSummary:
 
         random.shuffle(summaries_with_score)
 
+        return summaries_with_score
+
     def reset(self):
 
         if self.current_article is None:
@@ -132,21 +129,21 @@ class PickBestSummary:
             self.current_summaries_with_reward = self._generate_summaries()
             self.ctr = (self.ctr + 1) % len(self.dataset["train"])
 
-        observation = f"You are given an article below. \n {self.current_article}. " \
+        observation = f"You are given an article below. \n\n {self.current_article}. \n\n" \
                       f"You are also given {self.num_actions} many summaries some of which are good " \
-                      f"and others can be incorrect. The list of summaries and their indices are:"
+                      f"and others can be incorrect. The list of summaries and their indices are:\n\n"
 
         for idx, summary_with_reward in enumerate(self.current_summaries_with_reward):
             summary, _ = summary_with_reward
-            observation = observation + f"\n {idx}: {summary}"
+            observation = observation + f"\n\n {idx}: {summary}"
 
-        observation = observation + "\n Please select the best summary for the above article by entering its index."
+        observation = observation + "\n\n Please select the best summary for the above article by entering its index."
 
         return observation
 
     def step(self, action):
 
-        feedback = self.critic_llm.generate(
+        feedback, _ = self.critic_llm.generate(
             prompt=self.feedback_prompt % (self.current_article, self.current_summaries_with_reward[action][0]),
             max_tokens=self.feedback_max_tokens
         )

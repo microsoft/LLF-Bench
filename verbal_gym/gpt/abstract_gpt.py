@@ -57,13 +57,16 @@ class AbstractGPT:
 
         text = response["choices"][0]["text"]
 
-        if echo:
-            # GPT does not compute logprob of the first token
-            first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
-            assert first_tk_logprob == 0 or first_tk_logprob is None
-            logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+        if logprobs is not None:
+            if echo:
+                # GPT does not compute logprob of the first token
+                first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
+                assert first_tk_logprob == 0 or first_tk_logprob is None
+                logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+            else:
+                logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
         else:
-            logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
+            logprob = None
 
         info = {
             "logprob": logprob,
