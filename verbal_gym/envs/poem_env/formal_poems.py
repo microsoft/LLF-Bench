@@ -298,4 +298,6 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         else:
             raise ValueError(f"Invalid feedback level: {self.feedback}")
 
-        return self.assignment, frac, False, {'frac': frac, 'feedback': feedback, 'success': 1}
+        terminal = True  # one step environment
+
+        return self.assignment, frac, terminal, {'frac': frac, 'feedback': feedback, 'success': 1}
