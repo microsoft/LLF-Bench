@@ -1,10 +1,7 @@
-import pdb
 import random
-
-from gpt.gpt import GPT3
-
-
-class PickBestSummary:
+from verbal_gym.llm.gpt.gpt import GPT3
+import gym
+class PickBestSummary(gym.Env):
     """
         Select the best summary
     """

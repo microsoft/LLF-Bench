@@ -5,6 +5,7 @@ import gym
 import cmudict
 import guidance
 import syllables
+import sys
 
 # gotta add rhyme to it
 
@@ -99,6 +100,10 @@ class Haiku(PoemUtil, gym.Env):
         self.feedback = feedback
         self.syllable_req = [5, 7, 5]
         assert feedback in {0, 0.5, 1}
+
+        # TODO check if these are the right space
+        self.action_space = gym.spaces.Text(sys.maxsize)
+        self.observation_space = gym.spaces.Text(sys.maxsize)
 
         super().__init__()
 
@@ -241,6 +246,10 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
 
         self.cmudict = cmudict.dict()
         self.extractor = PoemExtractor(silent=silent)
+
+        # TODO check if these are the right space
+        self.action_space = gym.spaces.Text(sys.maxsize)
+        self.observation_space = gym.spaces.Text(sys.maxsize)
 
     def reset(self, **kwargs):
         return self.assignment
