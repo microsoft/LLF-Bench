@@ -18,6 +18,8 @@ setup(
         "cmudict",
         "guidance",
         "syllables",
+        # summarization
+        "datasets"
     ],
     extras_require={
         'gpt': ['openai'],
