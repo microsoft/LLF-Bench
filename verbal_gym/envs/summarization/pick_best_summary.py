@@ -1,6 +1,6 @@
 import random
 from verbal_gym.llm.gpt.gpt import GPT3
-import gym
+import gym, sys
 class PickBestSummary(gym.Env):
     """
         Select the best summary
@@ -20,6 +20,9 @@ class PickBestSummary(gym.Env):
 
         assert num_actions >= 2, "There must be at least 2 actions."
         self.num_actions = num_actions
+
+        self.action_space = gym.spaces.Discrete(num_actions)
+        self.observation_space = gym.spaces.Text(sys.maxsize)
 
         self.summary_max_tokens = summary_max_tokens
         self.feedback_max_tokens = feedback_max_tokens
