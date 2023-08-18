@@ -22,6 +22,9 @@ class AbstractGPT(LLM):
         """ This is one-time query response. """
         return self.generate(self, user_prompt, *args, **kwargs)
 
+    def logprob(self, prompt, *args, **kwargs):
+        return self.get_logprobs(prompt, *args, **kwargs)
+
     def get_logprobs(self, prompt, MAX_WAITTIME_SEC=300):
         """
             Get log-probabilities of the given prompt

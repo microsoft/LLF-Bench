@@ -20,3 +20,8 @@ class LLM(ABC):
         """ This is one-time query response. """
         raise NotImplementedError
         return response, info
+
+    def logprob(self, prompt, *args, **kwargs):
+        """ This is one-time query response. """
+        raise NotImplementedError
+        return logprob

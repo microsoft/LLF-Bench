@@ -73,12 +73,12 @@ class PickBestSummary(gym.Env):
         for i in range(0, self.num_actions - num_bad_summaries):
 
             temperature = 0.0 if i == 0 else 1.0
-            generation, info = self.summary_generator_llm.generate(prompt=good_prompt,
-                                                                   max_tokens=self.summary_max_tokens,
-                                                                   echo=True,
-                                                                   logprobs=
-                                                                   1 if self.reward_type == self.LOGPROB else None,
-                                                                   temperature=temperature)
+            generation, info = self.summary_generator_llm.query(prompt=good_prompt,
+                                                                max_tokens=self.summary_max_tokens,
+                                                                echo=True,
+                                                                logprobs=
+                                                                1 if self.reward_type == self.LOGPROB else None,
+                                                                temperature=temperature)
 
             if good_prompt != generation[:len(good_prompt)]:
                 raise AssertionError(f"{generation} should start with {good_prompt}")
@@ -98,15 +98,15 @@ class PickBestSummary(gym.Env):
         bad_prompt = self.bad_summary_prompt % self.current_article
         for _ in range(0, num_bad_summaries):
 
-            summary, info = self.summary_generator_llm.generate(prompt=bad_prompt,
-                                                                max_tokens=self.summary_max_tokens,
-                                                                logprobs=None,
-                                                                temperature=1.0)
+            summary, info = self.summary_generator_llm.query(prompt=bad_prompt,
+                                                             max_tokens=self.summary_max_tokens,
+                                                             logprobs=None,
+                                                             temperature=1.0)
 
             if self.reward_type == self.LOGPROB:
                 # Compute logprob of the summary under the new summary
                 good_prompt_with_bad_summary = good_prompt + summary
-                reward = self.summary_generator_llm.get_logprobs(prompt=good_prompt_with_bad_summary)
+                reward = self.summary_generator_llm.logprob(prompt=good_prompt_with_bad_summary)
             elif self.reward_type == self.Binary:
                 reward = 0
             else:
@@ -143,7 +143,7 @@ class PickBestSummary(gym.Env):
 
     def step(self, action):
 
-        feedback, _ = self.critic_llm.generate(
+        feedback, _ = self.critic_llm.query(
             prompt=self.feedback_prompt % (self.current_article, self.current_summaries_with_reward[action][0]),
             max_tokens=self.feedback_max_tokens
         )
