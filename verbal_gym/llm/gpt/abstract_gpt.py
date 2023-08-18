@@ -12,7 +12,7 @@ class AbstractGPT(LLM):
 
         self.api_key = os.getenv("GCR_GPT_KEY")
         self.base_url = os.getenv("GCR_GPT_URL")
-        # self.url = self.base_url + "/openai/deployments/" + deployment_name + "/completions?api-version=2022-12-01"
+        self.url = self.base_url + "/openai/deployments/" + deployment_name + "/completions?api-version=2022-12-01"
 
     def reset(self):
         """ This resets the LLM and removes the chat history. """
