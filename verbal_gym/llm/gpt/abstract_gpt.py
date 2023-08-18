@@ -3,15 +3,24 @@ import pdb
 import time
 import requests
 import json
+from verbal_gym.llm.llm import LLM
 
+class AbstractGPT(LLM):
 
-class AbstractGPT:
-
-    def __init__(self, deployment_name):
+    def __init__(self, deployment_name, system_prompt=''):
+        super().__init__(system_prompt=system_prompt)
 
         self.api_key = os.getenv("GCR_GPT_KEY")
         self.base_url = os.getenv("GCR_GPT_URL")
-        self.url = self.base_url + "/openai/deployments/" + deployment_name + "/completions?api-version=2022-12-01"
+        # self.url = self.base_url + "/openai/deployments/" + deployment_name + "/completions?api-version=2022-12-01"
+
+    def reset(self):
+        """ This resets the LLM and removes the chat history. """
+        pass  # Since it does not have a history.
+
+    def query(self, user_prompt, *args, **kwargs):
+        """ This is one-time query response. """
+        return self.generate(self, user_prompt, *args, **kwargs)
 
     def get_logprobs(self, prompt, MAX_WAITTIME_SEC=300):
         """
