@@ -1,6 +1,9 @@
+import gym
+import sys
 import random
 from verbal_gym.llm.gpt.gpt import GPT3
-import gym, sys
+
+
 class PickBestSummary(gym.Env):
     """
         Select the best summary
@@ -28,7 +31,8 @@ class PickBestSummary(gym.Env):
         self.feedback_max_tokens = feedback_max_tokens
         self.fixed = fixed
 
-        self.seed = seed
+        self.env_seed = seed
+        self.docstring = "Select the best summary for a given article."
         self.rng = random.Random(seed)
 
         if reward_type == "binary":
@@ -54,6 +58,10 @@ class PickBestSummary(gym.Env):
         self.current_article = None
         self.current_summaries_with_reward = None
 
+    def seed(self, seed):
+        self.env_seed = seed
+        self.rng = random.Random(seed)
+
     def _generate_summaries(self):
 
         if self.current_article is None:
@@ -73,7 +81,7 @@ class PickBestSummary(gym.Env):
         for i in range(0, self.num_actions - num_bad_summaries):
 
             temperature = 0.0 if i == 0 else 1.0
-            generation, info = self.summary_generator_llm.query(prompt=good_prompt,
+            generation, info = self.summary_generator_llm.generate(prompt=good_prompt,
                                                                 max_tokens=self.summary_max_tokens,
                                                                 echo=True,
                                                                 logprobs=
@@ -98,7 +106,7 @@ class PickBestSummary(gym.Env):
         bad_prompt = self.bad_summary_prompt % self.current_article
         for _ in range(0, num_bad_summaries):
 
-            summary, info = self.summary_generator_llm.query(prompt=bad_prompt,
+            summary, info = self.summary_generator_llm.generate(prompt=bad_prompt,
                                                              max_tokens=self.summary_max_tokens,
                                                              logprobs=None,
                                                              temperature=1.0)
@@ -143,7 +151,7 @@ class PickBestSummary(gym.Env):
 
     def step(self, action):
 
-        feedback, _ = self.critic_llm.query(
+        feedback, _ = self.critic_llm.generate(
             prompt=self.feedback_prompt % (self.current_article, self.current_summaries_with_reward[action][0]),
             max_tokens=self.feedback_max_tokens
         )

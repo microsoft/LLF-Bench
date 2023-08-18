@@ -1,11 +1,12 @@
 import random
 from verbal_gym.utils.misc_utils import print_color, extract_number
 
+
 class Agent:
     """ An agent that interacts with an environment with verbal feedback. """
     def __init__(self, *args, **kwargs):
         # TODO: pass env_spec
-        pass
+        self.docstring = None
 
     def reset(self, docstring):
         self.docstring = docstring
@@ -13,10 +14,12 @@ class Agent:
     def act(self, *args, **kwargs):
         raise NotImplementedError
 
+
 class RandomAgent(Agent):
     """ An random agent for a fixed number of actions. """
 
     def __init__(self, action_min, action_max):
+        super(Agent, self).__init__()
         assert type(action_min)==int and type(action_max)==int
         self.action_min = action_min
         self.action_max = action_max
@@ -24,9 +27,11 @@ class RandomAgent(Agent):
     def act(self, *args, **kwargs):
         return random.randint(self.action_min, self.action_max)
 
+
 class BasicAgent(Agent):
 
     def __init__(self, llm, action_range, verbose=False):
+        super(Agent, self).__init__()
         self.llm = llm
         self.action_range = action_range
         self.previous_action = None
@@ -79,4 +84,5 @@ class BasicAgent(Agent):
         action = int(numbers[0]) if numbers else random.randint(self.action_range[0], self.action_range[1])
 
         self.history.append({'action': action, 'feedback': None})
+
         return action

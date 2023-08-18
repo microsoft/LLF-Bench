@@ -5,6 +5,7 @@ import requests
 import json
 from verbal_gym.llm.llm import LLM
 
+
 class AbstractGPT(LLM):
 
     def __init__(self, deployment_name, system_prompt=''):
