@@ -32,7 +32,7 @@ class GPT(LLM):
         response, info = call_model(self.messages, temperature=temperature, **self.spec)
         return response, info
 
-    def query(self, user_prompt, temperature=None):
+    def generate(self, user_prompt, temperature=None):
         """ This is one-time query response. """
         messages = [{"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_prompt}]
