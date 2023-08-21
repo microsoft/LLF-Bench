@@ -75,7 +75,7 @@ class BasicAgent(Agent):
         if self.verbose:
             print_color('User: {}'.format(user_prompt), "blue")
 
-        response, _ = self.llm.query(user_prompt)
+        response, _ = self.llm.generate(user_prompt)
 
         if self.verbose:
             print_color('Agent: {}'.format(response), "green")

@@ -16,7 +16,7 @@ class LLM(ABC):
         raise NotImplementedError
         return response, info
 
-    def query(self, user_prompt, *args, **kwargs):
+    def generate(self, user_prompt, *args, **kwargs):
         """ This is one-time query response. """
         raise NotImplementedError
         return response, info
