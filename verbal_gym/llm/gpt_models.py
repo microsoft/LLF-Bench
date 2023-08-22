@@ -25,14 +25,14 @@ class GPT(LLM):
         """ This resets the LLM and removes the chat history. """
         self.messages = [{"role": "system", "content": self.system_prompt}]
 
-    def chat(self, user_prompt, temperature=None):
+    def chat(self, user_prompt, temperature=0.0):
         """ This is a history-dependent response. """
         self.messages.append({"role": "user", "content": user_prompt})
         temperature = temperature or self.temperature
         response, info = call_model(self.messages, temperature=temperature, **self.spec)
         return response, info
 
-    def generate(self, user_prompt, temperature=None):
+    def generate(self, user_prompt, temperature=0.0):
         """ This is one-time query response. """
         messages = [{"role": "system", "content": self.system_prompt},
                     {"role": "user", "content": user_prompt}]

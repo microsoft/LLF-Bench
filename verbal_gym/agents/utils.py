@@ -10,5 +10,5 @@ def extract_action(response, n_actions, separator="#"):
                 return action
     except IndexError:
         pass
-    print("Cannot find the action in the response\nResponse: {}.\nTake a random action.".format(response))
+    print("Cannot find the action in the response, so take a random action.\n\tResponse: {}.\n".format(response))
     return random.randint(0,n_actions-1)
