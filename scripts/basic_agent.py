@@ -1,7 +1,6 @@
 import gym
-import numpy as np
 from verbal_gym.llm.gpt_models import GPT
-from verbal_gym.agents.agents import Agent, RandomAgent, BasicAgent
+from verbal_gym.agents.agents import RandomAgent, BasicAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -39,14 +38,21 @@ def main(args):
 
     system_prompt = FullInformationAgent.system_prompt
     llm = GPT(system_prompt)
-    gpt_agent = FullInformationAgent(llm, n_actions=n_actions, verbose=False)
-    scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers, return_full_information=True)
+    gpt_agent = FullInformationAgent(llm,
+                                     n_actions=n_actions,
+                                     verbose=False)
+
+    scores = evaluate_agent(gpt_agent, env, horizon=horizon,
+                            n_episodes=n_episodes,
+                            n_workers=args.n_workers,
+                            return_full_information=True)
     print_color('Oralce LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
 
 
-
 def get_parser():
+
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_episodes', type=int, default=10)
     parser.add_argument('--horizon', type=int, default=10)
@@ -55,6 +61,7 @@ def get_parser():
     parser.add_argument('--n_workers', type=int, default=1)
     return parser
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     parser = get_parser()
     main(parser.parse_args())
