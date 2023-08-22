@@ -11,32 +11,38 @@ def main(args):
     n_episodes = args.n_episodes
     horizon = args.horizon
 
-    system_prompt = """\
-    You are an agent taked to solve an interactive problem with verbal feedback.\
-    You will see "Problem Description" that tell you want to problem is about (such\
-    as the goal of the task, the action space you should choose from, the rules, the\
-    constraints, etc.)\
-    After you choose an action, you will see the feedback from the environment.\
-    You goal is to choose the right actions solve the task as fast as possible, according to "Problem Description".\
-    """
-    print_color('System: {}'.format(system_prompt), "blue")
-
     # Create the environment
     env = gym.make(args.env_name)
     set_seed(args.seed, env)
 
     assert isinstance(env.action_space, gym.spaces.Discrete)
-    action_range = [env.action_space.start, env.action_space.start+env.action_space.n]
+    n_actions = env.action_space.n
 
-   # TODO should save the stdout
+    # TODO should save the stdout
+
+    # Basic agent
+    system_prompt = BasicAgent.system_prompt
     llm = GPT(system_prompt)
-    gpt_agent = BasicAgent(llm, action_range, verbose=True)
+    gpt_agent = BasicAgent(llm, n_actions, verbose=False)
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
-    print('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()))
+    print_color('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
 
-    random_agent = RandomAgent(action_range[0], action_range[1]-1)
+    # Random agent
+    random_agent = RandomAgent(n_actions)
     scores = evaluate_agent(random_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
-    print('Random agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()))
+    print_color('Random agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
+
+    # Full information agent
+    from verbal_gym.envs.env_wrapper import FullInformationWrapper
+    from verbal_gym.agents.agents import FullInformationAgent
+    env = FullInformationWrapper(env)
+
+    system_prompt = FullInformationAgent.system_prompt
+    llm = GPT(system_prompt)
+    gpt_agent = FullInformationAgent(llm, n_actions=n_actions, verbose=False)
+    scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers, return_full_information=True)
+    print_color('Oralce LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
+
 
 
 def get_parser():

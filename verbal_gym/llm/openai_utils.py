@@ -8,7 +8,7 @@ if API_MODE_AZURE:
     openai.api_type = "azure"
     openai.api_version = "2023-05-15"
     openai.api_base = "https://nexus-openai-1.openai.azure.com/"
-    openai.api_key =  os.getenv('OPEANAI_KEY')
+    openai.api_key = os.getenv('OPEANAI_KEY')
 else:
     raise NotImplementedError("OpenAI API mode not implemented")
     # openai.api_key_path =

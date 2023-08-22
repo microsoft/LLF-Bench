@@ -1,8 +1,10 @@
 import numpy as np
 import random
 
-def rollout(agent, env, *, horizon, log_data=False):
+def rollout(agent, env, *, horizon, return_full_information=False, log_data=False):
     """ A basic agent evaluation loop. """
+    if return_full_information:
+        assert hasattr(env,'get_full_information')
     docstring = env.docstring
     agent.reset(docstring)
 
@@ -12,7 +14,11 @@ def rollout(agent, env, *, horizon, log_data=False):
     data = dict(observations=[observation], actions=[], rewards=[], dones=[], infos=[])
     for i in range(horizon):
         feedback = info.get('feedback', None)
-        action = agent.act(observation, feedback)
+        if return_full_information:  # Oracle: the agent gets privileged information
+            full_information = info.get('full_information', env.get_full_information())
+            action = agent.act(observation, feedback, full_information=full_information)
+        else:  # regular agent
+            action = agent.act(observation, feedback)
         observation, reward, done, info = env.step(action)
         if log_data:
             for k in data.keys():
@@ -20,15 +26,16 @@ def rollout(agent, env, *, horizon, log_data=False):
         sum_of_rewards += reward
     return sum_of_rewards, data
 
-def evaluate_agent(agent, env, *, horizon, n_episodes, n_workers=1):
+def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, n_workers=1):
     """ Evaluate an agent with n_episodes rollouts. """
+    _rollout = lambda: rollout(agent, env, horizon=horizon, return_full_information=return_full_information)[0]
     if n_workers > 1:
         import ray
-        ray_rollout = ray.remote(lambda: rollout(agent, env, horizon=horizon)[0])
+        ray_rollout = ray.remote(_rollout)
         scores = [ray_rollout.remote() for _ in range(n_episodes)]
         scores = ray.get(scores)
     else:
-        scores = [rollout(agent, env, horizon=horizon)[0] for _ in range(n_episodes)]
+        scores = [_rollout() for _ in range(n_episodes)]
     scores = np.array(scores)
     return scores
 

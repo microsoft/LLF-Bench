@@ -1,5 +1,7 @@
 import random
-from verbal_gym.utils.misc_utils import print_color, extract_number
+from textwrap import dedent
+from verbal_gym.utils.misc_utils import print_color
+from verbal_gym.agents.utils import extract_action
 
 
 class Agent:
@@ -18,70 +20,128 @@ class Agent:
 class RandomAgent(Agent):
     """ An random agent for a fixed number of actions. """
 
-    def __init__(self, action_min, action_max):
+    def __init__(self, n_actions):
         super(Agent, self).__init__()
-        assert type(action_min)==int and type(action_max)==int
-        self.action_min = action_min
-        self.action_max = action_max
+        assert type(n_actions)==int
+        self.n_actions = n_actions
 
     def act(self, *args, **kwargs):
-        return random.randint(self.action_min, self.action_max)
+        return random.randint(0, self.n_actions-1)
 
+class FullInformationAgent(Agent):
+    """ This is a helper function to use LLM to make decisions among K choices,
+    given full information. """
+
+    system_prompt = dedent("""
+        You are an expert decision making agent. You will see "Problem
+        Description" that tell you want to problem is about (such as the goal of
+        the task, the action space you should choose from, the rules, the
+        constraints, etc.) In addition, you will be presented with the feedback
+        of all the acitons. You goal is to choose the right actions solve the
+        task, according to "Problem Description".
+    """)
+
+
+    def __init__(self, llm, n_actions, verbose=False):
+        super(Agent, self).__init__()
+        self.llm = llm
+        self.n_actions = n_actions
+        self.verbose = verbose
+        self.prompt_template = dedent("""\
+
+        You're given with the problem below:
+
+        Problem Description: {}
+
+        You see the following actions and their feedbacks:
+
+        {}
+
+        Choose your action according to the problem description and explain why.
+
+        The response should be in the following format:
+
+            Reasoning for Decision: <your reasoning>
+            Decision: #<your action>#
+
+        Note that <your action> should be an integer from [0, {}). You must follow this format!!!
+        """)
+
+
+    def act(self, obs, feedback, full_information, **kwargs):
+        world_info = '\n'.join([f'\t Action {k}: {v["feedback"]}' for k, v in full_information.items()])
+        user_prompt = self.prompt_template.format(self.docstring, world_info, self.n_actions)
+
+        response, _ = self.llm.generate(user_prompt)
+        action = extract_action(response.split('\n')[-1], len(full_information))
+        if self.verbose:
+            print_color('User:\n{}'.format(user_prompt), "blue")
+            print_color('Agent:\n{}'.format(response), "green")
+            print_color(f'Action: {action}\n', 'red')
+        return action
 
 class BasicAgent(Agent):
 
-    def __init__(self, llm, action_range, verbose=False):
+    system_prompt = dedent("""
+    You are an agent tasked to solve an interactive problem with verbal
+    feedback. You will see "Problem Description" that tell you want to problem
+    is about (such as the goal of the task, the action space you should choose
+    from, the rules, the constraints, etc.) After you choose an action, you will
+    see the feedback from the environment. You goal is to choose the right
+    actions solve the task as fast as possible, according to "Problem
+    Description".
+    """)
+
+    def __init__(self, llm, n_actions, verbose=False):
         super(Agent, self).__init__()
         self.llm = llm
-        self.action_range = action_range
-        self.previous_action = None
-        self.history = []
+        self.n_actions = n_actions
         self.verbose = verbose
 
-        self.problem_prompt_template = """
+        # history
+        self.previous_action = None
+        self.history = []
+
+        self.prompt_template = dedent("""
             You're given with the problem below:
 
             Problem Description: {}
-        """
-        self.command_prompt = """
+
+            You have observed the following actions and their feedbacks:
+
+            {}
+
             Choose your action according to the problem description and explain why.
 
             The response should be in the following format:
 
-                Reasoning for Decision: <your reasoning>
-                Decision: <your action>
+            Reasoning for Decision: <your reasoning>
+            Decision: #<your action>#
 
-            Note that <your action> should be an integer from [{}, {}). You must follow this format!!
-        """.format(self.action_range[0], self.action_range[1])
+            Note that <your action> should be an integer from [0, {}). You must follow this format!!!
+        """)
 
     def reset(self, docstring):
         self.docstring = docstring
-        self.problem_prompt = self.problem_prompt_template.format(docstring)
         self.history = []
 
-    def act(self, obs, feedback, **kwargs):
-        history_prompt=''
+    def update_history(self, feedback):
+        world_info=''
         if len(self.history)>0:
             self.history[-1]['feedback'] = feedback
-            formatted_strings = [f"    Action {item['action']}: Feedback {item['feedback']}" for item in self.history]
-            history_str = '\n            '.join(formatted_strings)
-            history_prompt0 = """
-            You have observed the following history of action and feedback:\n
-            """
-            history_prompt = history_prompt0+history_str+'\n'
+            world_info = '\n'.join([f'\t Action {item["action"]}: {item["feedback"]}' for item in self.history])
+        return world_info
 
-        user_prompt = self.problem_prompt + history_prompt + self.command_prompt
-
-        if self.verbose:
-            print_color('User: {}'.format(user_prompt), "blue")
-
+    def act(self, obs, feedback, **kwargs):
+        world_info = self.update_history(feedback)
+        user_prompt = self.prompt_template.format(self.docstring, world_info, self.n_actions)
         response, _ = self.llm.generate(user_prompt)
+        action = extract_action(response.split('\n')[-1], self.n_actions)
 
         if self.verbose:
-            print_color('Agent: {}'.format(response), "green")
-
-        numbers = extract_number(response.split('\n')[-1])
-        action = int(numbers[0]) if numbers else random.randint(self.action_range[0], self.action_range[1])
+            print_color(f'User: {user_prompt}', "blue")
+            print_color(f'Agent: {response}', "green")
+            print_color(f'Action: {action}', 'red')
 
         self.history.append({'action': action, 'feedback': None})
 
