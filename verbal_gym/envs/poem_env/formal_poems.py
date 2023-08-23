@@ -199,7 +199,7 @@ class Haiku(PoemUtil, gym.Env):
             feedbacks.append(self.produce_line_feedback(info))
 
         if len(feedbacks) == 0:
-            feedback = ""
+            feedback = "Congrats! You have successfully produced a poem that matches the assignment description."
         elif self.feedback == 0:
             feedback = feedbacks[-1]
         else:
@@ -279,7 +279,8 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         success, frac, info = self.get_line_feedback(a)
 
         if success:
-            return self.assignment, frac, True, {'frac': frac, 'feedback': None, 'success': 1}
+            feedback = "Congrats! You have successfully produced a poem that matches the assignment description."
+            return self.assignment, frac, True, {'frac': frac, 'feedback': feedback, 'success': 1}
 
         if self.feedback == 0:
             # we just say "The generated poem is not correct."
