@@ -97,11 +97,12 @@ class Haiku(PoemUtil, gym.Env):
         self.assignment = f"Can you write me a haiku? A haiku is a poem that consists of three phrases composed of 17 syllables in a 5, 7, 5 pattern."
         self.form_name = 'Haiku'
         self.use_extractor = use_extractor
+        self.extractor = None
+
         self.feedback = feedback
         self.syllable_req = [5, 7, 5]
         assert feedback in {0, 0.5, 1}
 
-        # TODO check if these are the right space
         self.action_space = gym.spaces.Text(sys.maxsize)
         self.observation_space = gym.spaces.Text(sys.maxsize)
 
@@ -109,6 +110,9 @@ class Haiku(PoemUtil, gym.Env):
 
     def reset(self, **kwargs):
         return self.assignment
+
+    def initialize_text_extractor(self, poem_extractor: PoemExtractor):
+        self.extractor = poem_extractor
 
     def line_number_incorrect(self, observed_num):
         if self.feedback == 0:
@@ -177,7 +181,10 @@ class Haiku(PoemUtil, gym.Env):
         # observation, reward, terminal, info
 
         if self.use_extractor:
-            a = self.extractor.extract_poem(a)
+            if self.extractor is None:
+                raise Exception(
+                    "Must pass in an extractor through initialize_text_extractor before using the extractor.")
+            a = self.extractor(a)
 
         feedbacks = []
         success = True
@@ -227,7 +234,8 @@ class LineSyllableConstrainedPoem(Haiku):
         # We can extend this to add "theme" of the poem
         # This increases difficulty a little, but also hard to check if it's thematic or not.
         super().__init__(feedback, silent, use_extractor)
-        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables per line is in a pattern of {'-'.join(syllable_req)}."
+        syllable_req_str = [str(i) for i in syllable_req]
+        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables per line is in a pattern of {'-'.join(syllable_req_str)}."
         self.use_extractor = use_extractor
         self.feedback = feedback
         self.syllable_req = syllable_req
@@ -245,14 +253,16 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         assert self.feedback in {0, 0.5, 1}
 
         self.cmudict = cmudict.dict()
-        self.extractor = PoemExtractor(silent=silent)
+        self.extractor = None
 
-        # TODO check if these are the right space
         self.action_space = gym.spaces.Text(sys.maxsize)
         self.observation_space = gym.spaces.Text(sys.maxsize)
 
     def reset(self, **kwargs):
         return self.assignment
+
+    def initialize_text_extractor(self, poem_extractor: PoemExtractor):
+        self.extractor = poem_extractor
 
     def get_line_feedback(self, text):
         success = True
@@ -275,6 +285,8 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
     def step(self, a):
         # observation, reward, terminal, info
         if self.use_extractor:
+            if self.extractor is None:
+                raise Exception("Must pass in an extractor through initialize_text_extractor before using the extractor.")
             a = self.extractor(a)
         success, frac, info = self.get_line_feedback(a)
 
