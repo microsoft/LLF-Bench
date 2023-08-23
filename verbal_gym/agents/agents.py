@@ -133,7 +133,6 @@ class BasicAgent(Agent):
 
             """)
 
-
     def reset(self, docstring):
         self.docstring = docstring
         self.history = []
@@ -155,7 +154,6 @@ class BasicAgent(Agent):
         if self.verbose:
             print_color(f'User:\n\n{user_prompt}\n', "blue")
             print_color(f'Agent:\n\n{response}\n', "green")
-            breakpoint()
 
         action = response.split(self.action_name+':')[1]
         if self.n_actions is not None:

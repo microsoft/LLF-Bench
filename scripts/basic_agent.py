@@ -15,16 +15,16 @@ def main(args):
     set_seed(args.seed, env)
 
     n_actions = env.action_space.n if isinstance(env.action_space, gym.spaces.Discrete) else None
+    action_name = 'Action'
+    if any([name in args.env_name for name in ('Haiku', 'Tanka', 'LineSyllableConstrainedPoem', 'SyllableConstrainedPoem')]):
+        action_name = 'Poem'
 
     # TODO should save the stdout
 
     # Basic agent
     system_prompt = BasicAgent.system_prompt
     llm = GPT(system_prompt)
-    gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose)
-    if any([name in args.env_name for name in ('Haiku', 'Tanka', 'LineSyllableConstrainedPoem', 'SyllableConstrainedPoem')]):
-        gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Poem')
-
+    gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Poem')
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print_color('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
