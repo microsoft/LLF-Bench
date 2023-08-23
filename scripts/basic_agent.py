@@ -23,7 +23,7 @@ def main(args):
     llm = GPT(system_prompt)
     gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose)
     if any([name in args.env_name for name in ('Haiku', 'Tanka', 'LineSyllableConstrainedPoem', 'SyllableConstrainedPoem')]):
-        gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Response')
+        gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Poem')
 
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
@@ -61,8 +61,7 @@ def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_episodes', type=int, default=10)
     parser.add_argument('--horizon', type=int, default=10)
-    parser.add_argument('--env_name',type=str, default='verbal-BanditTenArmedRandomRandom-v0')
-    # parser.add_argument('--env_name',type=str, default='verbal-Haiku-v0')
+    parser.add_argument('--env_name',type=str, default='verbal-BanditTenArmedRandomRandom-v0')  #'verbal-Haiku-v0'
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
