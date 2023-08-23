@@ -11,7 +11,8 @@ class PickBestSummary(gym.Env):
 
     Binary, LOGPROB = range(2)
 
-    def __init__(self, num_actions=4, summary_max_tokens=50, fixed=True, seed=1234,
+    def __init__(self, num_actions=4, article_max_length=500,
+                 summary_max_tokens=50, fixed=True, seed=1234,
                  feedback_max_tokens=40, reward_type="binary"):
 
         from datasets import load_dataset
@@ -27,6 +28,7 @@ class PickBestSummary(gym.Env):
         self.action_space = gym.spaces.Discrete(num_actions)
         self.observation_space = gym.spaces.Text(sys.maxsize)
 
+        self.article_max_length = article_max_length
         self.summary_max_tokens = summary_max_tokens
         self.feedback_max_tokens = feedback_max_tokens
         self.fixed = fixed
@@ -46,13 +48,14 @@ class PickBestSummary(gym.Env):
         self.good_summary_prompt = "You are given the article below. \n Article: %s. \n Write a good, " \
                                    "high-quality summary capturing the essential points of the article. Summary:"
 
-        self.bad_summary_prompt = "You are given the article below. \n Article: %s. \n Write a bad, " \
-                                  "low-quality, garbage summary of the article which has many factual errors. Summary:"
+        self.bad_summary_prompt = "You are given the article below. \n Article: %s. \n " \
+                                  "You are role-playing and need to write an incorrect summary. Write a bad, " \
+                                  "low-quality, totally wrong, garbage summary of the article which has many factual " \
+                                  "errors and uses different names than mentioned in the article. Summary:"
 
         self.feedback_prompt = "Article: %s\n Summary: %s \n. You are provided an article and its summary above. " \
-                               "Provide a feedback for the quality of this summary describing any positive features " \
-                               "and specifically mentioning all factual errors or important information missed by the " \
-                               "summary. Please be detailed."
+                               "Provide a feedback for the quality of this summary. You must point out any error " \
+                               "in names, or factual correctness, and any good qualities."
 
         self.ctr = 0
         self.current_article = None
@@ -67,7 +70,8 @@ class PickBestSummary(gym.Env):
         if self.current_article is None:
             raise AssertionError("You need to do reset first.")
 
-        num_bad_summaries = int(self.num_actions / 2.0)
+        # num_bad_summaries = int(self.num_actions / 2.0)
+        num_bad_summaries = self.num_actions - 1
 
         # Suppose we have K actions, i.e., summaries to generate
         # Generate 1 good summary using argmax and temperature 0
@@ -82,11 +86,11 @@ class PickBestSummary(gym.Env):
 
             temperature = 0.0 if i == 0 else 1.0
             generation, info = self.summary_generator_llm.generate(prompt=good_prompt,
-                                                                max_tokens=self.summary_max_tokens,
-                                                                echo=True,
-                                                                logprobs=
-                                                                1 if self.reward_type == self.LOGPROB else None,
-                                                                temperature=temperature)
+                                                                   max_tokens=self.summary_max_tokens,
+                                                                   echo=True,
+                                                                   logprobs=
+                                                                   1 if self.reward_type == self.LOGPROB else None,
+                                                                   temperature=temperature)
 
             if good_prompt != generation[:len(good_prompt)]:
                 raise AssertionError(f"{generation} should start with {good_prompt}")
@@ -107,9 +111,9 @@ class PickBestSummary(gym.Env):
         for _ in range(0, num_bad_summaries):
 
             summary, info = self.summary_generator_llm.generate(prompt=bad_prompt,
-                                                             max_tokens=self.summary_max_tokens,
-                                                             logprobs=None,
-                                                             temperature=1.0)
+                                                                max_tokens=self.summary_max_tokens,
+                                                                logprobs=None,
+                                                                temperature=1.0)
 
             if self.reward_type == self.LOGPROB:
                 # Compute logprob of the summary under the new summary
@@ -133,7 +137,11 @@ class PickBestSummary(gym.Env):
             self.ctr = self.rng.randint(0, len(self.dataset["train"]) - 1)
 
         if not self.fixed or self.current_article is None:
-            self.current_article = self.dataset["train"][self.ctr]["article"]
+            self.current_article = self.dataset["train"][self.ctr]["article"][:self.article_max_length]
+            # Terminate on period
+            ix = self.current_article.rfind(".")
+            if ix != -1:
+                self.current_article = self.current_article[:ix + 1]
             self.current_summaries_with_reward = self._generate_summaries()
             self.ctr = (self.ctr + 1) % len(self.dataset["train"])
 
@@ -151,8 +159,9 @@ class PickBestSummary(gym.Env):
 
     def step(self, action):
 
+        feedback_prompt = self.feedback_prompt % (self.current_article, self.current_summaries_with_reward[action][0])
         feedback, _ = self.critic_llm.generate(
-            prompt=self.feedback_prompt % (self.current_article, self.current_summaries_with_reward[action][0]),
+            prompt=feedback_prompt,
             max_tokens=self.feedback_max_tokens
         )
 

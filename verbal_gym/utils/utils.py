@@ -5,10 +5,12 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
     """ A basic agent evaluation loop. """
     if return_full_information:
         assert hasattr(env,'get_full_information')
-    docstring = env.docstring
-    agent.reset(docstring)
 
     observation = env.reset()
+    default_docstring = 'This is an interactive decision making problem with verbal feedback.'
+    docstring = getattr(env, 'docstring', observation if isinstance(observation,str) else default_docstring)  # in case the environment does not have docstring
+    agent.reset(docstring)
+
     info = {}
     sum_of_rewards = 0.0
     data = dict(observations=[observation], actions=[], rewards=[], dones=[], infos=[])

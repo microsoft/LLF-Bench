@@ -15,8 +15,10 @@ def main(args):
     env = gym.make(args.env_name)
     set_seed(args.seed, env)
 
-    assert isinstance(env.action_space, gym.spaces.Discrete)
-    n_actions = env.action_space.n
+    n_actions = env.action_space.n if isinstance(env.action_space, gym.spaces.Discrete) else None
+    action_name = 'Action'
+    if any([name in args.env_name for name in ('Haiku', 'Tanka', 'LineSyllableConstrainedPoem', 'SyllableConstrainedPoem')]):
+        action_name = 'Poem'
 
     # TODO should save the stdout
 
@@ -24,6 +26,7 @@ def main(args):
     paraphrase_agent = None if args.not_paraphrase else ParaphraseAgent(GPT(ParaphraseAgent.system_prompt, temperature=args.temperature))
     gpt_agent = PosteriorAgent(GPT(PosteriorAgent.system_prompt, temperature=args.temperature),
                                n_actions,
+                               action_name=action_name,
                                verbose=args.verbose,
                                permute_history=not args.not_permute_history,
                                paraphrase_agent=paraphrase_agent)
@@ -35,9 +38,7 @@ def main(args):
 
 
 def get_parser():
-
     import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_episodes', type=int, default=10)
     parser.add_argument('--horizon', type=int, default=10)
