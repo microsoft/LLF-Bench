@@ -155,7 +155,7 @@ class BasicAgent(Agent):
             print_color(f'User:\n\n{user_prompt}\n', "blue")
             print_color(f'Agent:\n\n{response}\n', "green")
 
-        action = response.split(self.action_name+':')[1]
+        action = response.split(self.action_name+':')[-1]
         if self.n_actions is not None:
             action = extract_action(action, self.n_actions)
 

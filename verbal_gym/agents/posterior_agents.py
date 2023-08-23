@@ -9,7 +9,7 @@ from textwrap import dedent, indent
 class ParaphraseAgent:
     system_prompt = dedent("""
     You are an expert in paraphrasing. You will see a sentence and you need to
-    paraphrase it compactly.
+    paraphrase it compactly, while keeping the numerics.
     """)
 
     def __init__(self, llm):
