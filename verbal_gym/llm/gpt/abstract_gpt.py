@@ -5,6 +5,7 @@ import requests
 import json
 from verbal_gym.llm.llm import LLM
 
+
 class AbstractGPT(LLM):
 
     def __init__(self, deployment_name, system_prompt=''):
@@ -17,10 +18,6 @@ class AbstractGPT(LLM):
     def reset(self):
         """ This resets the LLM and removes the chat history. """
         pass  # Since it does not have a history.
-
-    def query(self, user_prompt, *args, **kwargs):
-        """ This is one-time query response. """
-        return self.generate(self, user_prompt, *args, **kwargs)
 
     def logprob(self, prompt, *args, **kwargs):
         return self.get_logprobs(prompt, *args, **kwargs)

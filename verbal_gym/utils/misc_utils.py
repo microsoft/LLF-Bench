@@ -1,3 +1,6 @@
+import re
+
+
 # print with colors (modified from Huihan's lflf)
 def print_color(message, color=None):
     colors = {
@@ -10,6 +13,6 @@ def print_color(message, color=None):
     }
     print(f"{colors.get(color, '')}{message}\033[0m")  # Default to no color if invalid color is provided
 
-import re
-def extract_number(string):
-    return re.findall(r'\d+', string)
+
+def extract_int(txt):
+    return [int(s) for s in txt.split() if s.isdigit()]
