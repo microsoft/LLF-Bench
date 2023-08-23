@@ -42,7 +42,7 @@ class PosteriorAgent(BasicAgent):
             self.history[-1]['feedback'] = feedback
             # XXX Add random permuation and paraphrasing
             history = np.random.permutation(self.history) if self.permute_history else self.history
-            world_info = '\n'.join([ indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {self.paraphrase(item["feedback"])}\n\n\n','\t') for item in self.history])
+            world_info = '\n'.join([ indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {self.paraphrase(item["feedback"])}\n\n\n','\t') for item in history])
         return world_info
 
     def paraphrase(self, sentence):
