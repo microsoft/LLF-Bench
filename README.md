@@ -26,3 +26,16 @@ Some valid options:
     openai: for using openai ChatCompletion backend.
 
 For example, to use openai+ray, install the repo by `pip install -e.[openai,ray]`.
+
+### Example scripts
+
+First, set the environment variables.
+
+    export AZURE_OPEANAI_KEY = <azure endpoint key>  # if using azure endpoint
+    export OPEANAI_KEY_PATH = <a file containing openai key>  # if using openai endpoint directly
+
+An example command using the openai endpoint would be
+
+     python scripts/basic_agent.py  --n_workers 0  --env_name verbal-SyllableConstrainedPoem-v0  --verbose  --model gpt-3.5-turbo
+
+To use the azure endpoint, add `azure:` as prefix to the model name, e.g., `azure:gpt-35-turbo`. Set `n_workers` to be >1 to use ray to parallelize the evaluation.
