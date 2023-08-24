@@ -1,5 +1,6 @@
 import gym
 from verbal_gym.llm.gpt_models import GPT
+from verbal_gym.llm.openai_utils import init_openai_api
 from verbal_gym.agents.agents import RandomAgent, BasicAgent
 from verbal_gym.agents.posterior_agents import PosteriorAgent, ParaphraseAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
@@ -7,6 +8,7 @@ from verbal_gym.utils.misc_utils import print_color
 
 
 def main(args):
+    init_openai_api(args.use_azure_api)
 
     n_episodes = args.n_episodes
     horizon = args.horizon
@@ -23,8 +25,8 @@ def main(args):
     # TODO should save the stdout
 
     # Posterior agent
-    paraphrase_agent = None if args.not_paraphrase else ParaphraseAgent(GPT(ParaphraseAgent.system_prompt, temperature=args.temperature))
-    gpt_agent = PosteriorAgent(GPT(PosteriorAgent.system_prompt, temperature=args.temperature),
+    paraphrase_agent = None if args.not_paraphrase else ParaphraseAgent(GPT(ParaphraseAgent.system_prompt, temperature=args.temperature, model=args.model))
+    gpt_agent = PosteriorAgent(GPT(PosteriorAgent.system_prompt, temperature=args.temperature, model=args.model),
                                n_actions,
                                action_name=action_name,
                                verbose=args.verbose,
@@ -49,6 +51,8 @@ def get_parser():
     parser.add_argument('--not_paraphrase', action='store_true')
     parser.add_argument('--not_permute_history', action='store_true')
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--use_azure_api', action='store_true')
+    parser.add_argument('--model', type=str, default='gpt-35-turbo')
 
     return parser
 

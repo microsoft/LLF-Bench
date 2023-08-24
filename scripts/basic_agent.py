@@ -6,6 +6,7 @@ from verbal_gym.utils.misc_utils import print_color
 
 
 def main(args):
+    init_openai_api(args.use_azure_api)
 
     n_episodes = args.n_episodes
     horizon = args.horizon
@@ -23,7 +24,7 @@ def main(args):
 
     # Basic agent
     system_prompt = BasicAgent.system_prompt
-    llm = GPT(system_prompt)
+    llm = GPT(system_prompt, model=args.model)
     gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Poem')
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
@@ -65,6 +66,8 @@ def get_parser():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--use_azure_api', action='store_true')
+    parser.add_argument('--model', type=str, default='gpt-35-turbo')
     return parser
 
 

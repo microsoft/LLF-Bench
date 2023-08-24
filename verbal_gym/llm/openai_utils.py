@@ -1,59 +1,49 @@
 import openai
 import time, os
 
+OPENAI_API_INITIALIZED = False
 API_MODE_AZURE = True
 
-# setup openai to be either gpt3.5 or gpt4
-if API_MODE_AZURE:
-    openai.api_type = "azure"
-    openai.api_version = "2023-05-15"
-    openai.api_base = "https://nexus-openai-1.openai.azure.com/"
-    openai.api_key = os.getenv('OPEANAI_KEY')
-else:
-    raise NotImplementedError("OpenAI API mode not implemented")
-    # openai.api_key_path =
 
 
 def _call_model(messages, model, temperature, request_timeout, max_tokens=None):
     # Place one call to the model, returning the response and total number of tokens involved.
     # Minor difference between using azure service (like MSR do) or not: use `engine` or `model`
-
+    config = dict(
+        messages=messages,
+        temperature=temperature,
+        request_timeout=request_timeout,
+        max_tokens=max_tokens,
+    )
     if max_tokens is not None:
-        if API_MODE_AZURE:
-            response = openai.ChatCompletion.create(
-                messages=messages,
-                engine=model,
-                temperature=temperature,
-                request_timeout=request_timeout,
-                max_tokens=max_tokens
-            )
-        else:
-            response = openai.ChatCompletion.create(
-                messages=messages,
-                model=model,
-                temperature=temperature,
-                request_timeout=request_timeout,
-                max_tokens=max_tokens
-            )
-
+        config['max_tokens'] = max_tokens
     if API_MODE_AZURE:
-        response = openai.ChatCompletion.create(
-            messages=messages,
-            engine=model,
-            temperature=temperature,
-            request_timeout=request_timeout
-        )
+        model = model.replace('3.5', '35')
+        config['engine'] = model
     else:
-        response = openai.ChatCompletion.create(
-            messages=messages,
-            model=model,
-            temperature=temperature,
-            request_timeout=request_timeout
-        )
+        model = model.replace('35', '3.5')
+        config['model'] = model
+    response = openai.ChatCompletion.create(**config)
+
     return response['choices'][0]['message']['content'], response
 
 
-def call_model(messages, model, temperature, request_timeout, max_tokens=None, max_attempts=50):
+def init_openai_api(api_mode_azure=True):
+    global OPENAI_API_INITIALIZED, API_MODE_AZURE
+    assert not OPENAI_API_INITIALIZED
+    OPENAI_API_INITIALIZED = True
+    API_MODE_AZURE = api_mode_azure
+    # setup openai to be either gpt3.5 or gpt4
+    if API_MODE_AZURE:
+        openai.api_type = "azure"
+        openai.api_version = "2023-05-15"
+        openai.api_base = "https://nexus-openai-1.openai.azure.com/"
+        openai.api_key = os.getenv('AZURE_OPEANAI_KEY')
+    else:
+        openai.api_key_path = os.getenv('OPEANAI_KEY_PATH')
+
+
+def call_model(messages, model, temperature, request_timeout, max_tokens=None, max_attempts=200):
     for _ in range(max_attempts):
         try:
             return _call_model(messages, model, temperature, request_timeout, max_tokens)
