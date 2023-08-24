@@ -8,7 +8,6 @@ from verbal_gym.utils.misc_utils import print_color
 
 
 def main(args):
-    init_openai_api(args.use_azure_api)
 
     n_episodes = args.n_episodes
     horizon = args.horizon
@@ -51,8 +50,7 @@ def get_parser():
     parser.add_argument('--not_paraphrase', action='store_true')
     parser.add_argument('--not_permute_history', action='store_true')
     parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--use_azure_api', action='store_true')
-    parser.add_argument('--model', type=str, default='gpt-35-turbo')
+    parser.add_argument('--model', type=str, default='azure:gpt-35-turbo')
 
     return parser
 
