@@ -24,7 +24,7 @@ def main(args):
     # Basic agent
     system_prompt = BasicAgent.system_prompt
     llm = GPT(system_prompt, model=args.model)
-    gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Poem')
+    gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name=action_name)
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print_color('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
