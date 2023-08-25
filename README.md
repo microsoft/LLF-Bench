@@ -1,10 +1,9 @@
 # verbal-gym
 
-A collecation of gym environemnts with verbal feedback.
+A collection of gym environments with verbal feedback.
 
 On top of the standard gym interface, each envronment has a
 `docstring` attribute that describes the environment's problem or prior information in texts. In addition, the `info` dict returned by `step` function has a key 'feedback' that describes the verbal feedback given to the agent.
-
 
 
 ### Installation
@@ -31,8 +30,8 @@ For example, to use openai+ray, install the repo by `pip install -e.[openai,ray]
 
 First, set the environment variables.
 
-    export AZURE_OPEANAI_KEY = <azure endpoint key>  # if using azure endpoint
-    export OPEANAI_KEY_PATH = <a file containing openai key>  # if using openai endpoint directly
+    export AZURE_OPENAI_KEY = <azure endpoint key>  # if using azure endpoint
+    export OPENAI_KEY_PATH = <a file containing openai key>  # if using openai endpoint directly
 
 An example command using the openai endpoint would be
 
