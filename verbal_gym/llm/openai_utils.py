@@ -43,9 +43,9 @@ def init_openai_api(api_mode_azure=True):
             openai.api_type = "azure"
             openai.api_version = "2023-05-15"
             openai.api_base = "https://nexus-openai-1.openai.azure.com/"
-            openai.api_key = os.getenv('AZURE_OPEANAI_KEY')
+            openai.api_key = os.getenv('AZURE_OPENAI_KEY')
         else:
-            openai.api_key_path = os.getenv('OPEANAI_KEY_PATH')
+            openai.api_key_path = os.getenv('OPENAI_KEY_PATH')
 
 
 def call_model(messages, model, temperature, request_timeout, max_tokens=None, max_attempts=200):
