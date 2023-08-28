@@ -4,6 +4,7 @@ import numpy as np
 
 def rollout(agent, env, *, horizon, return_full_information=False, log_data=False):
     """ A basic agent evaluation loop. """
+
     if return_full_information:
         assert hasattr(env,'get_full_information')
 

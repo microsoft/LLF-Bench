@@ -41,7 +41,9 @@ def main(args, logger):
             dataset.append((obs, action, simulated_feedback))
 
     # Create a prompt using the above dataset
-    # Step 1: Summarize the feedback for each action
+
+    prompt = f"I am presented with the following problem described as follows {env.docstring}." \
+             f""
 
     # Create prompt to take action based on the above feedback
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)

@@ -28,6 +28,7 @@ class RandomAgent(Agent):
     def act(self, *args, **kwargs):
         return random.randint(0, self.n_actions-1)
 
+
 class FullInformationAgent(Agent):
     """ This is a helper function to use LLM to make decisions among K choices,
     given full information. """
@@ -40,7 +41,6 @@ class FullInformationAgent(Agent):
         of all the acitons. You goal is to choose the right actions solve the
         task, according to "Problem Description".
     """)
-
 
     def __init__(self, llm, n_actions, verbose=False):
         super(Agent, self).__init__()
@@ -67,7 +67,6 @@ class FullInformationAgent(Agent):
         Note that <your action> should be an integer from [0, {}). You must follow this format!!!
         """)
 
-
     def act(self, obs, feedback, full_information, **kwargs):
         world_info = '\n'.join([f'\t Action {k}: {v["feedback"]}' for k, v in full_information.items()])
         user_prompt = self.prompt_template.format(self.docstring, world_info, self.n_actions)
@@ -79,6 +78,7 @@ class FullInformationAgent(Agent):
             print_color('Agent:\n{}'.format(response), "green")
             print_color(f'Action: {action}\n', 'red')
         return action
+
 
 class BasicAgent(Agent):
 
@@ -143,7 +143,10 @@ class BasicAgent(Agent):
             self.history[-1]['feedback'] = feedback
             # TODO how to format this nicely?
             # world_info = '\n'.join([f'\t {self.action_name} {item["action"]} --- {item["feedback"]}' for item in self.history])
-            world_info = '\n'.join([ indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {item["feedback"]}\n\n\n','\t') for item in self.history])
+            world_info = '\n'.join(
+                [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {item["feedback"]}\n\n\n','\t')
+                 for item in self.history])
+
         return world_info
 
     def act(self, obs, feedback, **kwargs):
