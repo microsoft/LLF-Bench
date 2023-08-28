@@ -1,6 +1,6 @@
 import gym
 from verbal_gym.llm.gpt_models import GPT
-from verbal_gym.agents.agents import RandomAgent, BasicAgent
+from verbal_gym.agents.basic_agent import RandomAgent, BasicAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -37,7 +37,7 @@ def main(args):
         print_color('Random agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
 
         from verbal_gym.envs.env_wrapper import FullInformationWrapper
-        from verbal_gym.agents.agents import FullInformationAgent
+        from verbal_gym.agents.basic_agent import FullInformationAgent
         env = FullInformationWrapper(env)
 
         # Full information agent

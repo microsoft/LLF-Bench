@@ -1,4 +1,4 @@
-from verbal_gym.agents.agents import BasicAgent
+from verbal_gym.agents.basic_agent import BasicAgent
 from verbal_gym.agents.utils import extract_action
 from verbal_gym.utils.misc_utils import print_color
 
@@ -26,6 +26,8 @@ class ParaphraseAgent:
 
 
 class PosteriorAgent(BasicAgent):
+
+    NAME = "PosteriorAgent"
 
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
                 permute_history=True, paraphrase_agent=None, paraphrase_at_given=True):

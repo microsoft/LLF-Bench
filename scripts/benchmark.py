@@ -28,16 +28,16 @@ def create_agent(agent_name, env, *, agent_config=None, verbose=False):
                                    paraphrase_at_given=agent_config['paraphrase_at_given'],
                                    paraphrase_agent=paraphrase_agent)
     elif agent_name=='basic_agent':
-        from verbal_gym.agents.agents import BasicAgent
+        from verbal_gym.agents.basic_agent import BasicAgent
         agent = BasicAgent(GPT(BasicAgent.system_prompt, model=agent_config['model']),
                                n_actions, verbose=verbose, action_name=action_name)
     elif agent_name=='random_agent':
-        from verbal_gym.agents.agents import RandomAgent
+        from verbal_gym.agents.basic_agent import RandomAgent
         assert n_actions is not None
         agent = RandomAgent(n_actions)
     elif agent_name=='full_info_agent':
         from verbal_gym.envs.env_wrapper import FullInformationWrapper
-        from verbal_gym.agents.agents import FullInformationAgent
+        from verbal_gym.agents.basic_agent import FullInformationAgent
         # Full information agent
         agent = FullInformationAgent(GPT(FullInformationAgent.system_prompt, model=agent_config['model']),
                                         n_actions=n_actions,

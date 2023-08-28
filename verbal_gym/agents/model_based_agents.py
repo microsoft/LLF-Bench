@@ -1,4 +1,4 @@
-from verbal_gym.agents.agents import BasicAgent
+from verbal_gym.agents.basic_agent import BasicAgent
 from verbal_gym.agents.utils import extract_action
 from verbal_gym.utils.misc_utils import print_color
 

@@ -1,11 +1,11 @@
 import gym
+import logging
 
+from agents.agent_selector import AgentSelector
 from llm.gpt.gpt import GPT3
 from utils.multiprocess_logger import MultiprocessingLoggerManager
 from verbal_gym.llm.gpt_models import GPT
 from verbal_gym.llm.openai_utils import init_openai_api
-from verbal_gym.agents.agents import RandomAgent, BasicAgent
-from verbal_gym.agents.posterior_agents import PosteriorAgent, ParaphraseAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -72,13 +72,21 @@ def get_parser():
     return parser
 
 
+class LogLevel(object):
+    pass
+
+
 if __name__ == '__main__':
 
     parser = get_parser()
     args = parser.parse_args()
 
+    agent_selector = AgentSelector()
+    agent = agent_selector.get_agent("basic")
+
     # Create a logger
-    log_manager = MultiprocessingLoggerManager(file_path=args.logfile)
+    log_manager = MultiprocessingLoggerManager(file_path=args.logfile,
+                                               logging_level=logging.INFO)
     logger = log_manager.get_logger("Main")
 
     main(args=args,
