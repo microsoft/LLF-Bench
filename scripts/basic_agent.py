@@ -1,6 +1,6 @@
 import gym
 from verbal_gym.llm.gpt_models import GPT
-from verbal_gym.agents.agents import RandomAgent, BasicAgent
+from verbal_gym.agents.basic_agent import RandomAgent, BasicAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -23,8 +23,8 @@ def main(args):
 
     # Basic agent
     system_prompt = BasicAgent.system_prompt
-    llm = GPT(system_prompt)
-    gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name='Poem')
+    llm = GPT(system_prompt, model=args.model)
+    gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name=action_name)
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print_color('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
@@ -37,7 +37,7 @@ def main(args):
         print_color('Random agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
 
         from verbal_gym.envs.env_wrapper import FullInformationWrapper
-        from verbal_gym.agents.agents import FullInformationAgent
+        from verbal_gym.agents.basic_agent import FullInformationAgent
         env = FullInformationWrapper(env)
 
         # Full information agent
@@ -65,6 +65,7 @@ def get_parser():
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--model', type=str, default='azure:gpt-35-turbo')
     return parser
 
 

@@ -18,7 +18,7 @@ class GPT(LLM):
             request_timeout = request_timeout,
             max_tokens = max_tokens,
             max_attempts = max_attempts,
-            model = "gpt-35-turbo"
+            model = model,
         )
 
     def reset(self):

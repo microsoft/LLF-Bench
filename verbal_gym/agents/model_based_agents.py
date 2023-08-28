@@ -1,0 +1,34 @@
+from verbal_gym.agents.basic_agent import BasicAgent
+from verbal_gym.agents.utils import extract_action
+from verbal_gym.utils.misc_utils import print_color
+
+import numpy as np
+from textwrap import dedent, indent
+
+
+class ModelBasedAgent(BasicAgent):
+
+    def __init__(self, llm, n_actions, verbose=False, action_name='Action',
+                permute_history=True, paraphrase_agent=None):
+        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name)
+        self.permute_history = permute_history
+        self.paraphrase_agent = paraphrase_agent
+
+    def reset(self, docstring):
+        self._docstring = docstring
+
+    def update_history(self, feedback):
+        world_info='None'
+        if len(self.history)>0:
+            self.history[-1]['feedback'] = feedback
+            # XXX Add random permuation and paraphrasing
+            history = np.random.permutation(self.history) if self.permute_history else self.history
+            world_info = '\n'.join([ indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {self.paraphrase(item["feedback"])}\n\n\n','\t') for item in history])
+        return world_info
+
+    def paraphrase(self, sentence):
+        return self.paraphrase_agent.paraphrase(sentence) if self.paraphrase_agent is not None else sentence
+
+    @property
+    def docstring(self):
+        return self.paraphrase(self._docstring)

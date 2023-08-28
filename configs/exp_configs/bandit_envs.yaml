@@ -1,0 +1,16 @@
+env_name:
+  - verbal-BanditTenArmedRandomFixed-v0
+  - verbal-BanditTenArmedRandomRandom-v0
+  - verbal-BanditTenArmedGaussian-v0
+  - verbal-BanditTenArmedUniformDistributedReward-v0
+  - verbal-BanditTwoArmedDeterministicFixed-v0
+  - verbal-BanditTwoArmedHighHighFixed-v0
+  - verbal-BanditTwoArmedHighLowFixed-v0
+  - verbal-BanditTwoArmedLowLowFixed-v0
+
+agent_config:
+  file:
+    - configs/agent_configs/random_agent.yaml
+    - configs/agent_configs/basic_agent.yaml
+    - configs/agent_configs/posterior_agent.yaml
+    - configs/agent_configs/full_info_agent.yaml
