@@ -1,0 +1,11 @@
+env_list:
+    - verbal-Haiku-v0
+    - verbal-Tanka-v0
+    - verbal-LineSyllableConstrainedPoem-v0
+    - verbal-SyllableConstrainedPoem-v0
+
+agent_list:
+    - basic_agent
+    - posterior_agent
+
+log_dir: results/poem_envs

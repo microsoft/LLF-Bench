@@ -4,10 +4,13 @@ from verbal_gym.llm.gpt_models import GPT
 from verbal_gym.envs.env_wrapper import FullInformationWrapper
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
-import yaml
+import yaml, copy, time, pickle
+from itertools import product
 
 
-def create_agent(agent_name, env, *, agent_config=None, verbose=False):
+def create_agent(agent_config, env, verbose=False):
+
+    agent_name = agent_config['agent_name']
 
     # Define action spec
     n_actions = env.action_space.n if isinstance(env.action_space, gym.spaces.Discrete) else None
@@ -32,12 +35,13 @@ def create_agent(agent_name, env, *, agent_config=None, verbose=False):
         agent = BasicAgent(GPT(BasicAgent.system_prompt, model=agent_config['model']),
                                n_actions, verbose=verbose, action_name=action_name)
     elif agent_name=='random_agent':
-        from verbal_gym.agents.basic_agent import RandomAgent
+        from verbal_gym.agents.random_agent import RandomAgent
         assert n_actions is not None
         agent = RandomAgent(n_actions)
     elif agent_name=='full_info_agent':
         from verbal_gym.envs.env_wrapper import FullInformationWrapper
-        from verbal_gym.agents.basic_agent import FullInformationAgent
+        from verbal_gym.agents.full_information_agent import FullInformationAgent
+        assert n_actions is not None
         # Full information agent
         agent = FullInformationAgent(GPT(FullInformationAgent.system_prompt, model=agent_config['model']),
                                         n_actions=n_actions,
@@ -46,40 +50,77 @@ def create_agent(agent_name, env, *, agent_config=None, verbose=False):
         raise NotImplementedError
     return agent
 
+def run_experiment(agent_config, env_name, *, horizon, n_episodes, seed=0, verbose=False, n_workers=1, **kwargs):
+    """ Run experiemnts for a single agent. """
+
+    # agnet_config is a dict, which should contain the following keys:
+    #   agent_name: name of the agent. If not provided, `file` must be provided.
+    #   file: path to a yaml file that contains the default config
+    #   other keys used to create the agent in `create_agent`.
+
+    if 'file' in agent_config and 'name' not in agent_config:
+        default_config = yaml.safe_load(open(agent_config['file'], 'r'))
+        del agent_config['file']
+        default_config.update(agent_config)
+        agent_config.update(default_config)
+
+    agent_name = agent_config['agent_name']
+    # Create the environment
+    env = gym.make(env_name)
+    set_seed(seed, env)
+    if 'full_info' in agent_name:
+        env = FullInformationWrapper(env)
+    # Create the agent
+    agent = create_agent(agent_config, env, verbose=verbose)
+    # Evaluate the agent!
+    scores, data = evaluate_agent(
+                            agent, env,
+                            horizon=horizon,
+                            n_episodes=n_episodes,
+                            n_workers=n_workers,
+                            return_full_information='full_info' in agent_name,
+                            log_data=True)
+    print_color(f'{agent_name}: mean score {scores.mean():.2f}, std {scores.std():.2f}', 'red')
+    return scores, data
+
+import os, yaml
+from tqdm import tqdm
+
 def main(args):
 
-    # Create the environment
-    env = gym.make(args.env_name)
-    set_seed(args.seed, env)
-    if 'full_info' in args.agent_name:
-        env = FullInformationWrapper(env)
+    config = yaml.safe_load(open(args.config, 'r'))
+    config.update(dict(  # Read values from args
+            horizon=[args.horizon],
+            n_episodes=[args.n_episodes],
+            seed=[args.seed],
+            verbose=[args.verbose],
+            n_workers=[args.n_workers]
+        ))
 
-    # Create the agent
-    if isinstance(args.agent_config, str):   # Load agent config from yaml
-        args.agent_config = yaml.safe_load(open(args.agent_config, 'r'))
-        assert args.agent_name == args.agent_config['agent_name']
-    agent = create_agent(args.agent_name, env, agent_config=args.agent_config, verbose=args.verbose)
+    from verbal_gym.utils.benchmark_utils import batch_exp
 
-    # Evaluate the agent!
-    scores = evaluate_agent(agent, env,
-                            horizon=args.horizon,
-                            n_episodes=args.n_episodes,
-                            n_workers=args.n_workers,
-                            return_full_information='full_info' in args.agent_name)
+    def logger(inputs, outputs):
+        # Set log path
+        log_path = os.path.join(args.log_dir, inputs['env_name'], inputs['agent_config']['agent_name']+'_'+time.strftime("%m%d_%H%M%S"))
+        # Log
+        os.makedirs(log_path, exist_ok=True)
+        yaml.dump(inputs, open(os.path.join(log_path, 'exp_config.yaml'), 'w'))
+        scores, data = outputs
+        stats = dict(mean=float(scores.mean()), std=float(scores.std()), scores=scores.tolist())
+        pickle.dump(data,  open(os.path.join(log_path, 'data.pkl'), 'wb'))
+        yaml.dump(stats, open(os.path.join(log_path, 'stats.yaml'), 'w'))
 
-    print_color(f'{args.agent_name}: mean score {scores.mean():.2f}, std {scores.std():.2f}', 'red')
-
-    return scores
+    batch_run_exps = batch_exp(run_experiment, logger)
+    batch_run_exps(**config)  # run experiments
 
 
 def get_parser():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--n_episodes', type=int, default=10)
+    parser.add_argument('--log_dir', type=str, default='results')
+    parser.add_argument('--config', type=str, required=True)
     parser.add_argument('--horizon', type=int, default=10)
-    parser.add_argument('--env_name',type=str, default='verbal-BanditTenArmedRandomRandom-v0')
-    parser.add_argument('--agent_name',type=str, default='random_agent')
-    parser.add_argument('--agent_config',type=str, default=None)
+    parser.add_argument('--n_episodes', type=int, default=30)
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
