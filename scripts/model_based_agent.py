@@ -1,6 +1,7 @@
 import gym
 
 from llm.gpt.gpt import GPT3
+from utils.multiprocess_logger import MultiprocessingLoggerManager
 from verbal_gym.llm.gpt_models import GPT
 from verbal_gym.llm.openai_utils import init_openai_api
 from verbal_gym.agents.agents import RandomAgent, BasicAgent
@@ -9,7 +10,7 @@ from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
 
-def main(args):
+def main(args, logger):
 
     n_episodes = args.n_episodes
     horizon = args.horizon
@@ -23,6 +24,7 @@ def main(args):
     assert isinstance(env.action_space, gym.spaces.Discrete), "Currently only handles discrete actions"
 
     dataset = []
+
     for _ in range(args.model_eps):
 
         obs = env.reset()
@@ -39,7 +41,7 @@ def main(args):
             dataset.append((obs, action, simulated_feedback))
 
     # Create a prompt using the above dataset
-    pass
+    # Step 1: Summarize the feedback for each action
 
     # Create prompt to take action based on the above feedback
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
@@ -48,23 +50,34 @@ def main(args):
 
 
 def get_parser():
+
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--n_episodes', type=int, default=10)
-    parser.add_argument('--horizon', type=int, default=10)
-    parser.add_argument('--env_name',type=str, default='verbal-BanditTenArmedRandomRandom-v0')
-    parser.add_argument('--seed', type=int, default=0)
-    parser.add_argument('--n_workers', type=int, default=1)
-    parser.add_argument('--temperature', type=float, default=0.0)
-    parser.add_argument('--not_paraphrase', action='store_true')
-    parser.add_argument('--not_permute_history', action='store_true')
-    parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--model', type=str, default='azure:gpt-35-turbo')
-    parser.add_argument('--model_eps', type=str, default='azure:gpt-35-turbo')
+    parser.add_argument("--n_episodes", type=int, default=10)
+    parser.add_argument("--horizon", type=int, default=10)
+    parser.add_argument("--logfile", type=str, default="./results.txt")
+    parser.add_argument("--env_name",type=str, default="verbal-BanditTenArmedRandomRandom-v0")
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--n_workers", type=int, default=1)
+    parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--not_paraphrase", action="store_true")
+    parser.add_argument("--not_permute_history", action="store_true")
+    parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--model", type=str, default="azure:gpt-35-turbo")
+    parser.add_argument("--model_eps", type=str, default="azure:gpt-35-turbo")
 
     return parser
 
 
 if __name__ == '__main__':
+
     parser = get_parser()
-    main(parser.parse_args())
+    args = parser.parse_args()
+
+    # Create a logger
+    log_manager = MultiprocessingLoggerManager(file_path=args.logfile)
+    logger = log_manager.get_logger("Main")
+
+    main(args=args,
+         logger=logger)
