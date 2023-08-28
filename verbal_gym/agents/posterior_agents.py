@@ -1,12 +1,11 @@
-from verbal_gym.agents.basic_agent import BasicAgent
-from verbal_gym.agents.utils import extract_action
-from verbal_gym.utils.misc_utils import print_color
-
 import numpy as np
 from textwrap import dedent, indent
 
+from verbal_gym.agents.basic_agent import BasicAgent
+
 
 class ParaphraseAgent:
+
     system_prompt = dedent("""
     You are an expert in paraphrasing. You will see a sentence and you need to
     paraphrase it compactly, while keeping the numerics.
@@ -14,14 +13,14 @@ class ParaphraseAgent:
 
     def __init__(self, llm):
         self.llm = llm
-        self.promot_template = dedent("""\
+        self.prompt_template = dedent("""\
             You see the following sentence:
             {}
             Paraphrase:
         """)
 
     def paraphrase(self, sentence):
-        response, _ = self.llm.generate(self.promot_template.format(sentence))
+        response, _ = self.llm.generate(self.prompt_template.format(sentence))
         return response
 
 
