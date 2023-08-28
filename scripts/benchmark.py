@@ -4,8 +4,7 @@ from verbal_gym.llm.gpt_models import GPT
 from verbal_gym.envs.env_wrapper import FullInformationWrapper
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
-import yaml, copy, time, pickle
-from itertools import product
+import yaml, time, pickle, os
 
 
 def create_agent(agent_config, env, verbose=False):
@@ -83,8 +82,6 @@ def run_experiment(agent_config, env_name, *, horizon, n_episodes, seed=0, verbo
     print_color(f'{agent_name}: mean score {scores.mean():.2f}, std {scores.std():.2f}', 'red')
     return scores, data
 
-import os, yaml
-from tqdm import tqdm
 
 def main(args):
 
