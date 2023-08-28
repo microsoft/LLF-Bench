@@ -1,2 +1,0 @@
-agent_name: basic_agent  # this is for verification
-model: azure:gpt-35-turbo

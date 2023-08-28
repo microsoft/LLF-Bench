@@ -1,8 +1,0 @@
-agent_name: posterior_agent  # this is for verification
-model: azure:gpt-35-turbo
-temperature: 0.0
-paraphrase_model: azure:gpt-35-turbo
-paraphrase_temperature: 0.0
-paraphrase: true
-paraphrase_at_given: true  # set true to run faster
-permute_history: true

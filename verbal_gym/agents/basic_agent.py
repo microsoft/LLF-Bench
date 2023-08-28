@@ -45,7 +45,7 @@ class BasicAgent(Agent):
 
         if n_actions is not None:
             self.prompt_template += dedent(f"""\
-            The response should be in the following format, where <your action> should be an integer from [0, {n_actions}). You must follow this format!!!
+            The response should be in the following format, where <your action> should be an integer from 0 and less than {n_actions}. You must follow this format!!!
 
                 Reasoning: <your reasoning>
                 {action_name}: #<your action>#
