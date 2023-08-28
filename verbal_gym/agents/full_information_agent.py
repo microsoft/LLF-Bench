@@ -1,7 +1,7 @@
 import random
 from textwrap import dedent, indent
 
-from agents.abstract_agent import Agent
+from verbal_gym.agents.abstract_agent import Agent
 from verbal_gym.utils.misc_utils import print_color
 from verbal_gym.agents.utils import extract_action
 
@@ -57,4 +57,3 @@ class FullInformationAgent(Agent):
             print_color('Agent:\n{}'.format(response), "green")
             print_color(f'Action: {action}\n', 'red')
         return action
-
