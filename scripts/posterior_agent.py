@@ -1,7 +1,5 @@
 import gym
 from verbal_gym.llm.gpt_models import GPT
-from verbal_gym.llm.openai_utils import init_openai_api
-from verbal_gym.agents.basic_agent import RandomAgent, BasicAgent
 from verbal_gym.agents.posterior_agents import PosteriorAgent, ParaphraseAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color

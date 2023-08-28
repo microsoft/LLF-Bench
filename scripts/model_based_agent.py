@@ -41,7 +41,6 @@ def main(args, logger):
             dataset.append((obs, action, simulated_feedback))
 
     # Create a prompt using the above dataset
-
     prompt = f"I am presented with the following problem described as follows {env.docstring}." \
              f""
 
