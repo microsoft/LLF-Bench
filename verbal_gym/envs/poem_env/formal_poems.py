@@ -214,7 +214,7 @@ class Haiku(PoemUtil, gym.Env):
 
         terminal = True  # one step environment
 
-        return self.assignment, frac, terminal, {'feedback': feedback}
+        return self.assignment, frac, terminal, {'feedback': feedback, 'success': int(success)}
 
 
 class Tanka(Haiku):
@@ -322,4 +322,4 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
 
         terminal = True  # one step environment
 
-        return self.assignment, frac, terminal, {'frac': frac, 'feedback': feedback, 'success': 1}
+        return self.assignment, frac, terminal, {'frac': frac, 'feedback': feedback, 'success': 0}
