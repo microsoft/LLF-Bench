@@ -1,6 +1,6 @@
 import random
 
-from agents.abstract_agent import Agent
+from verbal_gym.agents.abstract_agent import Agent
 
 
 class RandomAgent(Agent):
