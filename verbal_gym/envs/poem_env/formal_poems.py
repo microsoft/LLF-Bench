@@ -101,6 +101,7 @@ class Haiku(PoemUtil, gym.Env):
 
         self.feedback = feedback
         self.syllable_req = [5, 7, 5]
+        self.syllable_req_str = [str(i) for i in self.syllable_req]
         assert feedback in {0, 0.5, 1}
 
         self.action_space = gym.spaces.Text(sys.maxsize)
@@ -158,7 +159,7 @@ class Haiku(PoemUtil, gym.Env):
             # we offer an explanation or error message (on exactly which line is at fault)
             # Generated poem is incorrect because <which rule was violated, and where:> poem needs to have exactly 7 syllables in each line, but lines x,y do not.
             feedback = f"The generated {self.form_name} is incorrect.\n"
-            feedback += f"This is because {self.form_name} needs to have exactly 5-7-5 syllables in three lines"
+            feedback += f"This is because {self.form_name} needs to have exactly {'-'.join(self.syllable_req_str)} syllables in three lines"
             feedback += ", but lines " if len(info) > 1 else ", but line "
             for tup in info:
                 i, line, count, diff = tup
@@ -173,7 +174,7 @@ class Haiku(PoemUtil, gym.Env):
             for tup in info:
                 i, line, count, diff = tup
                 improv_direction = "more" if diff > 0 else "less"
-                feedback += f'The line: "{line}" has {count} syllables. It should only have {self.syllable} syllables. '
+                feedback += f'The line: "{line}" has {count} syllables. It should only have {self.syllable_req[line]} syllables. '
                 feedback += f'You should rewrite the line to have {improv_direction} syllables.' + '\n'
         return feedback
 
@@ -222,10 +223,11 @@ class Tanka(Haiku):
         # We can extend this to add "theme" of the poem
         # This increases difficulty a little, but also hard to check if it's thematic or not.
         super().__init__(feedback, silent, use_extractor)
-        self.assignment = f"Can you write me a Tanka? A Tanka is a poem that consists of five lines. The number of syllables per line is in a pattern of 5-7-5-7-7."
+        self.assignment = f"Can you write me a Tanka? A Tanka is a poem that consists of five lines composed of syllables in a 5-7-5-7-7 pattern."
         self.use_extractor = use_extractor
         self.feedback = feedback
         self.syllable_req = [5, 7, 5, 7, 7]
+        self.syllable_req_str = [str(i) for i in self.syllable_req]
         self.form_name = 'Tanka'
 
 
@@ -234,8 +236,8 @@ class LineSyllableConstrainedPoem(Haiku):
         # We can extend this to add "theme" of the poem
         # This increases difficulty a little, but also hard to check if it's thematic or not.
         super().__init__(feedback, silent, use_extractor)
-        syllable_req_str = [str(i) for i in syllable_req]
-        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables per line is in a pattern of {'-'.join(syllable_req_str)}."
+        self.syllable_req_str = [str(i) for i in syllable_req]
+        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables for the lines should follow a {'-'.join(self.syllable_req_str)} pattern."
         self.use_extractor = use_extractor
         self.feedback = feedback
         self.syllable_req = syllable_req
