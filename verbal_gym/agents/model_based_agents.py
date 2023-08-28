@@ -6,25 +6,6 @@ import numpy as np
 from textwrap import dedent, indent
 
 
-class ParaphraseAgent:
-    system_prompt = dedent("""
-    You are an expert in paraphrasing. You will see a sentence and you need to
-    paraphrase it compactly, while keeping the numerics.
-    """)
-
-    def __init__(self, llm):
-        self.llm = llm
-        self.promot_template = dedent("""\
-            You see the following sentence:
-            {}
-            Paraphrase:
-        """)
-
-    def paraphrase(self, sentence):
-        response, _ = self.llm.generate(self.promot_template.format(sentence))
-        return response
-
-
 class ModelBasedAgent(BasicAgent):
 
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
