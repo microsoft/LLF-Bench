@@ -65,11 +65,12 @@ class BasicAgent(Agent):
         self.history = []
 
     def update_history(self, feedback):
-        world_info='None'
-        if len(self.history)>0:
+        world_info = 'None'
+        if len(self.history) > 0:
             self.history[-1]['feedback'] = feedback
             # TODO how to format this nicely?
-            # world_info = '\n'.join([f'\t {self.action_name} {item["action"]} --- {item["feedback"]}' for item in self.history])
+            # world_info = '\n'.join([f'\t {self.action_name} {item["action"]} --- {item["feedback"]}'
+            # for item in self.history])
             world_info = '\n'.join(
                 [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {item["feedback"]}\n\n\n','\t')
                  for item in self.history])
