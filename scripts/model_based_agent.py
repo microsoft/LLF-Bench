@@ -1,11 +1,12 @@
+import re
+import pdb
 import gym
 import logging
+import numpy as np
 
-from agents.agent_selector import AgentSelector
-from llm.gpt.gpt import GPT3
+from llm.gpt.gpt import GPT3, GPT35
+from agents.fixed_agent import FixedAgent
 from utils.multiprocess_logger import MultiprocessingLoggerManager
-from verbal_gym.llm.gpt_models import GPT
-from verbal_gym.llm.openai_utils import init_openai_api
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -19,34 +20,93 @@ def main(args, logger):
     env = gym.make(args.env_name)
     set_seed(args.seed, env)
 
-    critic_llm = GPT3()
+    critic_llm = GPT35()
 
     assert isinstance(env.action_space, gym.spaces.Discrete), "Currently only handles discrete actions"
 
     dataset = []
 
-    for _ in range(args.model_eps):
+    for i in range(args.model_eps):
 
         obs = env.reset()
 
         for action in range(env.action_space.n):
 
-            simulated_feedback = critic_llm.generate(
-                prompt=f"I am trying to solve a problem described as {env.docstring}."
-                       f"I was presented with a specific problem {obs}. "
-                       f"I chose action {action}. How did I do?",
+            prompt = f"I am trying to solve a problem described as follows.\n {env.docstring}. " \
+                     f"I was presented with a specific problem {obs}. " \
+                     f"Is action {action} a good action or a bad action? why or why not?"
+
+            simulated_feedback, _ = critic_llm.generate(
+                prompt=prompt,
                 max_tokens=100,
                 temperature=0.0)
 
+            logger.log(f"Episode {i}, Action {action}\n")
+            logger.log(f"Agent Prompt: {prompt}\n")
+            logger.log(f"Simulated Feedback: {simulated_feedback}\n\n")
+
             dataset.append((obs, action, simulated_feedback))
 
-    # Create a prompt using the above dataset
-    prompt = f"I am presented with the following problem described as follows {env.docstring}." \
-             f""
+    logger.log("=" * 20)
+    logger.log("\n\n")
+
+    # Assume bandit setting, compute aggregate feedback for each action and then take the best action
+    aggregate_feedbacks = dict()
+    for action in range(env.action_space.n):
+
+        feedbacks = [f"- {dp_simulated_feedback} "
+                     for dp_obs, dp_action, dp_simulated_feedback in dataset if dp_action == action]
+
+        feedback_string = "\n".join(feedbacks)
+
+        aggregation_prompt = \
+            f"I am trying to solve a problem described as follows.\n {env.docstring}. " \
+            f"I took action {action} many times and received the following feedback. \n {feedback_string}. \n" \
+            f"Can you please summarize all the essential comments about this action, whether it was good or bad, " \
+            f"below. Also include a recommendation whether it is a good action to take. \n"
+
+        # Compute aggregate feedback
+        aggregate_feedback, _ = critic_llm.generate(prompt=aggregation_prompt,
+                                                    max_tokens=100,
+                                                    temperature=0.0)
+
+        logger.log(f"Computing Aggregate Feedback for Action {action}\n")
+        logger.log(f"Aggregation Prompt {aggregation_prompt}\n")
+        logger.log(f"Aggregate Feedback {aggregate_feedback}\n\n")
+
+        aggregate_feedbacks[action] = aggregate_feedback
+
+    evaluation_prompt = f"I am trying to solve a problem described as {env.docstring}. I can take {env.action_space.n}" \
+                        f"possible actions. For each action, my overall feedback is given below:\n"
+
+    for action in range(env.action_space.n):
+        evaluation_prompt += f"Action {action}: {aggregate_feedbacks[action]}\n"
+
+    evaluation_prompt += f"Based upon the above feedback. The best action is "
+
+    answer_feedback, _ = critic_llm.generate(prompt=evaluation_prompt,
+                                             max_tokens=5,
+                                             temperature=0.0)
+
+    answers = re.findall(r'\d+', answer_feedback)
+
+    logger.log(f"Evaluating Prompt {evaluation_prompt}\n")
+    logger.log(f"Answer Feedback {answer_feedback}\n")
+    logger.log(f"Parsed Answers {answers}\n\n")
+
+    if len(answers) == 0:
+        print("Failed")
+        return [0] * n_episodes
+
+    fixed_action = int(answers[0])
+    agent = FixedAgent(fixed_action=fixed_action)
+    logger.log(f"Created a fixed agent with action {fixed_action}")
 
     # Create prompt to take action based on the above feedback
-    scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
+    scores, _ = evaluate_agent(agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print_color('Basic Posterior agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
+    logger.log(f"Mean total reward on {n_episodes} episodes is {np.mean(scores)} with std of {np.std(scores)}")
+
     return scores
 
 
@@ -66,22 +126,15 @@ def get_parser():
     parser.add_argument("--not_permute_history", action="store_true")
     parser.add_argument("--verbose", action="store_true")
     parser.add_argument("--model", type=str, default="azure:gpt-35-turbo")
-    parser.add_argument("--model_eps", type=str, default="azure:gpt-35-turbo")
+    parser.add_argument("--model_eps", type=int, default=2)
 
     return parser
-
-
-class LogLevel(object):
-    pass
 
 
 if __name__ == '__main__':
 
     parser = get_parser()
     args = parser.parse_args()
-
-    agent_selector = AgentSelector()
-    agent = agent_selector.get_agent("basic")
 
     # Create a logger
     log_manager = MultiprocessingLoggerManager(file_path=args.logfile,

@@ -1,6 +1,8 @@
 import gym
 import sys
 import random
+import numpy as np
+
 from verbal_gym.llm.gpt.gpt import GPT3
 
 
@@ -32,6 +34,8 @@ class PickBestSummary(gym.Env):
         self.summary_max_tokens = summary_max_tokens
         self.feedback_max_tokens = feedback_max_tokens
         self.fixed = fixed
+
+        self.oracle_action = None
 
         self.env_seed = seed
         self.docstring = "Select the best summary for a given article."
@@ -118,7 +122,7 @@ class PickBestSummary(gym.Env):
             if self.reward_type == self.LOGPROB:
                 # Compute logprob of the summary under the new summary
                 good_prompt_with_bad_summary = good_prompt + summary
-                reward = self.summary_generator_llm.logprob(prompt=good_prompt_with_bad_summary)
+                reward = self.summary_generator_llm.get_logprobs(prompt=good_prompt_with_bad_summary)
             elif self.reward_type == self.Binary:
                 reward = 0
             else:
@@ -145,6 +149,8 @@ class PickBestSummary(gym.Env):
             self.current_summaries_with_reward = self._generate_summaries()
             self.ctr = (self.ctr + 1) % len(self.dataset["train"])
 
+            self.oracle_action = np.argmax([reward for _, reward in self.current_summaries_with_reward])
+
         observation = f"You are given an article below. \n\n {self.current_article}. \n\n" \
                       f"You are also given {self.num_actions} many summaries some of which are good " \
                       f"and others can be incorrect. The list of summaries and their indices are:\n\n"
@@ -156,6 +162,9 @@ class PickBestSummary(gym.Env):
         observation = observation + "\n\n Please select the best summary for the above article by entering its index."
 
         return observation
+
+    def get_oracle_action(self):
+        return self.oracle_action
 
     def step(self, action):
 
