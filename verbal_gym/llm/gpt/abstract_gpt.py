@@ -77,6 +77,12 @@ class AbstractGPT(LLM):
         else:
             logprob = None
 
+            # If echo was set to true when logprobs is None, then we dont return the prompt but add it here
+            # This is not the most desirable, but we cannot add echo: True with logprobs to None for models like GPT3.5
+            # as it gives error
+            if echo:
+                text = prompt + text
+
         info = {
             "logprob": logprob,
             "echo": echo
@@ -124,13 +130,13 @@ class AbstractGPT(LLM):
 
         payload = {
             "prompt": prompt,
-            "temperature": temperature,
-            "echo": echo
+            "temperature": temperature
         }
 
         if logprobs is not None:
             assert type(logprobs) == int
             payload["logprobs"] = logprobs
+            payload["echo"] = echo
 
         if max_tokens is not None:
             assert type(max_tokens) == int
@@ -145,5 +151,9 @@ class AbstractGPT(LLM):
                           )
 
         response = json.loads(r.text)
+
+        if "choices" not in response:
+            print("Response is ", response)
+            pdb.set_trace()
 
         return response
