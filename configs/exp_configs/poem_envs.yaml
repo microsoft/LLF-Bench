@@ -1,11 +1,10 @@
-env_list:
+env_name:
     - verbal-Haiku-v0
     - verbal-Tanka-v0
     - verbal-LineSyllableConstrainedPoem-v0
     - verbal-SyllableConstrainedPoem-v0
 
-agent_list:
-    - basic_agent
-    - posterior_agent
-
-log_dir: results/poem_envs
+agent_config:
+  file:
+    - configs/agent_configs/basic_agent.yaml
+    - configs/agent_configs/posterior_agent.yaml

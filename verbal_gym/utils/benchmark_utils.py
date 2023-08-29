@@ -44,6 +44,29 @@ def unflatten_dict_of_lists(d, separator=':'):
 
 
 def batch_exp(fun, logger=None):
+    """
+        This decorator is used to generate a batch of experiments from a function.
+
+        Example:
+
+            Suppose we want to run the experiments with fun using aaa=[1,2,3]
+            and b=[4,5,6], and a fixed core_fun, while printing(logging) the
+            inputs and outputs of fun.
+
+                def fun(a, b, core_fun):
+                    aaa = a['a']['a']
+                    return core_fun(aa, aaa, b)
+
+            We can do the following:
+
+                batch_fun = batch_exp(fun, logger=lambda inputs, outputs: print(inputs, outputs))
+                batch_inputs = {
+                    'a': {'a': [1,2,3]},
+                    'b': [4,5,6],
+                    'core_fun' : [core_fun]
+                }
+                batch_fun(**batch_inputs)
+    """
     # TODO support return value
     def wrapper(**dict_of_lists_kwargs):
         flatten_kwargs = flatten_dict_of_lists(dict_of_lists_kwargs)

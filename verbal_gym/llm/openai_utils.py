@@ -48,8 +48,10 @@ def init_openai_api(api_mode_azure=True):
             openai.api_key_path = os.getenv('OPENAI_KEY_PATH')
 
 
-def call_model(messages, model, temperature, request_timeout, max_tokens=None, max_attempts=200):
-    for _ in range(max_attempts):
+def call_model(messages, model, temperature, request_timeout, wait_time=2, max_tokens=None, max_attempts=float('inf')):
+    i = 0
+    while i < max_attempts:
+        i+=1
         try:
             return _call_model(messages, model, temperature, request_timeout, max_tokens)
         except openai.error.Timeout as e:
@@ -59,8 +61,8 @@ def call_model(messages, model, temperature, request_timeout, max_tokens=None, m
         except openai.error.RateLimitError as e:
             print(f"OpenAI API request exceeded rate limit: {e}")
             # Wait the timeout period before retrying, to avoid a retry storm.
-            print(f"Waiting {request_timeout} seconds before retrying...")
-            time.sleep(request_timeout)
+            print(f"Waiting {wait_time} seconds before retrying...")
+            time.sleep(wait_time)
             print("Retrying the call...")
             continue
         except openai.error.APIError as e:
