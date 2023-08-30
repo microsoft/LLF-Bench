@@ -37,6 +37,9 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
                 data[k].append(locals()[k[:-1]])  # removing s at the end
         sum_of_rewards += reward
 
+        if done:
+            break
+
     return sum_of_rewards, data
 
 
