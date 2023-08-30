@@ -17,7 +17,9 @@ def main(args):
         if config_filename in files:  # reach the end
             config = yaml.safe_load(open(os.path.join(root,config_filename), 'r'))
             stats = yaml.safe_load(open(os.path.join(root,stats_filename), 'r'))
-            set_nested_value(results, [config['env_name'], config['agent_config']['agent_name']], stats)
+            # set_nested_value(results, [config['env_name'], config['agent_config']['agent_name']], stats)
+            env_name = root.split(os.sep)[-2] if args.use_dir_name else config['env_config']['env_name']
+            set_nested_value(results, [env_name, config['agent_config']['agent_name']], stats)
 
     if not args.separate_plots:
         plt.figure()
@@ -25,7 +27,6 @@ def main(args):
         fig, axs = plt.subplots(int(np.ceil(len(results)/n_fig_per_row)), n_fig_per_row, figsize=(15,15))
         i = 0
         matplotlib.rcParams.update({'font.size': 10})
-
         for env_name in results:
             result = collections.OrderedDict(sorted(results[env_name].items()))
             print(env_name)
@@ -37,7 +38,10 @@ def main(args):
                 means.append(mean)
                 errors.append(std/np.sqrt(n))
             # Plot bar plot
-            ax = axs[i//n_fig_per_row, i%n_fig_per_row]
+            if int(np.ceil(len(results)/n_fig_per_row)) == 1:
+                ax = axs[i%n_fig_per_row]
+            else:
+                ax = axs[i//n_fig_per_row, i%n_fig_per_row]
 
             x = np.arange(len(means))
             ax.bar(x, means, width=0.6,#color = 'blue', edgecolor = 'black',
@@ -80,4 +84,5 @@ if __name__=='__main__':
     parser.add_argument('--config_filename', type=str, default='exp_config.yaml')
     parser.add_argument('--stats_filename', type=str, default='stats.yaml')
     parser.add_argument('--separate_plots', action='store_true')
+    parser.add_argument('--use_dir_name', action='store_true')
     main(parser.parse_args())
