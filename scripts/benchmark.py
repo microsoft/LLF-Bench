@@ -49,7 +49,7 @@ def create_agent(agent_config, env, verbose=False):
         raise NotImplementedError
     return agent
 
-def run_experiment(agent_config, env_name, *, horizon, n_episodes, seed=0, verbose=False, n_workers=1, **kwargs):
+def run_experiment(agent_config, env_config, *, horizon, n_episodes, seed=0, verbose=False, n_workers=1, **kwargs):
     """ Run experiemnts for a single agent. """
 
     # agnet_config is a dict, which should contain the following keys:
@@ -65,7 +65,12 @@ def run_experiment(agent_config, env_name, *, horizon, n_episodes, seed=0, verbo
 
     agent_name = agent_config['agent_name']
     # Create the environment
+    env_name = env_config['env_name']
     env = gym.make(env_name)
+    for k in env_config.keys():
+        if k!='env_name':
+            setattr(env, k, env_config[k])
+
     set_seed(seed, env)
     if 'full_info' in agent_name:
         env = FullInformationWrapper(env)
@@ -98,7 +103,7 @@ def main(args):
 
     def logger(inputs, outputs):
         # Set log path
-        log_path = os.path.join(args.log_dir, inputs['env_name'], inputs['agent_config']['agent_name']+'_'+time.strftime("%m%d_%H%M%S"))
+        log_path = os.path.join(args.log_dir, inputs['env_config']['env_name'], inputs['agent_config']['agent_name']+'_'+time.strftime("%m%d_%H%M%S"))
         # Log
         os.makedirs(log_path, exist_ok=True)
         yaml.dump(inputs, open(os.path.join(log_path, 'exp_config.yaml'), 'w'))

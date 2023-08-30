@@ -1,11 +1,8 @@
 env_config:
   env_name:
-    - verbal-Haiku-v0
-    - verbal-Tanka-v0
-    - verbal-LineSyllableConstrainedPoem-v0
     - verbal-SyllableConstrainedPoem-v0
-  feedback:
-    - 0.0
+  feedback: [0, 0.5, 1.0]
+  syllable: [5, 6, 7, 8]
 
 agent_config:
   file:
