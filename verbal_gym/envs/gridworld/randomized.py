@@ -1,3 +1,4 @@
+import pdb
 import gym
 import random
 
@@ -65,8 +66,17 @@ class Scene:
 
         room = Room(room_type=room_type,
                     room_id=self.room_ctr[room_type])
+        self.rooms.append(room)
 
         return room
+
+    def print(self):
+
+        for room in self.rooms:
+            print(f"Room {room.get_name()}:")
+            for dir_to, new_room in room.doors.items():
+                print(f"\t - Taking {dir_to} path leads to {new_room.get_name()}.")
+            print("\n\n")
 
 
 class RandomizedGridworld(gym.Env):
@@ -92,11 +102,9 @@ class RandomizedGridworld(gym.Env):
         queue = deque()
 
         room = scene.create_random_empty_room()
-
         queue.append(room)
-        scene.rooms.append(room)
 
-        while len(queue) > 0 or len(scene.rooms) < self.num_rooms:
+        while len(queue) > 0 and len(scene.rooms) < self.num_rooms:
 
             room = queue.popleft()
 
@@ -105,16 +113,36 @@ class RandomizedGridworld(gym.Env):
                                     for direction in [Room.NORTH, Room.WEST, Room.SOUTH, Room.EAST]
                                     if direction not in room.doors]
 
-            num_dir = random.randint(0, len(available_directions) - 1)
+            if len(available_directions) == 0:
+                # All directions from this room has been connected
+                continue
+
+            num_dir = random.randint(1, len(available_directions) - 1)
             chosen_directions = random.sample(available_directions, k=num_dir)
 
             for i, dir_to in enumerate(chosen_directions):
 
+                # TODO Connect the new room not just to where it spawned from but also other rooms to create a graph
                 ngbr_room = scene.create_random_empty_room()
                 room.add_door(ngbr_room, dir_to)
-
                 queue.append(ngbr_room)
-                scene.rooms.append(ngbr_room)
+
+        # TODO add objects in each room
+
+        return scene
 
     def reset(self):
-        pass
+
+        scene = self.make_scene()
+        scene.print()
+
+        # TODO select room with key and start state
+
+        # TODO use DFS to generate feedback
+
+        pdb.set_trace()
+
+
+if __name__ == "__main__":
+    env = RandomizedGridworld()
+    env.reset()
