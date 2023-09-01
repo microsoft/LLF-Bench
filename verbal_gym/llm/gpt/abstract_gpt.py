@@ -46,6 +46,10 @@ class AbstractGPT(LLM):
                  temperature,  # temperature of the generation
                  max_tokens,  # maximum number of tokens to generate
                  max_attempts):  # maximum number of attempts to call the model
+
+        if len(self.system_prompt)>0:
+            prompt = f'System: {self.system_prompt}\nUser: {prompt}'
+
         return self.generate(prompt, max_tokens=max_tokens, logprob=True, temperature=temperature, MAX_WAITTIME_SEC=timeout)
 
     def generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, MAX_WAITTIME_SEC=300):
