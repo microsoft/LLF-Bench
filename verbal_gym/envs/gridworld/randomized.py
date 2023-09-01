@@ -9,11 +9,6 @@ class Room:
 
     ROOM_TYPES = ["kitchen", "bedroom", "lobby", "toilet", "balcony", "corridor", "drawing room"]
     OBJECTS = ["lamp", "table", "couch", "television", "fridge"]
-    NORTH = "north"     # Action 0
-    EAST = "east"       # Action 1
-    WEST = "west"       # Action 2
-    SOUTH = "south"     # Action 3
-    DIRECTIONS = [NORTH, EAST, WEST, SOUTH]
 
     def __init__(self, room_type, room_id, pos, max_objects=2):
         """
@@ -35,10 +30,11 @@ class Room:
         self.max_objects = max_objects
         self.objects = []
 
-        self.doors = dict()
-
     def get_name(self):
         return self.name
+
+    def get_objects(self):
+        return self.objects
 
     def get_pos(self):
         return self.pos
@@ -50,70 +46,41 @@ class Room:
         else:
             raise AssertionError(f"Cannot add more than {self.max_objects} to {self.name}")
 
-    @staticmethod
-    def opposite_direction(dir_to):
-
-        if dir_to == Room.NORTH:
-            return Room.SOUTH
-
-        elif dir_to == Room.SOUTH:
-            return Room.NORTH
-
-        elif dir_to == Room.WEST:
-            return Room.EAST
-
-        elif dir_to == Room.EAST:
-            return Room.WEST
-
-        else:
-            raise AssertionError(f"Direction {dir_to} is unhandled.")
-
-    def check_pos_consistentcy(self, room, other_room, dir_to):
-        # An additional check to see
-
-        room_x, room_y = self.pos
-        other_room_x, other_room_y = other_room.get_pos()
-
-        if dir_to == Room.NORTH:
-            is_consistent = room_y < other_room_y
-        elif dir_to == Room.SOUTH:
-            is_consistent = room_y > other_room_y
-        elif dir_to == Room.WEST:
-            is_consistent = room_x > other_room_x
-        elif dir_to == Room.EAST:
-            is_consistent = room_x < other_room_x
-        else:
-            raise AssertionError(f"Direction {dir_to} is unhandled.")
-
-        return is_consistent
-
-    def get_relative_pos(self, dir_to, length=1):
-
-        if dir_to == Room.NORTH:
-            new_pos = (self.pos.x, self.pos.y + length)
-        elif dir_to == Room.SOUTH:
-            new_pos = (self.pos.x, self.pos.y - length)
-        elif dir_to == Room.WEST:
-            new_pos = (self.pos.x - length, self.pos.y)
-        elif dir_to == Room.EAST:
-            new_pos = (self.pos.x + length, self.pos.y)
-        else:
-            raise AssertionError(f"Direction {dir_to} is unhandled.")
-
-        return new_pos
-
-    def add_door(self, other_room, dir_to):
-        self.doors[dir_to] = other_room
-        other_room.doors[self.opposite_direction(dir_to)] = self
-
 
 class Scene:
 
+    NORTH = "north"  # Action 0
+    EAST = "east"    # Action 1
+    WEST = "west"    # Action 2
+    SOUTH = "south"  # Action 3
+    DIRECTIONS = [NORTH, EAST, WEST, SOUTH]
+
     def __init__(self):
         self.rooms = []
+
+        self.start_room = None
         self.key_room = None
 
         self.room_ctr = dict()
+        self.doors = dict()
+
+        # Run BFS
+        self.bfs_path = dict()
+
+    def get_add_start_room(self, start_room):
+        self.start_room = start_room
+
+    def get_add_key_room(self, key_room):
+        self.key_room = key_room
+
+    def get_room(self, i):
+        return self.rooms[i]
+
+    def num_rooms(self):
+        return len(self.rooms)
+
+    def get_rooms(self):
+        return self.rooms
 
     def create_random_empty_room(self, pos):
 
@@ -128,19 +95,105 @@ class Scene:
                     room_id=self.room_ctr[room_type],
                     pos=pos)
         self.rooms.append(room)
+        self.doors[room] = dict()
 
         return room
 
-    def get_room(self, i):
-        return self.rooms[i]
+    @staticmethod
+    def opposite_direction(dir_to):
 
-    def num_rooms(self):
-        return len(self.rooms)
+        if dir_to == Scene.NORTH:
+            return Scene.SOUTH
+
+        elif dir_to == Scene.SOUTH:
+            return Scene.NORTH
+
+        elif dir_to == Scene.WEST:
+            return Scene.EAST
+
+        elif dir_to == Scene.EAST:
+            return Scene.WEST
+
+        else:
+            raise AssertionError(f"Direction {dir_to} is unhandled.")
+
+    @staticmethod
+    def check_pos_consistentcy(room, other_room, dir_to):
+        # An additional check to see
+
+        room_x, room_y = room.pos
+        other_room_x, other_room_y = other_room.get_pos()
+
+        if dir_to == Scene.NORTH:
+            is_consistent = room_y < other_room_y
+
+        elif dir_to == Scene.SOUTH:
+            is_consistent = room_y > other_room_y
+
+        elif dir_to == Scene.WEST:
+            is_consistent = room_x > other_room_x
+
+        elif dir_to == Scene.EAST:
+            is_consistent = room_x < other_room_x
+
+        else:
+            raise AssertionError(f"Direction {dir_to} is unhandled.")
+
+        return is_consistent
+
+    @staticmethod
+    def get_relative_pos(room, dir_to, length=1):
+
+        room_x, room_y = room.pos
+
+        if dir_to == Scene.NORTH:
+            new_pos = (room_x, room_y + length)
+
+        elif dir_to == Scene.SOUTH:
+            new_pos = (room_x, room_y - length)
+
+        elif dir_to == Scene.WEST:
+            new_pos = (room_x - length, room_y)
+
+        elif dir_to == Scene.EAST:
+            new_pos = (room_x + length, room_y)
+
+        else:
+            raise AssertionError(f"Direction {dir_to} is unhandled.")
+
+        return new_pos
+
+    def add_door(self, room, dir_to, other_room):
+        self.doors[room][dir_to] = other_room
+        self.doors[other_room][self.opposite_direction(dir_to)] = room
+
+    def start_bfs(self, start_room):
+
+        queue = deque([])
+
+        queue.append(start_room)
+        self.bfs_path[start_room] = []
+
+        while len(queue) > 0:
+
+            room = queue.popleft()
+
+            for dir_to, ngbr_room in self.doors[room].items():
+                queue.append(ngbr_room)
+
+                path = list(self.bfs_path[room])
+                path.append((dir_to, ngbr_room))
+                self.bfs_path[ngbr_room] = path
+
+        return self.bfs_path
 
     def print(self):
 
+        print(f"Start room {self.start_room.get_name()} and Key room {self.key_room.get_name()}\n")
+
         for room in self.rooms:
-            print(f"Room {room.get_name()}:")
+            obj_names = ", ".join(room.get_objects())
+            print(f"Room {room.get_name()}: containing objects {obj_names}")
             for dir_to, new_room in room.doors.items():
                 print(f"\t - Taking {dir_to} path leads to {new_room.get_name()}.")
             print("\n\n")
@@ -177,7 +230,7 @@ class RandomizedGridworld(gym.Env):
             room = queue.popleft()
 
             # Sample a subset of edges from the list of available directions
-            available_directions = [direction for direction in Room.DIRECTIONS if direction not in room.doors]
+            available_directions = [direction for direction in Scene.DIRECTIONS if direction not in room.doors]
 
             if len(available_directions) == 0:
                 # All directions from this room has been connected
@@ -191,7 +244,9 @@ class RandomizedGridworld(gym.Env):
                 # TODO Connect the new room not just to where it spawned from but also other rooms to create a graph
                 new_pos = room.get_relative_pos(dir_to, length=1)
                 ngbr_room = scene.create_random_empty_room(pos=new_pos)
-                room.add_door(ngbr_room, dir_to)
+                scene.add_door(room=room,
+                               dir_to=dir_to,
+                               other_room=ngbr_room)
                 queue.append(ngbr_room)
 
         indices = list(range(0, scene.num_rooms()))
@@ -205,7 +260,18 @@ class RandomizedGridworld(gym.Env):
                 available_objects.remove(obj)
 
         # Add start room
+        rooms = scene.get_rooms()
+        start_room = random.choice(rooms)
+        scene.get_add_start_room(start_room=start_room)
+
+        # Do DFS
+        scene.start_bfs(start_room)
+
         # Add key in a room at least k steps away
+        k = 4
+        rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if k < len(path) and ngbr_room != start_room]
+        key_room = random.choice(rooms)
+        scene.get_add_key_room(key_room=key_room)
 
         return scene
 
