@@ -9,6 +9,7 @@ class Room:
 
     ROOM_TYPES = ["kitchen", "bedroom", "lobby", "toilet", "balcony", "corridor", "drawing room"]
     OBJECTS = ["lamp", "table", "couch", "television", "fridge"]
+    goal = "treasure"
 
     def __init__(self, room_type, room_id, pos, max_objects=2):
         """
@@ -36,8 +37,19 @@ class Room:
     def get_objects(self):
         return self.objects
 
+    def describe_room(self):
+        s = f"You are in {self.name} room. "
+
+        if len(self.objects) > 0:
+            s += "This room has following objects: " + ",".join(self.objects) + ". "
+
+        return s
+
     def get_pos(self):
         return self.pos
+
+    def add_goal(self):
+        self.objects.append(Room.goal)
 
     def add_object(self, obj):
 
@@ -70,8 +82,8 @@ class Scene:
     def get_add_start_room(self, start_room):
         self.start_room = start_room
 
-    def get_add_key_room(self, key_room):
-        self.key_room = key_room
+    def get_add_goal_room(self, goal_room):
+        self.key_room = goal_room
 
     def get_room(self, i):
         return self.rooms[i]
@@ -81,6 +93,15 @@ class Scene:
 
     def get_rooms(self):
         return self.rooms
+
+    def get_start_room(self):
+        return self.start_room
+
+    def get_room_doors(self, room):
+
+        s = " ".join([f"You have a door to the {dir_to} of you that takes you to the {ngbr_room.get_name()} room."
+                     for dir_to, ngbr_room in self.doors[room].items()])
+        return s
 
     def create_random_empty_room(self, pos):
 
@@ -179,11 +200,13 @@ class Scene:
             room = queue.popleft()
 
             for dir_to, ngbr_room in self.doors[room].items():
-                queue.append(ngbr_room)
 
-                path = list(self.bfs_path[room])
-                path.append((dir_to, ngbr_room))
-                self.bfs_path[ngbr_room] = path
+                if ngbr_room not in self.bfs_path:
+
+                    queue.append(ngbr_room)
+                    path = list(self.bfs_path[room])
+                    path.append((dir_to, ngbr_room))
+                    self.bfs_path[ngbr_room] = path
 
         return self.bfs_path
 
@@ -210,6 +233,9 @@ class RandomizedGridworld(gym.Env):
         self.num_rooms = 10
 
         self.fixed = fixed
+
+        self.current_scene = None
+        self.current_room = None
 
     def make_scene(self):
 
@@ -270,24 +296,41 @@ class RandomizedGridworld(gym.Env):
         # Add key in a room at least k steps away
         k = 4
         rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if k < len(path) and ngbr_room != start_room]
-        key_room = random.choice(rooms)
-        scene.get_add_key_room(key_room=key_room)
+        goal_room = random.choice(rooms)
+        goal_room.add_goal()
+        scene.get_add_goal_room(goal_room=goal_room)
 
         return scene
 
     def reset(self):
 
-        scene = self.make_scene()
-        scene.print()
+        self.current_scene = self.make_scene()
+        self.current_scene.print()
 
-        # TODO select room with key and start state
-
-        # TODO use DFS to generate feedback
-
+        self.current_room = self.current_scene.get_start_room()
+        obs = self.current_room.describe_room() + self.current_scene.get_room_doors(self.current_room)
         pdb.set_trace()
 
+        return obs
+
     def step(self, action):
-        pass
+
+        if action == 0:
+            pass
+        elif action == 1:
+            pass
+        elif action == 2:
+            pass
+        elif action == 3:
+            pass
+        else:
+            raise AssertionError(f"Action must be in {{0, 1, 2, 3}} but found {action}")
+
+        info = {
+            "feedback": feedback
+        }
+
+        return reward, done, info
 
 
 if __name__ == "__main__":
