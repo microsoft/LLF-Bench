@@ -8,34 +8,37 @@ class GPT(LLM):
                  system_prompt='', *,
                  model="gpt-35-turbo",
                  temperature=0.0,
-                 request_timeout=100,
+                 timeout=100,
                  max_tokens=None,
-                 max_attempts=50):
+                 max_attempts=50,
+                 **kwargs):
         """ Initialize the LLM """
         super().__init__(system_prompt)
-        self.temperature = temperature
         self.spec = dict(
-            request_timeout = request_timeout,
+            model = model,
+            temperature = temperature,
+            timeout = timeout,
             max_tokens = max_tokens,
             max_attempts = max_attempts,
-            model = model,
         )
 
     def reset(self):
         """ This resets the LLM and removes the chat history. """
         self.messages = [{"role": "system", "content": self.system_prompt}]
 
-    def chat(self, user_prompt, temperature=0.0):
+    def chat(self, prompt, **kwargs):
         """ This is a history-dependent response. """
-        self.messages.append({"role": "user", "content": user_prompt})
-        temperature = temperature or self.temperature
-        response, info = call_model(self.messages, temperature=temperature, **self.spec)
+        self.messages.append({"role": "user", "content": prompt})
+        spec = self.spec.copy()
+        spec.update(kwargs)
+        response, info = call_model(self.messages, **spec)
         return response, info
 
-    def generate(self, user_prompt, temperature=0.0):
+    def generate(self, prompt, **kwargs):
         """ This is one-time query response. """
         messages = [{"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": user_prompt}]
-        temperature = temperature or self.temperature
-        response, info = call_model(messages, temperature=temperature, **self.spec)
+                    {"role": "user", "content": prompt}]
+        spec = self.spec.copy()
+        spec.update(kwargs)
+        response, info = call_model(messages, **spec)
         return response, info

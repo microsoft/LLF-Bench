@@ -3,8 +3,7 @@ import sys
 import random
 import numpy as np
 
-from verbal_gym.llm.gpt.gpt import GPT3
-
+from verbal_gym.llm import make_llm
 
 class PickBestSummary(gym.Env):
     """
@@ -15,14 +14,15 @@ class PickBestSummary(gym.Env):
 
     def __init__(self, num_actions=4, article_max_length=500,
                  summary_max_tokens=50, fixed=True, seed=1234,
-                 feedback_max_tokens=40, reward_type="binary"):
+                 feedback_max_tokens=40, reward_type="binary",
+                 llm_model="gcr:gpt-3"):
 
         from datasets import load_dataset
 
         self.dataset = load_dataset('cnn_dailymail', '3.0.0')
 
-        self.summary_generator_llm = GPT3()
-        self.critic_llm = GPT3()
+        self.summary_generator_llm = make_llm(llm_model)
+        self.critic_llm = make_llm(llm_model)
 
         assert num_actions >= 2, "There must be at least 2 actions."
         self.num_actions = num_actions
@@ -91,18 +91,21 @@ class PickBestSummary(gym.Env):
             temperature = 0.0 if i == 0 else 1.0
             generation, info = self.summary_generator_llm.generate(prompt=good_prompt,
                                                                    max_tokens=self.summary_max_tokens,
-                                                                   echo=True,
-                                                                   logprobs=
-                                                                   1 if self.reward_type == self.LOGPROB else None,
+                                                                #    echo=True,
+                                                                #    logprobs=
+                                                                #    1 if self.reward_type == self.LOGPROB else None,
                                                                    temperature=temperature)
+            if not (self.reward_type == self.LOGPROB):
+                generation = good_prompt + generation  # NOTE due to the original echo behavior
 
             if good_prompt != generation[:len(good_prompt)]:
                 raise AssertionError(f"{generation} should start with {good_prompt}")
 
             summary = generation[len(good_prompt):]
-
             if self.reward_type == self.LOGPROB:
-                reward = info["logprob"]
+                # reward = info["logprob"]
+                reward = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+
             elif self.reward_type == self.Binary:
                 reward = 1.0 if i == 0 else 0.0
             else:
@@ -116,7 +119,7 @@ class PickBestSummary(gym.Env):
 
             summary, info = self.summary_generator_llm.generate(prompt=bad_prompt,
                                                                 max_tokens=self.summary_max_tokens,
-                                                                logprobs=None,
+                                                                # logprobs=None,
                                                                 temperature=1.0)
 
             if self.reward_type == self.LOGPROB:

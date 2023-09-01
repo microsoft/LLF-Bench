@@ -1,6 +1,8 @@
 import gym
 from verbal_gym.llm.gpt_models import GPT
-from verbal_gym.agents.basic_agent import RandomAgent, BasicAgent
+from verbal_gym.llm import make_llm
+from verbal_gym.agents.basic_agent import BasicAgent
+from verbal_gym.agents.random_agent import RandomAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -23,7 +25,7 @@ def main(args):
 
     # Basic agent
     system_prompt = BasicAgent.system_prompt
-    llm = GPT(system_prompt, model=args.model)
+    llm = make_llm(args.model, system_prompt=system_prompt)
     gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name=action_name)
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)

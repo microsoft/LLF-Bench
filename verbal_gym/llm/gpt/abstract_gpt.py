@@ -40,7 +40,15 @@ class AbstractGPT(LLM):
 
         return logprob
 
-    def generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
+    def generate(self,
+                 prompt, *,
+                 timeout,  # Maximum time to wait if failure occurs before re-trying
+                 temperature,  # temperature of the generation
+                 max_tokens,  # maximum number of tokens to generate
+                 max_attempts):  # maximum number of attempts to call the model
+        return self.generate(prompt, max_tokens=max_tokens, logprob=True, temperature=temperature, MAX_WAITTIME_SEC=timeout)
+
+    def generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, MAX_WAITTIME_SEC=300):
         """
             Call GPT in a retrying mode
 
@@ -66,29 +74,29 @@ class AbstractGPT(LLM):
 
         text = response["choices"][0]["text"]
 
-        if logprobs is not None:
-            if echo:
-                # GPT does not compute logprob of the first token
-                first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
-                assert first_tk_logprob == 0 or first_tk_logprob is None
-                logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
-            else:
-                logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
-        else:
-            logprob = None
+        # if logprobs is not None:
+        #     if echo:
+        #         # GPT does not compute logprob of the first token
+        #         first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
+        #         assert first_tk_logprob == 0 or first_tk_logprob is None
+        #         rest_tk_logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+        #     else:
+        #         logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
+        # else:
+        #     logprob = None
 
-            # If echo was set to true when logprobs is None, then we dont return the prompt but add it here
-            # This is not the most desirable, but we cannot add echo: True with logprobs to None for models like GPT3.5
-            # as it gives error
-            if echo:
-                text = prompt + text
+        #     # If echo was set to true when logprobs is None, then we dont return the prompt but add it here
+        #     # This is not the most desirable, but we cannot add echo: True with logprobs to None for models like GPT3.5
+        #     # as it gives error
+        #     if echo:
+        #         text = prompt + text
 
-        info = {
-            "logprob": logprob,
-            "echo": echo
-        }
+        # info = {
+        #     "logprob": logprob,
+        #     "echo": echo
+        # }
 
-        return text, info
+        return text, response
 
     def call_gpt(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
         """

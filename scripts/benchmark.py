@@ -1,6 +1,6 @@
 import gym
 import verbal_gym
-from verbal_gym.llm.gpt_models import GPT
+from verbal_gym.llm import make_llm
 from verbal_gym.envs.env_wrapper import FullInformationWrapper
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
@@ -21,8 +21,8 @@ def create_agent(agent_config, env, verbose=False):
     if agent_name=='posterior_agent':
         from verbal_gym.agents.posterior_agents import PosteriorAgent, ParaphraseAgent
         paraphrase_agent = None if not agent_config['paraphrase'] else \
-                           ParaphraseAgent(GPT(ParaphraseAgent.system_prompt, temperature=agent_config['paraphrase_temperature'], model=agent_config['paraphrase_model']))
-        agent = PosteriorAgent(GPT(PosteriorAgent.system_prompt, temperature=agent_config['temperature'], model=agent_config['model']),
+                           ParaphraseAgent(make_llm(agent_config['paraphrase_model'], system_prompt=ParaphraseAgent.system_prompt, temperature=agent_config['paraphrase_temperature']))
+        agent = PosteriorAgent(make_llm( model=agent_config['model'], system_prompt=PosteriorAgent.system_prompt, temperature=agent_config['temperature'],),
                                    n_actions,
                                    action_name=action_name,
                                    verbose=verbose,
@@ -31,7 +31,7 @@ def create_agent(agent_config, env, verbose=False):
                                    paraphrase_agent=paraphrase_agent)
     elif agent_name=='basic_agent':
         from verbal_gym.agents.basic_agent import BasicAgent
-        agent = BasicAgent(GPT(BasicAgent.system_prompt, model=agent_config['model']),
+        agent = BasicAgent(make_llm(agent_config['model'], system_prompt=BasicAgent.system_prompt),
                                n_actions, verbose=verbose, action_name=action_name)
     elif agent_name=='random_agent':
         from verbal_gym.agents.random_agent import RandomAgent
@@ -42,7 +42,7 @@ def create_agent(agent_config, env, verbose=False):
         from verbal_gym.agents.full_information_agent import FullInformationAgent
         assert n_actions is not None
         # Full information agent
-        agent = FullInformationAgent(GPT(FullInformationAgent.system_prompt, model=agent_config['model']),
+        agent = FullInformationAgent(make_llm(agent_config['model'],system_prompt=FullInformationAgent.system_prompt),
                                         n_actions=n_actions,
                                         verbose=verbose)
     else:

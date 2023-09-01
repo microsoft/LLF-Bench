@@ -4,9 +4,9 @@ import gym
 import logging
 import numpy as np
 
-from llm.gpt.gpt import GPT3, GPT35
-from agents.fixed_agent import FixedAgent
-from utils.multiprocess_logger import MultiprocessingLoggerManager
+from verbal_gym.llm import make_llm
+from verbal_gym.agents.fixed_agent import FixedAgent
+from verbal_gym.utils.multiprocess_logger import MultiprocessingLoggerManager
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
 
@@ -20,7 +20,7 @@ def main(args, logger):
     env = gym.make(args.env_name)
     set_seed(args.seed, env)
 
-    critic_llm = GPT35()
+    critic_llm = make_llm(args.model)
 
     assert isinstance(env.action_space, gym.spaces.Discrete), "Currently only handles discrete actions"
 
@@ -44,7 +44,6 @@ def main(args, logger):
             logger.log(f"Episode {i}, Action {action}\n")
             logger.log(f"Agent Prompt: {prompt}\n")
             logger.log(f"Simulated Feedback: {simulated_feedback}\n\n")
-
             dataset.append((obs, action, simulated_feedback))
 
     logger.log("=" * 20)
@@ -125,7 +124,7 @@ def get_parser():
     parser.add_argument("--not_paraphrase", action="store_true")
     parser.add_argument("--not_permute_history", action="store_true")
     parser.add_argument("--verbose", action="store_true")
-    parser.add_argument("--model", type=str, default="azure:gpt-35-turbo")
+    parser.add_argument("--model", type=str,  default="gcr:gpt-35")
     parser.add_argument("--model_eps", type=int, default=2)
 
     return parser

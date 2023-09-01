@@ -1,5 +1,5 @@
 import gym
-from verbal_gym.llm.gpt_models import GPT
+from verbal_gym.llm import make_llm
 from verbal_gym.agents.posterior_agents import PosteriorAgent, ParaphraseAgent
 from verbal_gym.utils.utils import evaluate_agent, set_seed
 from verbal_gym.utils.misc_utils import print_color
@@ -22,8 +22,8 @@ def main(args):
     # TODO should save the stdout
 
     # Posterior agent
-    paraphrase_agent = None if args.not_paraphrase else ParaphraseAgent(GPT(ParaphraseAgent.system_prompt, temperature=args.temperature, model=args.model))
-    gpt_agent = PosteriorAgent(GPT(PosteriorAgent.system_prompt, temperature=args.temperature, model=args.model),
+    paraphrase_agent = None if args.not_paraphrase else ParaphraseAgent(make_llm(args.model, system_prompt=ParaphraseAgent.system_prompt, temperature=args.temperature))
+    gpt_agent = PosteriorAgent(make_llm(args.model, system_prompt=PosteriorAgent.system_prompt, temperature=args.temperature),
                                n_actions,
                                action_name=action_name,
                                verbose=args.verbose,
@@ -31,7 +31,7 @@ def main(args):
                                paraphrase_agent=paraphrase_agent)
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
-    print_color('Basic Posterior agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
+    print_color('Posterior agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
     return scores
 
 

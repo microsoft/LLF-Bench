@@ -4,20 +4,18 @@ import time, os
 OPENAI_API_INITIALIZED = False
 API_MODE_AZURE = True
 
-def _call_model(messages, model, temperature, request_timeout, max_tokens=None):
+def _call_model(messages, model, temperature, timeout, max_tokens=None):
 
-    if 'azure' in model:
-        init_openai_api(api_mode_azure=True)
-        model = model.split('azure:')[1]
-    else:
-        init_openai_api(api_mode_azure=False)
+    backend, model = model.split(':')
+    assert backend in ('azure', 'openai')
+    init_openai_api(api_mode_azure=(backend=='azure'))
 
     # Place one call to the model, returning the response and total number of tokens involved.
     # Minor difference between using azure service (like MSR do) or not: use `engine` or `model`
     config = dict(
         messages=messages,
         temperature=temperature,
-        request_timeout=request_timeout,
+        request_timeout=timeout,
         max_tokens=max_tokens,
     )
     if max_tokens is not None:
@@ -28,9 +26,19 @@ def _call_model(messages, model, temperature, request_timeout, max_tokens=None):
     else:
         model = model.replace('35', '3.5')
         config['model'] = model
-    response = openai.ChatCompletion.create(**config)
 
-    return response['choices'][0]['message']['content'], response
+    if model in ('text-davinci-003'):  # legacy models
+        prompt = ''
+        for m in config['messages']:
+            if len(m['content']) > 0:
+                prompt += m['role'] + ': ' + m['content'] + '\n'
+        config['prompt'] = prompt
+        del config['messages']
+        response = openai.Completion.create(logprobs=1, **config)
+        return response['choices'][0]['text'], response
+    else:
+        response = openai.ChatCompletion.create(**config)
+        return response['choices'][0]['message']['content'], response
 
 
 def init_openai_api(api_mode_azure=True):
@@ -48,12 +56,12 @@ def init_openai_api(api_mode_azure=True):
             openai.api_key_path = os.getenv('OPENAI_KEY_PATH')
 
 
-def call_model(messages, model, temperature, request_timeout, wait_time=2, max_tokens=None, max_attempts=float('inf')):
+def call_model(messages, model, temperature, timeout, wait_time=2, max_tokens=None, max_attempts=float('inf')):
     i = 0
     while i < max_attempts:
         i+=1
         try:
-            return _call_model(messages, model, temperature, request_timeout, max_tokens)
+            return _call_model(messages, model, temperature, timeout, max_tokens)
         except openai.error.Timeout as e:
             print(f"Request timed out: {e}")
             print("Retrying the call...")
@@ -84,7 +92,7 @@ def call_model(messages, model, temperature, request_timeout, wait_time=2, max_t
             print(f"Unexpected exception: {e}")
             #exit(1)
             #import pdb; pdb.set_trace()
-            time.sleep(request_timeout)
+            time.sleep(timeout)
             print("Retrying the call...")
             continue
 
