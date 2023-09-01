@@ -237,7 +237,7 @@ class LineSyllableConstrainedPoem(Haiku):
         # This increases difficulty a little, but also hard to check if it's thematic or not.
         super().__init__(feedback, silent, use_extractor)
         self.syllable_req_str = [str(i) for i in syllable_req]
-        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables for the lines should follow a {'-'.join(self.syllable_req_str)} pattern."
+        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables for the lines in the poem should follow a {'-'.join(self.syllable_req_str)} pattern."
         self.use_extractor = use_extractor
         self.feedback = feedback
         self.syllable_req = syllable_req
