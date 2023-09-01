@@ -62,3 +62,12 @@ Once the experiments are done, one can plot the reuslts by
     python analyses/plot.py  <directory where the results of benchmark.py are logged.>
 
 We can specify the title of each subplot by passing `--plot_name`. E.g., `--plot_name  env_config:env_name+env_config:feedback` means each subplot would be defined by a combination of `config['env_config']['feedback']`, where `+` is the connector and `:` is the separator to read values from the saved config. Similarly, we can specify what goes into each subplot by specifying `--legend_name` using the same syntax.
+
+
+## Create LLM
+
+Please use `make_llm(model_name, system_prompt=<system promopt>)` in `verbal_gym.llm` to create LLMs, where `model_name` is `<backend>:<model>`, where `<backend>` can be 'gcr', 'azure', 'openai', and `<model>` is something like gpt-3, gpt-35-turbo, gpt-4.
+
+To use 'azure' backend, one needs to set the environment variable `AZURE_OPENAI_KEY`.
+To use 'openai' backend, one needs to set the environment variable `OPENAI_KEY_PATH`. (The path to a file containing the openai key).
+To use 'gcr' backend, one needs to set the environment variables `GCR_GPT_KEY` and `GCR_GPT_URL`.
