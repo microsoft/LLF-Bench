@@ -59,4 +59,6 @@ The config yaml specifies a list of values that the batch experiment should span
 
 Once the experiments are done, one can plot the reuslts by
 
-    python analyses/plot.py --data_dir <directory where the results of benchmark.py are logged.>
+    python analyses/plot.py  <directory where the results of benchmark.py are logged.>
+
+We can specify the title of each subplot by passing `--plot_name`. E.g., `--plot_name  env_config:env_name+env_config:feedback` means each subplot would be defined by a combination of `config['env_config']['feedback']`, where `+` is the connector and `:` is the separator to read values from the saved config. Similarly, we can specify what goes into each subplot by specifying `--legend_name` using the same syntax.

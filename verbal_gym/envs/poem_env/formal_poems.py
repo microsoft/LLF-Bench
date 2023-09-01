@@ -213,7 +213,7 @@ class Haiku(PoemUtil, gym.Env):
         else:
             feedback = "\n".join(feedbacks)
 
-        terminal = True  # one step environment
+        terminal = False   # one step environment
 
         return self.assignment, frac, terminal, {'feedback': feedback, 'success': int(success)}
 
@@ -294,7 +294,7 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
 
         if success:
             feedback = "Congrats! You have successfully produced a poem that matches the assignment description."
-            return self.assignment, frac, True, {'frac': frac, 'feedback': feedback, 'success': 1}
+            return self.assignment, frac, False, {'frac': frac, 'feedback': feedback, 'success': 1}
 
         if self.feedback == 0:
             # we just say "The generated poem is not correct."
@@ -322,6 +322,7 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         else:
             raise ValueError(f"Invalid feedback level: {self.feedback}")
 
-        terminal = True  # one step environment
+        terminal = False   # one step environment
 
-        return self.assignment, frac, terminal, {'frac': frac, 'feedback': feedback, 'success': 0}
+        out =  self.assignment, frac, terminal, {'frac': frac, 'feedback': feedback, 'success': 0}
+        return out
