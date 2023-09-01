@@ -6,6 +6,12 @@ def set_nested_value(data_dict, keys, value):
         current_dict = current_dict.setdefault(key, {})
     current_dict[keys[-1]] = value
 
+def get_nested_value(data_dict, keys):
+    current_dict = data_dict
+    for key in keys[:-1]:
+        current_dict = current_dict[key]
+    return current_dict[keys[-1]]
+
 def generate_combinations_dict(input_dict):
     """ Turn a dict of lists into a list of dicts. """
     keys = list(input_dict.keys())
@@ -36,10 +42,7 @@ def unflatten_dict_of_lists(d, separator=':'):
     new_dict = {}
     for k,v in d.items():
         keys = k.split(separator)
-        current_dict = new_dict
-        for key in keys[:-1]:
-            current_dict = current_dict.setdefault(key, {})
-        current_dict[keys[-1]] = v
+        set_nested_value(new_dict, keys, v)
     return new_dict
 
 
