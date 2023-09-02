@@ -10,19 +10,25 @@ class SimpleGuidanceParser:
         if labeled_blocks[-1][0] == "assistant":
             labeled_blocks = labeled_blocks[:-1] # we remove the last assistant block, because that's for generation
 
-        content = template_text
+        typed_messages = []
+        # messages = [{"role": "system", "content": self.system_prompt},
+        #             {"role": "user", "content": prompt}]
+        assert labeled_blocks[0][0] == 'system', "The first block must be a system block"
+
         for block_type, content in labeled_blocks:
             # if statement is handled first, because this decides if the content should stay or disappear
             content = self.parse_if_block(content, **kwargs)
-            content = self.populate_template_for_each(content, **kwargs)
+            content = self.populate_template_for_each(content , **kwargs)
             content = self.populate_vars(content, **kwargs)
+            typed_messages.append({"role": block_type, "content": content})
+
             if self.verbose:
                 print("------New block------")
-                print(f"Block Type: {block_type}")
+                print(f"Block Type: {block_type.upper()}")
                 print(content)
                 print("------End block------")
 
-        return content
+        return typed_messages
 
     def parse_if_block(self, parsed_text, **kwargs):
         # Regular expression to capture the content inside the {{#if ...}} and {{/if}} tags
