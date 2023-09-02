@@ -71,7 +71,7 @@ class Scene:
         self.rooms = []
 
         self.start_room = None
-        self.key_room = None
+        self.goal_room = None
 
         self.room_ctr = dict()
         self.doors = dict()
@@ -83,7 +83,7 @@ class Scene:
         self.start_room = start_room
 
     def get_add_goal_room(self, goal_room):
-        self.key_room = goal_room
+        self.goal_room = goal_room
 
     def get_room(self, i):
         return self.rooms[i]
@@ -235,12 +235,16 @@ class Scene:
 
     def print(self):
 
-        print(f"Start room {self.start_room.get_name()} and Key room {self.key_room.get_name()}\n")
+        print(f"Start room {self.start_room.get_name()} and Key room {self.goal_room.get_name()}\n")
 
         for room in self.rooms:
-            obj_names = ", ".join(room.get_objects())
-            print(f"Room {room.get_name()}: containing objects {obj_names}")
-            for dir_to, new_room in room.doors.items():
+            objects = room.get_objects()
+            if len(objects) == 0:
+                print(f"Room {room.get_name()}: containing no objects.")
+            else:
+                obj_names = ", ".join(objects)
+                print(f"Room {room.get_name()}: containing objects {obj_names}")
+            for dir_to, new_room in self.doors[room].items():
                 print(f"\t - Taking {dir_to} path leads to {new_room.get_name()}.")
             print("\n\n")
 
@@ -248,15 +252,19 @@ class Scene:
 class RandomizedGridworld(gym.Env):
 
     # Feedback level
-    Bandit, Gold = range(2)
+    Bandit, Gold, Oracle = range(3)
 
-    def __init__(self, fixed=True, feedback_level="gold"):
+    def __init__(self, num_rooms=20, horizon=20, fixed=True, feedback_level="gold", goal_dist=4):
         super(RandomizedGridworld, self).__init__()
 
         # Action space consists of 4 actions: North, South, East and West
         self.num_actions = 4
         self.action_space = gym.spaces.Discrete(self.num_actions)
-        self.num_rooms = 10
+
+        self.num_rooms = num_rooms
+        self.horizon = horizon
+        assert self.horizon >= 5, "Horizon must be at least 5 to allow agent to somewhat explore the world"
+        self.goal_dist = goal_dist
 
         self.fixed = fixed
 
@@ -266,14 +274,14 @@ class RandomizedGridworld(gym.Env):
                          "If there is no door along that direction, then you will remain in the room. You will start " \
                          "in a room. Your goal is to navigate to another room which has the treasure."
 
-        self.horizon = 20
-        assert self.horizon >= 5, "Horizon must be at least 5 to allow agent to somewhat explore the world"
-
         if feedback_level == "bandit":
             self.feedback_level = RandomizedGridworld.Bandit
 
         elif feedback_level == "gold":
             self.feedback_level = RandomizedGridworld.Gold
+
+        elif feedback_level == "oracle":
+            self.feedback_level = RandomizedGridworld.Oracle
 
         else:
             raise AssertionError(f"Unhandled feedback level {feedback_level}")
@@ -303,7 +311,8 @@ class RandomizedGridworld(gym.Env):
             room = queue.popleft()
 
             # Sample a subset of edges from the list of available directions
-            available_directions = [direction for direction in Scene.DIRECTIONS if direction not in room.doors]
+            available_directions = [direction for direction in Scene.DIRECTIONS
+                                    if direction not in scene.doors[room]]
 
             if len(available_directions) == 0:
                 # All directions from this room has been connected
@@ -315,12 +324,15 @@ class RandomizedGridworld(gym.Env):
             for i, dir_to in enumerate(chosen_directions):
 
                 # TODO Connect the new room not just to where it spawned from but also other rooms to create a graph
-                new_pos = room.get_relative_pos(dir_to, length=1)
+                new_pos = scene.get_relative_pos(room, dir_to, length=1)
                 ngbr_room = scene.create_random_empty_room(pos=new_pos)
                 scene.add_door(room=room,
                                dir_to=dir_to,
                                other_room=ngbr_room)
                 queue.append(ngbr_room)
+
+                if len(scene.rooms) >= self.num_rooms:
+                    break
 
         indices = list(range(0, scene.num_rooms()))
         random.shuffle(indices)
@@ -334,19 +346,23 @@ class RandomizedGridworld(gym.Env):
 
         # Add start room
         rooms = scene.get_rooms()
-        start_room = random.choice(rooms)
-        scene.get_add_start_room(start_room=start_room)
 
-        # Do DFS
-        scene.start_bfs(start_room)
-
-        # Add key in a room at least k steps away
-        k = 4
-        rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if k < len(path) < self.horizon - 5
-                 and ngbr_room != start_room]
         goal_room = random.choice(rooms)
         goal_room.add_goal()
         scene.get_add_goal_room(goal_room=goal_room)
+
+        # Do DFS
+        scene.start_bfs(goal_room)
+
+        # Add key in a room at least k steps away
+        rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items()
+                 if self.goal_dist < len(path) < self.horizon - 5 and ngbr_room != goal_room]
+
+        if len(rooms) == 0:
+            rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if ngbr_room != goal_room]
+
+        start_room = random.choice(rooms)
+        scene.get_add_start_room(start_room=start_room)
 
         return scene
 
@@ -374,6 +390,8 @@ class RandomizedGridworld(gym.Env):
         if self.current_timestep > self.horizon:
             raise AssertionError("Horizon exhausted.")
 
+        old_gold_action = self.current_scene.get_gold_action(self.current_room)
+
         if 0 <= action < 4:
             new_room = self.current_scene.check_room_door(self.current_room, Scene.DIRECTIONS[action])
         else:
@@ -397,14 +415,48 @@ class RandomizedGridworld(gym.Env):
         if self.feedback_level == RandomizedGridworld.Bandit:
             if reward == 1.0:
                 feedback = f"You succeeded! Congratulations."
-            else:
+            elif self.goal_not_prev_visited:
                 feedback = f"You didn't succeed. Trying visiting more rooms."
+            else:
+                feedback = f"You have already reached the treasure. Good job."
 
         elif self.feedback_level == RandomizedGridworld.Gold:
+
+            # TODO
+            if new_room is None:
+                feedback = f"You tried to go in the direction where there is no room. " \
+                           f"You should have taken the {old_gold_action} direction."
+
+            elif old_gold_action == Scene.DIRECTIONS[action]:
+                if reward == 1.0:
+                    feedback = "Great job! You got the treasure"
+                else:
+                    feedback = f"Good job. You took the right direction and moved closer to the treasure."
+
+            else:
+                feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
+                           f"You should have taken the {old_gold_action} direction."
+
+        elif self.feedback_level == RandomizedGridworld.Oracle:
+
+            # TODO
             gold_action = self.current_scene.get_gold_action(self.current_room)
-            assert gold_action is not None, "Gold action cannot be None since we are not in the goal room."
-            feedback = f"You tried to go in the direction where there is no room. " \
-                       f"Consider taking the {gold_action} direction"
+
+            if new_room is None:
+                feedback = f"You tried to go in the direction where there is no room. " \
+                           f"Consider taking the {gold_action} direction."
+
+            elif old_gold_action == Scene.DIRECTIONS[action]:
+                if reward == 1.0:
+                    feedback = "Great job! You got the treasure."
+                else:
+                    feedback = f"Good job. You took the right direction and moved closer to the treasure. " \
+                               f"Now move in the direction of {gold_action}."
+
+            else:
+                feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
+                           f"Now from this new room you should follow the direction of {gold_action}."
+
         else:
             raise AssertionError(f"Unhandled feedback level {self.feedback_level}")
 
@@ -416,5 +468,15 @@ class RandomizedGridworld(gym.Env):
 
 
 if __name__ == "__main__":
-    env = RandomizedGridworld()
-    env.reset()
+    env = RandomizedGridworld(num_rooms=10)
+    obs = env.reset()
+    print(obs)
+    # pdb.set_trace()
+
+    while True:
+        action = input("Action is ")
+        action = int(action)
+        new_obs, reward, done, info = env.step(action)
+        print(f"New observation {new_obs}, Took action {action}, got reward {reward}, done {done}. "
+              f"You got feedback is {info['feedback']}")
+        # pdb.set_trace()
