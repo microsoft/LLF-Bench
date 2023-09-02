@@ -97,7 +97,14 @@ class Scene:
     def get_start_room(self):
         return self.start_room
 
-    def get_room_doors(self, room):
+    def check_room_door(self, room, dir_to):
+
+        if room in self.doors and dir_to in self.doors[room]:
+            return self.doors[room][dir_to]
+        else:
+            return None
+
+    def get_room_doors_description(self, room):
 
         s = " ".join([f"You have a door to the {dir_to} of you that takes you to the {ngbr_room.get_name()} room."
                      for dir_to, ngbr_room in self.doors[room].items()])
@@ -210,6 +217,22 @@ class Scene:
 
         return self.bfs_path
 
+    def get_gold_action(self, room):
+
+        # This is a path from this goal to this room
+        # Path consists of [(action-1, room-1), (action-2, room-2), ...., (action-k, room-k)] where room-k=room
+        path = self.bfs_path[room]
+
+        if len(path) == 0:  # No action to take
+            gold_direction = None
+        else:
+            direction, room_ = path[-1]
+            assert room_ == room
+            # We need to in opposite direction
+            gold_direction = self.opposite_direction(direction)
+
+        return gold_direction
+
     def print(self):
 
         print(f"Start room {self.start_room.get_name()} and Key room {self.key_room.get_name()}\n")
@@ -224,7 +247,10 @@ class Scene:
 
 class RandomizedGridworld(gym.Env):
 
-    def __init__(self, fixed):
+    # Feedback level
+    Bandit, Gold = range(2)
+
+    def __init__(self, fixed=True, feedback_level="gold"):
         super(RandomizedGridworld, self).__init__()
 
         # Action space consists of 4 actions: North, South, East and West
@@ -234,8 +260,29 @@ class RandomizedGridworld(gym.Env):
 
         self.fixed = fixed
 
+        self.docstring = "You are in a house with multiple rooms. Each room can have objects that will be visible to " \
+                         "you if you are in that room. Each room can have a door along the North, South, East and " \
+                         "West direction. You can follow a direction to go from one room to another. " \
+                         "If there is no door along that direction, then you will remain in the room. You will start " \
+                         "in a room. Your goal is to navigate to another room which has the treasure."
+
+        self.horizon = 20
+        assert self.horizon >= 5, "Horizon must be at least 5 to allow agent to somewhat explore the world"
+
+        if feedback_level == "bandit":
+            self.feedback_level = RandomizedGridworld.Bandit
+
+        elif feedback_level == "gold":
+            self.feedback_level = RandomizedGridworld.Gold
+
+        else:
+            raise AssertionError(f"Unhandled feedback level {feedback_level}")
+
+        # Counters that may have to be reset
+        self.current_timestep = 0.0
         self.current_scene = None
         self.current_room = None
+        self.goal_not_prev_visited = False
 
     def make_scene(self):
 
@@ -295,42 +342,77 @@ class RandomizedGridworld(gym.Env):
 
         # Add key in a room at least k steps away
         k = 4
-        rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if k < len(path) and ngbr_room != start_room]
+        rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if k < len(path) < self.horizon - 5
+                 and ngbr_room != start_room]
         goal_room = random.choice(rooms)
         goal_room.add_goal()
         scene.get_add_goal_room(goal_room=goal_room)
 
         return scene
 
+    def make_room_obs(self, room):
+        obs = room.describe_room() + self.current_scene.get_room_doors_description(room)
+        return obs
+
     def reset(self):
+
+        # Counters that may have to be reset
+        self.current_timestep = 0.0
 
         self.current_scene = self.make_scene()
         self.current_scene.print()
 
         self.current_room = self.current_scene.get_start_room()
-        obs = self.current_room.describe_room() + self.current_scene.get_room_doors(self.current_room)
-        pdb.set_trace()
+        self.goal_not_prev_visited = False
+
+        obs = self.make_room_obs(self.current_room)
 
         return obs
 
     def step(self, action):
 
-        if action == 0:
-            pass
-        elif action == 1:
-            pass
-        elif action == 2:
-            pass
-        elif action == 3:
-            pass
+        if self.current_timestep > self.horizon:
+            raise AssertionError("Horizon exhausted.")
+
+        if 0 <= action < 4:
+            new_room = self.current_scene.check_room_door(self.current_room, Scene.DIRECTIONS[action])
         else:
             raise AssertionError(f"Action must be in {{0, 1, 2, 3}} but found {action}")
+
+        if new_room is not None:
+            self.current_room = new_room
+            next_obs = self.make_room_obs(self.current_room)
+        else:
+            next_obs = f"You remained in room {self.current_room.get_name()} " \
+                       f"as there is no door in the direction {Scene.DIRECTIONS[action]}."
+
+        # Compute the reward
+        reward = 1.0 if self.current_room == self.current_scene.goal_room and self.goal_not_prev_visited else 0.0
+        self.goal_not_prev_visited = self.current_room == self.current_scene.goal_room
+
+        # Update the counter and compute done
+        self.current_timestep += 1
+        done = self.current_timestep == self.horizon
+
+        if self.feedback_level == RandomizedGridworld.Bandit:
+            if reward == 1.0:
+                feedback = f"You succeeded! Congratulations."
+            else:
+                feedback = f"You didn't succeed. Trying visiting more rooms."
+
+        elif self.feedback_level == RandomizedGridworld.Gold:
+            gold_action = self.current_scene.get_gold_action(self.current_room)
+            assert gold_action is not None, "Gold action cannot be None since we are not in the goal room."
+            feedback = f"You tried to go in the direction where there is no room. " \
+                       f"Consider taking the {gold_action} direction"
+        else:
+            raise AssertionError(f"Unhandled feedback level {self.feedback_level}")
 
         info = {
             "feedback": feedback
         }
 
-        return reward, done, info
+        return next_obs, reward, done, info
 
 
 if __name__ == "__main__":
