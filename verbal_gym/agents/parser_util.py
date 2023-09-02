@@ -2,10 +2,13 @@ import re
 
 class SimpleGuidanceParser:
 
-    def __init__(self, verbose=False):
+    def __init__(self, template_text, verbose=False, reduce_linebreaks=True):
         self.verbose = verbose
+        self.template_text = template_text
+        self.reduce_linebreaks = reduce_linebreaks
 
-    def __call__(self, template_text, **kwargs):
+    def __call__(self, **kwargs):
+        template_text = self.template_text
         labeled_blocks = self.extract_blocks(template_text)
         if labeled_blocks[-1][0] == "assistant":
             labeled_blocks = labeled_blocks[:-1] # we remove the last assistant block, because that's for generation
@@ -20,6 +23,9 @@ class SimpleGuidanceParser:
             content = self.parse_if_block(content, **kwargs)
             content = self.populate_template_for_each(content , **kwargs)
             content = self.populate_vars(content, **kwargs)
+            if self.reduce_linebreaks:
+                # match multiple line breaks and replace with a single line break
+                content = re.sub(r"(\n\s*){2,}", "\n", content)
             typed_messages.append({"role": block_type, "content": content})
 
             if self.verbose:
@@ -49,7 +55,7 @@ class SimpleGuidanceParser:
                 parsed_text = parsed_text.replace(r"{{#if " + condition_var + "}}" + block_content + "{{/if}}", "")
 
         # Return the modified text
-        return parsed_text
+        return parsed_text.strip()
 
     def populate_vars(self, template, **kwargs):
         # Regular expression to find all placeholders
@@ -67,6 +73,13 @@ class SimpleGuidanceParser:
 
     def populate_template_for_each(self, template, **kwargs):
         # We don't support nested for-loop
+
+        before_each_match = re.search(r"(.*?){{~#each examples}}", template, re.DOTALL)
+        before_each = before_each_match.group(1).strip() if before_each_match else None
+
+        # Extract the portion between {{~/each}} and {{~/user}}
+        after_each_match = re.search(r"{{~/each}}(.*?)", template, re.DOTALL)
+        after_each = after_each_match.group(1).strip() if after_each_match else None
 
         each_key_match = re.search(r"~#each (\w+)", template)
         if not each_key_match:
@@ -94,6 +107,12 @@ class SimpleGuidanceParser:
                     populated_text = populated_text.replace("{{this."+key+"}}", example[key])
             populated_texts.append(populated_text)
 
+        if before_each is not None:
+            populated_texts = [before_each.strip()] + populated_texts
+
+        if after_each is not None:
+            populated_texts = populated_texts + [after_each.strip()]
+
         return "\n".join(populated_texts)
 
     def extract_blocks(self, parsed_text):
@@ -118,6 +137,11 @@ class SimpleGuidanceParser:
 def usage_test_1():
     # Test
     parsed_text = """
+    {{#system~}}
+    You are a helpful assistant that wants to come up with instructions to a student to help them write a poem that is satisfactory to a teacher's assignment.
+    The student's poem needs to satisfy the requirement of this assignment.
+    {{~/system}}
+    
     {{#user~}}
 
     Now, you are given a new assignment, and you want to see if you can update the instructions to help the student write a poem that satisfies the new assignment.
@@ -132,12 +156,12 @@ def usage_test_1():
     """
 
     kwargs = {
-        "exists_instruction": True,
+        "exists_instruction": False,
         "instruction": "Try to use metaphors and similes to add depth to your poem."
     }
 
-    parser = SimpleGuidanceParser()
-    results = parser(parsed_text, **kwargs)
+    parser = SimpleGuidanceParser(parsed_text, verbose=True)
+    results = parser(**kwargs)
 
     print(results)
 
@@ -158,7 +182,7 @@ def usage_test_2():
     ---------------
     {{~/each}}
     {{~/user}}
-
+    
     {{#user~}}
 
     Now, you are given a new assignment, and you want to see if you can update the instructions to help the student write a poem that satisfies the new assignment.
@@ -173,8 +197,11 @@ def usage_test_2():
     ]
 
     new_assignment = "Compose a poem about winter."
-    parser = SimpleGuidanceParser()
-    results = parser(parsed_text, examples=examples, new_assignment=new_assignment)
+    parser = SimpleGuidanceParser(parsed_text, verbose=True)
+    results = parser(examples=examples, new_assignment=new_assignment)
+    print(results)
+
+    results = parser(examples=[], new_assignment=new_assignment)
     print(results)
 
 if __name__ == '__main__':
