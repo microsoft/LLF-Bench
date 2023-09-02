@@ -290,7 +290,7 @@ class RandomizedGridworld(gym.Env):
         self.current_timestep = 0.0
         self.current_scene = None
         self.current_room = None
-        self.goal_not_prev_visited = False
+        self.goal_prev_visited = False
 
     def make_scene(self):
 
@@ -379,7 +379,7 @@ class RandomizedGridworld(gym.Env):
         self.current_scene.print()
 
         self.current_room = self.current_scene.get_start_room()
-        self.goal_not_prev_visited = False
+        self.goal_prev_visited = False
 
         obs = self.make_room_obs(self.current_room)
 
@@ -405,8 +405,8 @@ class RandomizedGridworld(gym.Env):
                        f"as there is no door in the direction {Scene.DIRECTIONS[action]}."
 
         # Compute the reward
-        reward = 1.0 if self.current_room == self.current_scene.goal_room and self.goal_not_prev_visited else 0.0
-        self.goal_not_prev_visited = self.current_room == self.current_scene.goal_room
+        reward = 1.0 if self.current_room == self.current_scene.goal_room and not self.goal_prev_visited else 0.0
+        self.goal_prev_visited = self.goal_prev_visited or (self.current_room == self.current_scene.goal_room)
 
         # Update the counter and compute done
         self.current_timestep += 1
@@ -415,47 +415,81 @@ class RandomizedGridworld(gym.Env):
         if self.feedback_level == RandomizedGridworld.Bandit:
             if reward == 1.0:
                 feedback = f"You succeeded! Congratulations."
-            elif self.goal_not_prev_visited:
-                feedback = f"You didn't succeed. Trying visiting more rooms."
-            else:
+            elif self.goal_prev_visited:
                 feedback = f"You have already reached the treasure. Good job."
+            else:
+                feedback = f"You didn't succeed. Trying visiting more rooms."
 
         elif self.feedback_level == RandomizedGridworld.Gold:
 
-            # TODO
-            if new_room is None:
-                feedback = f"You tried to go in the direction where there is no room. " \
-                           f"You should have taken the {old_gold_action} direction."
+            if reward == 1.0:
+                feedback = f"You succeeded! Congratulations."
 
-            elif old_gold_action == Scene.DIRECTIONS[action]:
-                if reward == 1.0:
-                    feedback = "Great job! You got the treasure"
-                else:
-                    feedback = f"Good job. You took the right direction and moved closer to the treasure."
+            elif self.goal_prev_visited:
+                feedback = f"You have already reached the treasure. Good job."
 
             else:
-                feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
+                # This implies we have not reached the goal neither before or nor in this stage
+                # Provide feedback as follows:
+                #       Case 1: If the agent takes an action that resulted in no transition
+                #       Case 2: If the agent takes the wrong transition
+                #       Case 3: If the agent takes the right transition
+
+                if old_gold_action is None:
+                    pdb.set_trace()
+                assert old_gold_action is not None, "can only be none if you reach the goal"
+
+                if new_room is None:
+                    # Case 1: If the agent takes an action that resulted in no transition
+                    feedback = f"You tried to go in the direction {Scene.DIRECTIONS[action]} where there is no room. " \
+                               f"You should have taken the {old_gold_action} direction."
+
+                elif old_gold_action != Scene.DIRECTIONS[action]:
+                    # Case 2: If the agent takes the wrong transition
+                    feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
                            f"You should have taken the {old_gold_action} direction."
+
+                else:
+                    # Case 3: If the agent takes the right transition
+                    feedback = f"Good job. You took the right direction and moved closer to the treasure."
 
         elif self.feedback_level == RandomizedGridworld.Oracle:
 
-            # TODO
-            gold_action = self.current_scene.get_gold_action(self.current_room)
+            if reward == 1.0:
+                feedback = f"You succeeded! Congratulations."
 
-            if new_room is None:
-                feedback = f"You tried to go in the direction where there is no room. " \
-                           f"Consider taking the {gold_action} direction."
-
-            elif old_gold_action == Scene.DIRECTIONS[action]:
-                if reward == 1.0:
-                    feedback = "Great job! You got the treasure."
-                else:
-                    feedback = f"Good job. You took the right direction and moved closer to the treasure. " \
-                               f"Now move in the direction of {gold_action}."
+            elif self.goal_prev_visited:
+                feedback = f"You have already reached the treasure. Good job."
 
             else:
-                feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
-                           f"Now from this new room you should follow the direction of {gold_action}."
+                # This implies we have not reached the goal neither before or nor in this stage
+                # Provide feedback as follows:
+                #       Case 1: If the agent takes an action that resulted in no transition
+                #       Case 2: If the agent takes the wrong transition
+                #       Case 3: If the agent takes the right transition
+
+                gold_action = self.current_scene.get_gold_action(self.current_room)
+
+                if gold_action is None or old_gold_action is None:
+                    pdb.set_trace()
+
+                assert old_gold_action is not None, "can only be none if you reach the goal"
+                assert gold_action is not None, "can only be none if you reach the goal"
+
+                if new_room is None:
+                    # Case 1: If the agent takes an action that resulted in no transition
+                    feedback = f"You tried to go in the direction {Scene.DIRECTIONS[action]} where there is no room. " \
+                               f"You should have moved towards the {gold_action} direction."
+
+                elif old_gold_action != Scene.DIRECTIONS[action]:
+                    # Case 2: If the agent takes the wrong transition
+                    feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
+                               f"You should now move towards the {gold_action} direction."
+
+                else:
+                    # Case 3: If the agent takes the right transition
+                    feedback = f"Good job. You took the right direction and moved closer to the treasure. From this " \
+                               f"room you should move towards the {gold_action} direction."
 
         else:
             raise AssertionError(f"Unhandled feedback level {self.feedback_level}")
@@ -468,7 +502,7 @@ class RandomizedGridworld(gym.Env):
 
 
 if __name__ == "__main__":
-    env = RandomizedGridworld(num_rooms=10)
+    env = RandomizedGridworld(num_rooms=10, feedback_level="oracle")
     obs = env.reset()
     print(obs)
     # pdb.set_trace()
@@ -477,6 +511,6 @@ if __name__ == "__main__":
         action = input("Action is ")
         action = int(action)
         new_obs, reward, done, info = env.step(action)
-        print(f"New observation {new_obs}, Took action {action}, got reward {reward}, done {done}. "
-              f"You got feedback is {info['feedback']}")
-        # pdb.set_trace()
+        print(f"New observation {new_obs}\n, Took action {action}\n, got reward {reward}\n, done {done}\n "
+              f"You got feedback is: \n {info['feedback']}.")
+        pdb.set_trace()
