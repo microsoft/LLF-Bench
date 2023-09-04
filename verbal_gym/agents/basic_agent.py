@@ -2,8 +2,7 @@ from textwrap import dedent, indent
 
 from verbal_gym.agents.abstract_agent import Agent
 from verbal_gym.utils.misc_utils import print_color
-from verbal_gym.agents.utils import extract_action
-
+from verbal_gym.agents.utils import extract_action, ReplayBuffer
 
 class BasicAgent(Agent):
 
@@ -19,16 +18,31 @@ class BasicAgent(Agent):
     Description".
     """)
 
-    def __init__(self, llm, n_actions, verbose=False, action_name='Action'):
+    def __init__(self,
+                 llm,
+                 n_actions,
+                 verbose=False,
+                 action_name='Action',
+                 buffer_size=1000,
+                 ignore_observation=True):
+        """
+            Args:
+                llm: a large language model
+                n_actions: number of actions
+                verbose: whether to print out the prompt and response
+                action_name: the name of the action
+                buffer_size: the size of the replay buffer
+                ignore_observation: whether to ignore the observation (for bandit setting)
+        """
+
+
         super(Agent, self).__init__()
         self.llm = llm
         self.n_actions = n_actions
         self.verbose = verbose
         self.action_name = action_name
-
-        # history
-        self.previous_action = None
-        self.history = []
+        self.buffer = ReplayBuffer(buffer_size)
+        self.ignore_observation = ignore_observation
 
         self.prompt_template = dedent("""\
             You're given with the problem below:
@@ -62,36 +76,41 @@ class BasicAgent(Agent):
 
     def reset(self, docstring):
         self.docstring = docstring
-        self.history = []
+        self.buffer.reset()
 
-    def update_history(self, feedback):
-        world_info = 'None'
-        if len(self.history) > 0:
-            self.history[-1]['feedback'] = feedback
-            # TODO how to format this nicely?
-            # world_info = '\n'.join([f'\t {self.action_name} {item["action"]} --- {item["feedback"]}'
-            # for item in self.history])
+    @property
+    def world_info(self):
+        if len(self.buffer)==0:
+            return ''
+        if self.ignore_observation:
             world_info = '\n'.join(
-                [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {item["feedback"]}\n\n\n','\t')
-                 for item in self.history])
+                [indent(f'{self.action_name}: {item["action"]}\nFeedback: {item["feedback"]}\n\n','\t')
+                for item in self.buffer])
+        else:
+            raise NotImplementedError
 
         return world_info
 
-    def act(self, obs, feedback, **kwargs):
-        world_info = self.update_history(feedback)
+    def act(self, observation, feedback, **kwargs):
+
+        # update with the latest feedback (ignored in the first call)
+        self.buffer.update(feedback=feedback, next_observation=observation)
+        world_info = self.world_info
+        # create prompt
         user_prompt = self.prompt_template.format(self.docstring, world_info)
         response, _ = self.llm.generate(user_prompt)
-
-        if self.verbose:
-            print_color(f'User:\n\n{user_prompt}\n', "blue")
-            print_color(f'Agent:\n\n{response}\n', "green")
-
         action = response.split(self.action_name+':')[-1]
         if self.n_actions is not None:
             action = extract_action(action, self.n_actions)
 
         if self.verbose:
+            print_color(f'User:\n\n{user_prompt}\n', "blue")
+            print_color(f'Agent:\n\n{response}\n', "green")
             print_color(f'Action:\n\n{action}\n', 'red')
-        self.history.append({'action': action, 'feedback': None})
 
+        # update buffer and get world info
+        self.buffer.append(observation=observation,
+                           action=action,
+                           feedback=None,
+                           next_observation=None)
         return action

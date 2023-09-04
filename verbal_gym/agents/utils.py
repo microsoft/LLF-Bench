@@ -19,6 +19,36 @@ def extract_action(response, n_actions, separator="#"):
     print("Cannot find the action in the response, so take a random action.\n\tResponse: {}.\n".format(response))
     return random.randint(0,n_actions-1)
 
+class ReplayBuffer:
+    """ A basic replay buffer based on list. """
+
+    def __init__(self, buffer_size):
+        self.buffer_size = buffer_size
+        self.buffer = []
+
+    def reset(self):
+        self.buffer = []
+
+    def append(self, **kwargs):
+        self.buffer.append(dict(**kwargs))
+        if len(self.buffer) > self.buffer_size:
+            self.buffer.pop(0)
+
+    def update(self, **kwargs):
+        # update the last item
+        if len(self.buffer)>0:
+            self.buffer[-1].update(**kwargs)
+
+    def __len__(self):
+        return len(self.buffer)
+
+    def __getitem__(self, item):
+        return self.buffer[item]
+
+    def __iter__(self):
+        return self.buffer.__iter__()
+
+
 if __name__=='__main__':
 
     response = 'Decision: #0 or #1 (either action can be chosen randomly).'

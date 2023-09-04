@@ -1,6 +1,12 @@
 import gym
 import copy
 
+class TerminalFreeWrapper(gym.Wrapper):
+    #  Set terminal to False always
+    def step(self, action):
+        observation, reward, terminal, info = self.env.step(action)
+        return observation, reward, False, info
+
 class VerbalGymWrapper(gym.Wrapper):
     """
         This is basic example wrapper that turns a gym environment into a verbal

@@ -1,7 +1,7 @@
 import gym
 from gym.envs.registration import register
 import gym_bandits
-from verbal_gym.envs.env_wrapper import VerbalGymWrapper
+from verbal_gym.envs.env_wrapper import VerbalGymWrapper, TerminalFreeWrapper
 
 environments = [
     'BanditTenArmedRandomFixed-v0',
@@ -18,7 +18,7 @@ def make_verbal_env(env_name, **kwargs):
     """ Make the original env and wrap it with the VerbalGymWrapper. """
     env = gym.make(env_name)
     docstring =  env.env.env.env.__doc__  # This is hardcoded for gym_bandits
-    return VerbalGymWrapper(env, docstring)
+    return VerbalGymWrapper(TerminalFreeWrapper(env), docstring)
 
 for environment in environments:
     register(

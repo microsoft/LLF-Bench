@@ -63,7 +63,7 @@ def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=F
     scores = [score for score, _ in results]
     scores = np.array(scores)
     data = [data for _, data in results]
-    return scores, data if log_data else scores
+    return (scores, data) if log_data else scores
 
 
 def set_seed(seed, env=None):

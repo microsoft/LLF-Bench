@@ -35,35 +35,40 @@ class PosteriorAgent(BasicAgent):
         self.paraphrase_agent = paraphrase_agent
         self.paraphrase_at_given = paraphrase_at_given
 
-    def reset(self, docstring):
-        self._docstring = docstring
+        if paraphrase_at_given:
+            # We overwrite buffer.update and buffer.append
+            def paraphrase_wrapper(buffer_update):
+                def wrapper(**kwargs):
+                    for k in kwargs:
+                        if k in ('feedback'):  # TODO: add more if needed
+                            kwargs[k] = self.paraphrase(kwargs[k])
+                    return buffer_update(**kwargs)
+                return wrapper
+            self.buffer.update = paraphrase_wrapper(self.buffer.update)
+            self.buffer.append = paraphrase_wrapper(self.buffer.append)
 
-    def update_history(self, feedback):
-        # XXX Add random permuation and paraphrasing
-
-        if self.paraphrase_at_given:  # Here we just paraphrase the feedback when it is given.
-            history_text = 'None'
-
-            if len(self.history) > 0:
-                self.history[-1]['feedback'] = self.paraphrase(feedback)
-                history = np.random.permutation(self.history) if self.permute_history else self.history
-                history_text = '\n'.join(
-                    [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {item["feedback"]}\n\n\n','\t')
-                     for item in history])
-
-        else:  # Here we do paraphrasing when we need to return history observations.
-            history_text = 'None'
-            if len(self.history) > 0:
-                self.history[-1]['feedback'] = feedback
-                history = np.random.permutation(self.history) if self.permute_history else self.history
-                history_text = '\n'.join(
-                    [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {self.paraphrase(item["feedback"])}\n\n\n','\t')
-                     for item in history])
-        return history_text
+    @property
+    def world_info(self):
+        if len(self.buffer)==0:
+            return ''
+        if self.ignore_observation:
+            paraphrase = self.paraphrase if not self.paraphrase_at_given else lambda x: x
+            world_info = [indent(f'{self.action_name}: {item["action"]}\nFeedback: {paraphrase(item["feedback"])}\n\n','\t') for item in self.buffer]
+            world_info = np.random.permutation(world_info) if self.permute_history else world_info
+            world_info = '\n'.join(world_info)
+        else:
+            raise NotImplementedError
+        return world_info
 
     def paraphrase(self, sentence):
+        if sentence is None or sentence == '':
+            return ''
         return self.paraphrase_agent.paraphrase(sentence) if self.paraphrase_agent is not None else sentence
 
     @property
     def docstring(self):
         return self.paraphrase(self._docstring)
+
+    @docstring.setter
+    def docstring(self, value):
+        self._docstring = value
