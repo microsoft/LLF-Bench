@@ -14,16 +14,19 @@ class LLM(ABC):
 
     def chat(self,
              prompt, *,
+             logprob=None, # None or int. If int, return top-k logprobs.
              timeout,  # Maximum time to wait if failure occurs before re-trying
              temperature,  # temperature of the generation
              max_tokens,  # maximum number of tokens to generate
              max_attempts):  # maximum number of attempts to call the model
         """ This is a history-dependent chat response. """
         raise NotImplementedError
-        return response, info
+        # info is dict with keys 'logprobs' and 'response', where 'response' is the original response object from the model.
+        return generation, info
 
     def generate(self,
                  prompt, *,
+                 logprob=None, # None or int. If int, return top-k logprobs.
                  timeout,  # Maximum time to wait if failure occurs before re-trying
                  temperature,  # temperature of the generation
                  max_tokens,  # maximum number of tokens to generate
@@ -31,7 +34,9 @@ class LLM(ABC):
 
         """ This is one-time query response. """
         raise NotImplementedError
-        return response, info
+        # info is dict with keys 'logprobs' and 'response', where 'response' is the original response object from the model.        return response, info
+        return generation, info
+
 
     def logprob(self,
                 prompt, *,

@@ -92,8 +92,8 @@ class PickBestSummary(gym.Env):
             generation, info = self.summary_generator_llm.generate(prompt=good_prompt,
                                                                    max_tokens=self.summary_max_tokens,
                                                                 #    echo=True,
-                                                                #    logprobs=
-                                                                #    1 if self.reward_type == self.LOGPROB else None,
+                                                                   logprobs=
+                                                                   1 if self.reward_type == self.LOGPROB else None,
                                                                    temperature=temperature)
             if not (self.reward_type == self.LOGPROB):
                 generation = good_prompt + generation  # NOTE due to the original echo behavior
@@ -104,7 +104,7 @@ class PickBestSummary(gym.Env):
             summary = generation[len(good_prompt):]
             if self.reward_type == self.LOGPROB:
                 # reward = info["logprob"]
-                reward = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+                reward = sum(logprobs["token_logprobs"][1:])
 
             elif self.reward_type == self.Binary:
                 reward = 1.0 if i == 0 else 0.0

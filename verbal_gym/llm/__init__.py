@@ -20,6 +20,9 @@ def make_llm(model, **kwargs):
     if os.getenv("GCR_GPT_KEY") is not None and os.getenv("GCR_GPT_URL") is not None:
         available_backends.append('gcr')
 
+    if len(available_backends)==0:
+        raise Warning("No LLM backend is set up. Please set up at least one backend.")
+
     if backend not in available_backends:
         # Try to use the first available backend if the requested one is not available
         Warning(f"{backend} backend is not set up. Switch to {available_backends[0]} backend.")

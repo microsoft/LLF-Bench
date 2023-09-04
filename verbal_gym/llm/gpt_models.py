@@ -31,8 +31,7 @@ class GPT(LLM):
         self.messages.append({"role": "user", "content": prompt})
         spec = self.spec.copy()
         spec.update(kwargs)
-        response, info = call_model(self.messages, **spec)
-        return response, info
+        return call_model(self.messages, **spec)
 
     def generate(self, prompt, **kwargs):
         """ This is one-time query response. """
@@ -40,5 +39,4 @@ class GPT(LLM):
                     {"role": "user", "content": prompt}]
         spec = self.spec.copy()
         spec.update(kwargs)
-        response, info = call_model(messages, **spec)
-        return response, info
+        return call_model(messages, **spec)

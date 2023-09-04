@@ -4,7 +4,7 @@ import time, os
 OPENAI_API_INITIALIZED = False
 API_MODE_AZURE = True
 
-def _call_model(messages, model, temperature, timeout, max_tokens=None):
+def _call_model(messages, model, temperature, timeout, logprobs=None, max_tokens=None):
 
     backend, model = model.split(':')
     assert backend in ('azure', 'openai')
@@ -17,6 +17,7 @@ def _call_model(messages, model, temperature, timeout, max_tokens=None):
         temperature=temperature,
         request_timeout=timeout,
         max_tokens=max_tokens,
+        logprobs=logprobs,
     )
     if max_tokens is not None:
         config['max_tokens'] = max_tokens
@@ -34,11 +35,15 @@ def _call_model(messages, model, temperature, timeout, max_tokens=None):
                 prompt += m['role'] + ': ' + m['content'] + '\n'
         config['prompt'] = prompt
         del config['messages']
-        response = openai.Completion.create(logprobs=1, **config)
-        return response['choices'][0]['text'], response
+        response = openai.Completion.create(**config)
+        logprobs = response["choices"][0]["logprobs"]
+        info = {'logprobs': logprobs, 'response': response}
+        return response['choices'][0]['text'], info
     else:
+        del config['logprobs']  # logprobs is not supported by GPT3.5 or newer
         response = openai.ChatCompletion.create(**config)
-        return response['choices'][0]['message']['content'], response
+        info = {'logprobs': None, 'response': response}
+        return response['choices'][0]['message']['content'], info
 
 
 def init_openai_api(api_mode_azure=True):
@@ -56,7 +61,7 @@ def init_openai_api(api_mode_azure=True):
             openai.api_key_path = os.getenv('OPENAI_KEY_PATH')
 
 
-def call_model(messages, model, temperature, timeout, wait_time=2, max_tokens=None, max_attempts=float('inf')):
+def call_model(messages, model, temperature, timeout, wait_time=2, max_tokens=None, logprobs=None, max_attempts=float('inf')):
     i = 0
     while i < max_attempts:
         i+=1

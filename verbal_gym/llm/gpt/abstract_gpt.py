@@ -42,6 +42,7 @@ class AbstractGPT(LLM):
 
     def generate(self,
                  prompt, *,
+                 logprobs=None,  # None or int. If int, return top-k logprobs.
                  timeout,  # Maximum time to wait if failure occurs before re-trying
                  temperature,  # temperature of the generation
                  max_tokens,  # maximum number of tokens to generate
@@ -50,7 +51,7 @@ class AbstractGPT(LLM):
         if len(self.system_prompt)>0:
             prompt = f'System: {self.system_prompt}\nUser: {prompt}'
 
-        return self.generate(prompt, max_tokens=max_tokens, logprob=True, temperature=temperature, MAX_WAITTIME_SEC=timeout)
+        return self.generate(prompt, max_tokens=max_tokens, logprobs=logprobs, temperature=temperature, MAX_WAITTIME_SEC=timeout)
 
     def generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, MAX_WAITTIME_SEC=300):
         """
@@ -76,8 +77,8 @@ class AbstractGPT(LLM):
                                  echo=echo,
                                  MAX_WAITTIME_SEC=MAX_WAITTIME_SEC)
 
-        text = response["choices"][0]["text"]
-
+        generation = response["choices"][0]["text"]
+        logprobs = response["choices"][0]["logprobs"] if logprobs is not None else None
         # if logprobs is not None:
         #     if echo:
         #         # GPT does not compute logprob of the first token
@@ -99,8 +100,8 @@ class AbstractGPT(LLM):
         #     "logprob": logprob,
         #     "echo": echo
         # }
-
-        return text, response
+        info = {'logprobs': logprobs, 'response': response}
+        return generation, info
 
     def call_gpt(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
         """
