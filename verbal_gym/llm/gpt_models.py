@@ -35,8 +35,12 @@ class GPT(LLM):
 
     def generate(self, prompt, **kwargs):
         """ This is one-time query response. """
-        messages = [{"role": "system", "content": self.system_prompt},
-                    {"role": "user", "content": prompt}]
+        if isinstance(prompt, str):
+            messages = [{"role": "system", "content": self.system_prompt},
+                        {"role": "user", "content": prompt}]
+        else:
+            assert type(prompt) == list, "we also accept a list of messages or a single message, but this is not"
+            messages = prompt
         spec = self.spec.copy()
         spec.update(kwargs)
         return call_model(messages, **spec)
