@@ -29,7 +29,7 @@ def main(args):
 
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     scores = scores[0]
-    print_color('Reflexion agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
+    print_color('ReAct agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
     return scores
 
 
