@@ -83,21 +83,13 @@ Description".
 {{~/system}}
 
 {{#user~}}
-
-Problem Description: {{observation}}
-
 {{#if exists_reflection}}
 You have attempted to solve the problem before and failed. 
 The following reflection(s) give a plan to avoid failing to solve the problem in the same way you did previously. 
 Use them to improve your strategy of correctly solving the given problem.
 
-Past interacions:
-{{~#each history}}
-{{action_name}}: {{this.action}}
-Feedback: {{this.feedback}}
-Reflection: {{this.reflection}}
-
-{{~/each}}
+Reflection:
+{{reflection}}
 {{/if}}
 
 Problem Description: {{observation}}
@@ -118,10 +110,16 @@ Problem Description: {{observation}}
         # fill the history buffer
         # no reflection for the first time
         exists_reflection = True if len(self.history) > 0 else False
-        messages = self.prompt(observation=observation,
-                               action_name=self.action_name,
-                               history=self.history,
-                               exists_reflection=exists_reflection)
+        if exists_reflection:
+            reflection = self.history[-1]['reflection']
+            messages = self.prompt(observation=observation,
+                                   action_name=self.action_name,
+                                   reflection=reflection,
+                                   exists_reflection=exists_reflection)
+        else:
+            messages = self.prompt(observation=observation,
+                                   action_name=self.action_name,
+                                   exists_reflection=False)
         action, _ = self.llm.generate(messages)
 
         if self.verbose:
