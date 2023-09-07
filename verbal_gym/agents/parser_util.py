@@ -36,6 +36,12 @@ class SimpleGuidanceParser:
 
         return typed_messages
 
+    def decode_typed_messages(self, typed_messages):
+        messages = ""
+        for typed_message in typed_messages:
+            messages += typed_message['role'] + ': ' + typed_message['content']
+        return messages
+
     def parse_if_block(self, parsed_text, **kwargs):
         # Regular expression to capture the content inside the {{#if ...}} and {{/if}} tags
         pattern = r"{{#if (\w+)}}(.*?){{/if}}"
@@ -64,12 +70,20 @@ class SimpleGuidanceParser:
         # Replace each placeholder with its corresponding value from kwargs
         for placeholder in placeholders:
             if placeholder in kwargs:
+                kwargs[placeholder] = self.none_to_empty_string(kwargs[placeholder])
                 template = template.replace(f"{{{{{placeholder}}}}}", kwargs[placeholder])
             else:
                 template = template.replace(f"{{{{{placeholder}}}}}", f"Placeholder {placeholder} not provided")
                 raise Exception(template)
 
         return template
+
+    def none_to_empty_string(self, value):
+        # this is only applicable to populate_vars and for_each
+        # if_exists takes None dddd
+        if value is None:
+            return ""
+        return value
 
     def populate_template_for_each(self, template, **kwargs):
         # We don't support nested for-loop
@@ -104,6 +118,7 @@ class SimpleGuidanceParser:
             populated_text = template_inside_each
             for key in keys:
                 if key in example:
+                    example[key] = self.none_to_empty_string(example[key])
                     populated_text = populated_text.replace("{{this."+key+"}}", example[key])
             populated_texts.append(populated_text)
 
@@ -175,7 +190,7 @@ def usage_test_2():
     {{#user~}}
     Here are some instructions you wrote for the previous assignments:
     {{~#each examples}}
-    Teacher's Assignment: {{this.assignment}}
+    {{role}}'s Assignment: {{this.assignment}}
 
     Your Instruction: 
     {{this.instruction}}
@@ -198,7 +213,7 @@ def usage_test_2():
 
     new_assignment = "Compose a poem about winter."
     parser = SimpleGuidanceParser(parsed_text, verbose=True)
-    results = parser(examples=examples, new_assignment=new_assignment)
+    results = parser(examples=examples, new_assignment=new_assignment, role="Teacher")
     print(results)
 
     results = parser(examples=[], new_assignment=new_assignment)
