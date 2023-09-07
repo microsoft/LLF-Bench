@@ -50,10 +50,10 @@ class PosteriorAgent(BasicAgent):
     @property
     def world_info(self):
         if len(self.buffer)==0:
-            return ''
+            return 'None'
         if self.ignore_observation:
             paraphrase = self.paraphrase if not self.paraphrase_at_given else lambda x: x
-            world_info = [indent(f'{self.action_name}: {item["action"]}\nFeedback: {paraphrase(item["feedback"])}\n\n','\t') for item in self.buffer]
+            world_info = [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {paraphrase(item["feedback"])}\n\n\n','\t') for item in self.buffer]
             world_info = np.random.permutation(world_info) if self.permute_history else world_info
             world_info = '\n'.join(world_info)
         else:
