@@ -81,10 +81,10 @@ class BasicAgent(Agent):
     @property
     def world_info(self):
         if len(self.buffer)==0:
-            return ''
+            return 'None'
         if self.ignore_observation:
             world_info = '\n'.join(
-                [indent(f'{self.action_name}: {item["action"]}\nFeedback: {item["feedback"]}\n\n','\t')
+                [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {item["feedback"]}\n\n\n','\t')
                 for item in self.buffer])
         else:
             raise NotImplementedError
