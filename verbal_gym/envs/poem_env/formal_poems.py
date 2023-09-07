@@ -66,6 +66,9 @@ class PoemUtil:
                         num_sylls += 1
         return num_sylls
 
+    def seed(self, seed):
+        pass
+
 class PoemExtractor(object):
     # use LLM to extract the poem
     # just in case more things were written

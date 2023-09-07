@@ -15,7 +15,7 @@ class ReActAgent(BasicAgent):
 
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
                 buffer_size=5):
-        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name, buffer_size=buffer_size)
+        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name)
         self.thought_prompt = SimpleGuidanceParser("""
 {{#system~}}
 You are an advanced reasoning agent that can think and analyze the situation.
@@ -75,7 +75,8 @@ Thought: {{thought}}
         exists_history = True if len(self.history) > 0 else False
 
         # generate thoughts
-        thought = self.thought_prompt(observation=observation)
+        messages = self.thought_prompt(observation=observation)
+        thought, _ = self.llm.generate(messages)
 
         messages = self.prompt(observation=observation,
                                thought=thought,

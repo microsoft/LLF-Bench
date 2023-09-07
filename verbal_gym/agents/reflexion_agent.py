@@ -12,6 +12,8 @@ from verbal_gym.utils.misc_utils import print_color
 
 class ReflectAgent:
 
+    system_prompt = """You are an advanced reasoning agent that can improve based on self refection. """
+
     def __init__(self, llm, max_history=5, action_name='Action'):
         self.llm = llm
         self.parser = SimpleGuidanceParser("""
@@ -54,7 +56,7 @@ Reflection:
     def __call__(self, observation, action, feedback):
         response, _ = self.llm.generate(self.parser(exists_reflection_examples=len(self.reflection_examples) > 0,
                                         examples=self.reflection_examples, action_name=self.action_name,
-                                        instruction=observation, poem=action, feedback=feedback))
+                                        observation=observation, action=action, feedback=feedback))
         self.reflection_examples.append({'observation': observation,
                                          'action': action,
                                          'feedback': feedback,
@@ -68,7 +70,7 @@ class ReflexionAgent(BasicAgent):
 
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
                  reflection_agent=None, permute_history=True, buffer_size=5):
-        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name, buffer_size=buffer_size)
+        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name)
         self.prompt = SimpleGuidanceParser("""
 {{#system~}}
 You are an agent tasked to solve an interactive problem with verbal
@@ -111,7 +113,6 @@ Problem Description: {{observation}}
 
         self.permute_history = permute_history
         self.history = deque(maxlen=buffer_size)
-
 
     def act(self, observation, feedback, **kwargs):
         # fill the history buffer
