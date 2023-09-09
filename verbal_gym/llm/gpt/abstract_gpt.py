@@ -43,9 +43,9 @@ class AbstractGPT(LLM):
     def generate(self,
                  prompt, *,
                  logprobs=None,  # None or int. If int, return top-k logprobs.
-                 timeout,  # Maximum time to wait if failure occurs before re-trying
-                 temperature,  # temperature of the generation
-                 max_tokens,  # maximum number of tokens to generate
+                 timeout,        # Maximum time to wait if failure occurs before re-trying
+                 temperature,    # temperature of the generation
+                 max_tokens,     # maximum number of tokens to generate
                  max_attempts):  # maximum number of attempts to call the model
 
         if len(self.system_prompt)>0:

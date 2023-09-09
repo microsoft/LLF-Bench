@@ -1,3 +1,4 @@
+import re
 import pdb
 import torch
 import pickle
@@ -111,13 +112,16 @@ class LLMAgent:
             batch_llm_probs.append(prob)
 
         # Take mean
+        batch_llm_probs = np.vstack(batch_llm_probs)        # num-permute x num-actions
+        probs = np.mean(batch_llm_probs, dim=0)             # num-actions
 
-        return prob
+        return probs
 
     def get_prob_via_generation(self, history):
 
-        logprob_actions = []
-        for action in range(self.num_actions):
+        llm_probs = np.zeros(self.num_actions)
+        for _ in range(self.num_action_sample):
+
             prompt = self.base_prompt
             prompt += "\n".join([f"- Took action {action} and got a good reward"
                                  if reward == 1 else f"- Took action {action} and got a bad reward"
@@ -125,13 +129,25 @@ class LLMAgent:
 
             prompt += f"\n Based on the above feedback, I should choose action"
 
-            logprob_action = self.llm.generate(prompt, max_tokens=5)
-            logprob_actions.append(logprob_action)
+            logprob_action_string = self.llm.generate(prompt,
+                                                      max_tokens=3,
+                                                      timeout=300,
+                                                      temperature=0.0,
+                                                      max_attempts=1000)
 
-        logprobs = torch.FloatTensor(logprob_actions)
-        llm_probs = torch.softmax(logprobs, dim=0)
+            number_strings = re.findall(r'\d+', logprob_action_string)
 
-        llm_probs = np.array([llm_probs[i].item() for i in range(self.num_actions)])
+            if len(number_strings) == 0:
+                # Choose an action randomly
+                action = random.randint(0, self.num_actions - 1)
+            else:
+                # Choose the first. The first number, when multiple are present, is a good hack as
+                # it is closest to the prompt
+                action = int(number_strings[0])
+
+            llm_probs[action] = llm_probs[action] + 1
+
+        llm_probs = llm_probs / float(self.num_action_sample)
 
         return llm_probs
 
