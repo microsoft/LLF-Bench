@@ -628,7 +628,8 @@ class MovieRec(gym.Env):
         if rec_movies is None:
             # there's no difference between observation and feedback?
             return self.generate_request_query(), 0, False, {"raw_action": a,
-                                                                      "feedback": "You didn't recommend anything to me."}
+                                                             "feedback": "You didn't recommend anything to me.",
+                                                             "item_errors": {}}
 
         # 0-th order: just say whichever ones didn't satisfy the profile
         # 0.5-th order: explain why it didn't satisfy the critiera
@@ -638,17 +639,20 @@ class MovieRec(gym.Env):
 
         if len(feedbacks) == 0:
             initial_feedback = "Thank you! I like all of these recommendations."
-            return self.generate_request_query(), reward, False, {"raw_action": a, "feedback": initial_feedback}
+            return self.generate_request_query(), reward, False, {"raw_action": a, "feedback": initial_feedback,
+                                                                  "item_errors": title_to_num_rules_violation}
 
         initial_feedback = "These recommendations are not what I wanted. Can you give me some new recommendations?\n"
 
         if self.feedback == 0:
             return self.generate_request_query(), reward, False, {"raw_action": a,
-                                                                  "feedback": initial_feedback}
+                                                                  "feedback": initial_feedback,
+                                                                  "item_errors": title_to_num_rules_violation}
         else:
             initial_feedback += "\n".join(feedbacks)
             return self.generate_request_query(), reward, False, {"raw_action": a,
-                                                                  "feedback": initial_feedback}
+                                                                  "feedback": initial_feedback,
+                                                                  "item_errors": title_to_num_rules_violation}
 def test_generate_query():
     # Example usage:
     generator = RecommendationQueryGenerator()
