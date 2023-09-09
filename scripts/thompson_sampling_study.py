@@ -140,10 +140,17 @@ class LLMAgent:
             if len(number_strings) == 0:
                 # Choose an action randomly
                 action = random.randint(0, self.num_actions - 1)
+                print(f"Warning! Didn't find any text in response {logprob_action_string}. \n Prompt was {prompt}.")
+                pdb.set_trace()
+            elif len(number_strings) == 1:
+                action = int(number_strings[0])
             else:
                 # Choose the first. The first number, when multiple are present, is a good hack as
                 # it is closest to the prompt
                 action = int(number_strings[0])
+                print(f"Warning! Found more than one number in response "
+                      f"{logprob_action_string}. \n Prompt was {prompt}.")
+                pdb.set_trace()
 
             llm_probs[action] = llm_probs[action] + 1
 
@@ -206,11 +213,7 @@ class CalibrationStudy:
 
         return len(prob) - 1
 
-    def run(self):
-
-        env = BernoulliBandit()
-        llm_agent = LLMAgent(env.num_actions)
-        thompson_agent = ThompsonSampling(env.num_actions)
+    def run(self, env, llm_agent, thompson_agent):
 
         results = []
         history = []
@@ -269,31 +272,22 @@ class CalibrationStudy:
         print("Experiment Over. Generating plot and saving the data.")
 
         self.plot(results)
-        self.save(env, results)
 
-    def save(self, env, results):
-
-        setting = {
-
-        }
-
-        data = {
-            "setting": setting,
-            "results": results
-        }
-
-        with open("./results.pkl", "wb") as f:
-            pickle.dump(data, f)
+        return results
 
     def plot(self, results):
 
         plt.clf()
-        plt.title(f"Experiments on Bernoulli Bandit. Warm start: {warm_start_eps}, Prob type {prob_type}.")
+        plt.title(f"Experiments on Bernoulli Bandit. Agent: {self.agent_type}, Warmup: {self.warm_start_eps}.")
         plt.xlabel("Episodes")
-        episodes = list(range(1, num_eps + 1))
+        episodes = list(range(1, self.num_eps + 1))
 
-        plt.plot(episodes, action_1_prob, label="Prob. of action 1", color="red")
-        plt.plot(episodes, bayes_action_1_prob, label="Bayes Prob. of action 1", color="orange", linestyle="--")
+        # Plot probabilities of action-1 for each LLM (since there is only 2 action in the study,
+        # the other is automatically determined)
+        plt.plot(episodes, [result["llm_prob"][0] for result in results],
+                 label="LLM Prob. of action 1", color="red")
+        plt.plot(episodes, [result["thompson_prob"][0] for result in results],
+                 label="Thompson Prob. of action 1", color="blue", linestyle="-")
 
         plt.plot(action_1_eps_indicator, action_1_mean_indicator, ls="", marker="o", color="red", label='_nolegend_')
 
@@ -313,9 +307,61 @@ class CalibrationStudy:
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--warmup", default=5, type=int, help="number of warmup episodes")
+
+    # Study hyperparam
     parser.add_argument("--name", default="run-exp", help="Name of the experiment")
+    parser.add_argument("--num_eps", default=100, type=int, help="number of episodes")
+    parser.add_argument("--warmup_eps", default=5, type=int, help="number of warmup episodes")
+    parser.add_argument("--agent", default="thompson", type=str, help="which agent to use for decision making",
+                        choices=["llm", "thompson"])
+
+    # Thompson sampling hyperparam
+    parser.add_argument("--a", default=0.5, type=float, help="alpha hyperparam for Thompson prior")
+    parser.add_argument("--b", default=0.5, type=float, help="beta hyperparam for LLM prior")
+    parser.add_argument("--thompson_num_est", default=1000, type=int, help="number of samples for Thompson sampling")
+
+    # LLM sampling hyperparam
+    parser.add_argument("--use_log_prob", default=1, type=float, help="if > 0 then use log_prob for LLM agent "
+                                                                      "else dont use")
+    parser.add_argument("--permute", default=1, type=float, help="if > 0 then permute history else dont")
+    parser.add_argument("--num_permute", default=1, type=float, help="if > 0 then permute history else dont")
+    parser.add_argument("--num_action_sample", default=5, type=int, help="if LLM is in generation mode, then we can "
+                                                                         "sample actons many time to generate an "
+                                                                         "empirical distribution from which we actually"
+                                                                         " take the action")
+
     args = parser.parse_args()
 
-    study = CalibrationStudy(agent_type=args.agent)
-    study.run()
+    env = BernoulliBandit()
+
+    llm_agent = LLMAgent(num_actions=env.num_actions,
+                         use_log_prob=args.use_log_prob > 0,
+                         permute=args.permute > 0,
+                         num_permute=args.num_permute,
+                         num_action_sample=args.num_action_sample)
+
+    thompson_agent = ThompsonSampling(num_actions=env.num_actions,
+                                      a=args.a,
+                                      b=args.b,
+                                      num_est=args.num_est)
+
+    study = CalibrationStudy(agent_type=args.agent,
+                             num_eps=args.num_eps,
+                             warm_start_eps=args.warmup_eps)
+
+    results = study.run(env=env,
+                        llm_agent=llm_agent,
+                        thompson_agent=thompson_agent)
+
+    setting = {}
+
+    for k, v in vars(args).items():
+        setting[k] = v
+
+    data = {
+        "setting": setting,
+        "results": results
+    }
+
+    with open("./thompson_sampling_study_results.pkl", "wb") as f:
+        pickle.dump(data, f)
