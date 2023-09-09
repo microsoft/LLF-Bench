@@ -3,11 +3,10 @@ from string import punctuation
 
 import gym
 import cmudict
-import guidance
 import syllables
 import sys
 
-# gotta add rhyme to it
+from verbal_gym.agents.parser_util import SimpleGuidanceParser
 
 class PoemUtil:
     # designed as a Mixin class
@@ -72,8 +71,9 @@ class PoemUtil:
 class PoemExtractor(object):
     # use LLM to extract the poem
     # just in case more things were written
-    def __init__(self, silent=True):
-        self.prompt = guidance("""
+    def __init__(self, llm, silent=True):
+        self.llm = llm
+        self.prompt = SimpleGuidanceParser("""
 {{#system~}}
 You are a helpful assistant.
 {{~/system}}
@@ -90,10 +90,12 @@ Only return the poem line by line, including space.
 {{#assistant~}}
 {{gen 'poem' temperature=0.7}}
 {{~/assistant}}
-""", silent=silent)
+""")
 
     def __call__(self, content):
-        return self.prompt(content=content)['poem']
+        messages = self.prompt(content=content)
+        response, info = self.llm.generate(messages)
+        return response
 
 class Haiku(PoemUtil, gym.Env):
     def __init__(self, feedback=0, silent=True, use_extractor=False):

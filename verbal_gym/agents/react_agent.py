@@ -47,6 +47,18 @@ actions solve the task as fast as possible, according to "Problem Description".
 
 {{#user~}}
 Problem Description: {{observation}}
+
+{{#if exists_history}}
+Past interacions:
+{{~#each history}}
+{{action_name}}: {{this.action}}
+Thought: {{this.thought}}
+Feedback: {{this.feedback}}
+
+{{~/each}}
+{{/if}}
+
+Problem Description: {{observation}}
 Thought: {{thought}}
 {{action_name}}:
 {{~/user}}
