@@ -10,7 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.stats import beta
+
 from verbal_gym.llm.gpt.gpt import GPT3
+from verbal_gym.utils.tensorboard import Tensorboard
 
 
 class BernoulliBandit:
@@ -65,7 +67,7 @@ class ThompsonSampling:
         actions_chosen = np.argmax(action_prior, axis=0)  # num_est
         assert actions_chosen.shape[0] == self.num_est
 
-        action_counts = np.zeros(self.num_actions)
+        action_counts = np.zeros(self.num_actions).astype(np.float32)
         for action_chosen in actions_chosen:
             action_counts[action_chosen] += 1.0
 
@@ -79,7 +81,7 @@ class LLMAgent:
     def __init__(self, num_actions, use_log_prob=True, permute=True, num_permute=1, num_action_sample=5):
 
         self.num_actions = num_actions
-        self.agent_history = None
+        self.agent_history = []
 
         self.use_log_prob = use_log_prob
         self.permute = permute
@@ -118,13 +120,13 @@ class LLMAgent:
 
         # Take mean
         batch_llm_probs = np.vstack(batch_llm_probs)        # num-permute x num-actions
-        probs = np.mean(batch_llm_probs, dim=0)             # num-actions
+        probs = np.mean(batch_llm_probs, axis=0)            # num-actions
 
         return probs
 
     def get_prob_via_generation(self, history):
 
-        llm_probs = np.zeros(self.num_actions)
+        llm_probs = np.zeros(self.num_actions).astype(np.float32)
         for _ in range(self.num_action_sample):
 
             prompt = self.base_prompt
@@ -180,7 +182,7 @@ class LLMAgent:
         logprobs = torch.FloatTensor(logprob_actions)
         llm_probs = torch.softmax(logprobs, dim=0)
 
-        llm_probs = np.array([llm_probs[i].item() for i in range(self.num_actions)])
+        llm_probs = np.array([llm_probs[i].item() for i in range(self.num_actions)]).astype(np.float32)
 
         return llm_probs
 
@@ -204,7 +206,7 @@ class CalibrationStudy:
             sum_action[action] += reward
             counts[action] += 1
 
-        mean_action_reward = sum_action / float(max(1, counts))
+        mean_action_reward = sum_action / np.maximum(1, counts).astype(np.float32)
         return mean_action_reward, counts
 
     @staticmethod
@@ -219,7 +221,7 @@ class CalibrationStudy:
 
         return len(prob) - 1
 
-    def run(self, env, llm_agent, thompson_agent):
+    def run(self, env, llm_agent, thompson_agent, tensorboard=None):
 
         results = []
         history = []
@@ -273,6 +275,19 @@ class CalibrationStudy:
                 "reward": reward,
             }
             results.append(result)
+
+            if tensorboard is not None:
+                tensorboard.log_scalar("LLM Agent action 0 prob", llm_agent_prob[0])
+                tensorboard.log_scalar("Thompson Sampling action 0 prob", thompson_agent_prob[0])
+                tensorboard.log_scalar("action", action)
+                tensorboard.log_scalar("reward", reward)
+
+                tensorboard.log_scalar("mean action 0 return", mean_action_reward[0])
+                tensorboard.log_scalar("gold action 0 return", env.get_mean_return(0))
+
+                tensorboard.log_scalar("mean action 1 return", mean_action_reward[1])
+                tensorboard.log_scalar("gold action 1 return", env.get_mean_return(1))
+
             print("\n\n")
 
         print("Experiment Over. Generating plot and saving the data.")
@@ -323,7 +338,7 @@ class CalibrationStudy:
         action_1_eps = [i + 1 for i, result in enumerate(results) if result["action"] == 0]
         action_1_indicator = [result["mean_action_return"][0] for result in results if result["action"] == 0]
 
-        plt.plot(action_1_eps, action_1_indicator, label="_nolegend_", color="blue", marker="o")
+        plt.plot(action_1_eps, action_1_indicator, label="_nolegend_", ls="", color="blue", marker="o")
 
         plt.plot(episodes, [env.get_mean_return(1)] * self.num_eps,
                  label="Mean return of action 1", color="green", linestyle="--")
@@ -333,7 +348,7 @@ class CalibrationStudy:
         action_2_eps = [i + 1 for i, result in enumerate(results) if result["action"] == 1]
         action_2_indicator = [result["mean_action_return"][0] for result in results if result["action"] == 1]
 
-        plt.plot(action_2_eps, action_2_indicator, label="_nolegend_", color="green", marker="o")
+        plt.plot(action_2_eps, action_2_indicator, label="_nolegend_", ls="", color="green", marker="o")
 
         plt.legend()
         plt.savefig(f"{self.save_path}/{fname}")
@@ -347,7 +362,7 @@ if __name__ == '__main__':
     parser.add_argument("--name", default="llm-calibration-study", type=str, help="Name of the experiment")
     parser.add_argument("--save_dir", default="./llm-calibration-studies", help="Save directory")
     parser.add_argument("--num_eps", default=100, type=int, help="number of episodes")
-    parser.add_argument("--warmup_eps", default=5, type=int, help="number of warmup episodes")
+    parser.add_argument("--warmup_eps", default=0, type=int, help="number of warmup episodes")
     parser.add_argument("--agent", default="thompson", type=str, help="which agent to use for decision making",
                         choices=["llm", "thompson"])
 
@@ -357,10 +372,10 @@ if __name__ == '__main__':
     parser.add_argument("--thompson_num_est", default=1000, type=int, help="number of samples for Thompson sampling")
 
     # LLM sampling hyperparam
-    parser.add_argument("--use_log_prob", default=1, type=float, help="if > 0 then use log_prob for LLM agent "
+    parser.add_argument("--use_log_prob", default=1, type=int, help="if > 0 then use log_prob for LLM agent "
                                                                       "else dont use")
-    parser.add_argument("--permute", default=1, type=float, help="if > 0 then permute history else dont")
-    parser.add_argument("--num_permute", default=1, type=float, help="if > 0 then permute history else dont")
+    parser.add_argument("--permute", default=1, type=int, help="if > 0 then permute history else dont")
+    parser.add_argument("--num_permute", default=1, type=int, help="if > 0 then permute history else dont")
     parser.add_argument("--num_action_sample", default=5, type=int, help="if LLM is in generation mode, then we can "
                                                                          "sample actons many time to generate an "
                                                                          "empirical distribution from which we actually"
@@ -386,16 +401,22 @@ if __name__ == '__main__':
     thompson_agent = ThompsonSampling(num_actions=env.num_actions,
                                       a=args.a,
                                       b=args.b,
-                                      num_est=args.num_est)
+                                      num_est=args.thompson_num_est)
 
     study = CalibrationStudy(agent_type=args.agent,
                              save_path=save_path,
                              num_eps=args.num_eps,
                              warmup_eps=args.warmup_eps)
 
+    if not os.path.exists(f"{save_path}/tensorboard"):
+        os.makedirs(f"{save_path}/tensorboard")
+
+    tensorboard = Tensorboard(log_dir=f"{save_path}/tensorboard")
+
     results = study.run(env=env,
                         llm_agent=llm_agent,
-                        thompson_agent=thompson_agent)
+                        thompson_agent=thompson_agent,
+                        tensorboard=tensorboard)
 
     # Save plots
     study.plot(results)
@@ -411,5 +432,5 @@ if __name__ == '__main__':
         "results": results
     }
 
-    with open(f"{args.save_path}/results.pkl", "wb") as f:
+    with open(f"{save_path}/results.pkl", "wb") as f:
         pickle.dump(data, f)
