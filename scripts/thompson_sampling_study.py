@@ -1,5 +1,7 @@
 import re
+import os
 import pdb
+import time
 import torch
 import pickle
 import random
@@ -19,6 +21,9 @@ class BernoulliBandit:
             0: 0.8,
             1: 0.5
         }
+
+    def get_mean_return(self, action):
+        return self.params[action]
 
     def step(self, action):
 
@@ -182,11 +187,12 @@ class LLMAgent:
 
 class CalibrationStudy:
 
-    def __init__(self, agent_type, num_eps=100, warm_start_eps=5):
+    def __init__(self, agent_type, save_path, num_eps=100, warmup_eps=5):
 
-        self.num_eps = num_eps
         self.agent_type = agent_type
-        self.warm_start_eps = warm_start_eps
+        self.save_path = save_path
+        self.num_eps = num_eps
+        self.warmup_eps = warmup_eps
 
     @staticmethod
     def get_mean_returns_and_count(history, num_actions):
@@ -219,7 +225,7 @@ class CalibrationStudy:
         history = []
 
         for action in range(env.num_actions):
-            for k in range(self.warm_start_eps):
+            for k in range(self.warmup_eps):
                 reward = env.step(action)
                 history.append((action, reward))
 
@@ -271,37 +277,66 @@ class CalibrationStudy:
 
         print("Experiment Over. Generating plot and saving the data.")
 
-        self.plot(results)
-
         return results
 
     def plot(self, results):
 
+        self.plot_action_prob(results, fname="probabilities.png")
+
+        self.plot_action_return(results, fname="action_return.png")
+
+    def plot_action_prob(self, results, fname):
+
         plt.clf()
-        plt.title(f"Experiments on Bernoulli Bandit. Agent: {self.agent_type}, Warmup: {self.warm_start_eps}.")
+
+        # Plot returns
+        plt.title(f"Bernoulli Bandit with 2 actions. Agent: {self.agent_type}, Warmup: {self.warmup_eps}.")
+        plt.ylabel("Action 0 probability")
         plt.xlabel("Episodes")
         episodes = list(range(1, self.num_eps + 1))
 
         # Plot probabilities of action-1 for each LLM (since there is only 2 action in the study,
         # the other is automatically determined)
         plt.plot(episodes, [result["llm_prob"][0] for result in results],
-                 label="LLM Prob. of action 1", color="red")
+                 label="LLM Prob. of action 0", color="blue")
+
         plt.plot(episodes, [result["thompson_prob"][0] for result in results],
-                 label="Thompson Prob. of action 1", color="blue", linestyle="-")
-
-        plt.plot(action_1_eps_indicator, action_1_mean_indicator, ls="", marker="o", color="red", label='_nolegend_')
-
-        plt.plot(episodes, [env.params[1]] * num_eps, label="Mean return of action 1", color="blue", linestyle="--")
-        plt.plot(episodes, action_1_mean, label="Emp. mean return of action 1", color="blue")
-        # plt.plot(roots,[poly[i] for i in mark], ls="", marker="o", label="points")
-
-        plt.plot(episodes, [env.params[2]] * num_eps, label="Mean return of action 2", color="green", linestyle="--")
-        plt.plot(episodes, action_2_mean, label="Emp. mean return of action 2", color="green")
-        # plt.plot(episodes, action_2_count, label="Empirical count of action 2", color="green")
+                 label="Thompson Prob. of action 0", color="green")
 
         plt.legend()
-        plt.savefig(f"./bernoulli_bandit_{prob_type}.png")
-        pdb.set_trace()
+        plt.savefig(f"{self.save_path}/{fname}")
+
+    def plot_action_return(self, results, fname):
+
+        plt.clf()
+        plt.title("Mean action return vs episodes")
+        plt.ylabel("Mean return")
+        plt.xlabel("Episodes")
+
+        episodes = list(range(1, self.num_eps + 1))
+
+        plt.plot(episodes, [env.get_mean_return(0)] * self.num_eps,
+                 label="Mean return of action 0", color="blue", linestyle="--")
+        plt.plot(episodes, [result["mean_action_return"][0] for result in results],
+                 label="Emp. mean return of action 0", color="blue")
+
+        action_1_eps = [i + 1 for i, result in enumerate(results) if result["action"] == 0]
+        action_1_indicator = [result["mean_action_return"][0] for result in results if result["action"] == 0]
+
+        plt.plot(action_1_eps, action_1_indicator, label="_nolegend_", color="blue", marker="o")
+
+        plt.plot(episodes, [env.get_mean_return(1)] * self.num_eps,
+                 label="Mean return of action 1", color="green", linestyle="--")
+        plt.plot(episodes, [result["mean_action_return"][1] for result in results],
+                 label="Emp. mean return of action 1", color="green")
+
+        action_2_eps = [i + 1 for i, result in enumerate(results) if result["action"] == 1]
+        action_2_indicator = [result["mean_action_return"][0] for result in results if result["action"] == 1]
+
+        plt.plot(action_2_eps, action_2_indicator, label="_nolegend_", color="green", marker="o")
+
+        plt.legend()
+        plt.savefig(f"{self.save_path}/{fname}")
 
 
 if __name__ == '__main__':
@@ -309,7 +344,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Study hyperparam
-    parser.add_argument("--name", default="run-exp", help="Name of the experiment")
+    parser.add_argument("--name", default="llm-calibration-study", type=str, help="Name of the experiment")
+    parser.add_argument("--save_dir", default="./llm-calibration-studies", help="Save directory")
     parser.add_argument("--num_eps", default=100, type=int, help="number of episodes")
     parser.add_argument("--warmup_eps", default=5, type=int, help="number of warmup episodes")
     parser.add_argument("--agent", default="thompson", type=str, help="which agent to use for decision making",
@@ -331,6 +367,13 @@ if __name__ == '__main__':
                                                                          " take the action")
 
     args = parser.parse_args()
+    exp_name = f"{args.name}-{int(time.time())}"
+    save_path = f"{args.save_dir}/{exp_name}"
+
+    if os.path.exists(save_path):
+        raise AssertionError(f"Save Path {save_path} already exists")
+    else:
+        os.makedirs(save_path)
 
     env = BernoulliBandit()
 
@@ -346,13 +389,18 @@ if __name__ == '__main__':
                                       num_est=args.num_est)
 
     study = CalibrationStudy(agent_type=args.agent,
+                             save_path=save_path,
                              num_eps=args.num_eps,
-                             warm_start_eps=args.warmup_eps)
+                             warmup_eps=args.warmup_eps)
 
     results = study.run(env=env,
                         llm_agent=llm_agent,
                         thompson_agent=thompson_agent)
 
+    # Save plots
+    study.plot(results)
+
+    # Save setting
     setting = {}
 
     for k, v in vars(args).items():
@@ -363,5 +411,5 @@ if __name__ == '__main__':
         "results": results
     }
 
-    with open("./thompson_sampling_study_results.pkl", "wb") as f:
+    with open(f"{args.save_path}/results.pkl", "wb") as f:
         pickle.dump(data, f)
