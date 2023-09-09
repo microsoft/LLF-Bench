@@ -1,5 +1,6 @@
 import pdb
 import torch
+import pickle
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,12 +31,12 @@ class BernoulliBandit:
 
 class ThompsonSampling:
 
-    def __init__(self, n_actions, a=0.5, b=0.5, num_est=1000):
-        self.n_actions = n_actions
+    def __init__(self, num_actions, a=0.5, b=0.5, num_est=1000):
+        self.num_actions = num_actions
         self.num_est = num_est
 
         self.params = []
-        for _ in range(n_actions):
+        for _ in range(num_actions):
             self.params.append({"a": a, "b": b})
 
     def update_from_history(self, history):
@@ -49,7 +50,7 @@ class ThompsonSampling:
     def get_prob(self):
 
         all_action_samples = []
-        for i in range(self.n_actions):
+        for i in range(self.num_actions):
             action_samples = beta.rvs(a=self.params[i]["a"], b=self.params[i]["b"], size=self.num_est)
             all_action_samples.append(action_samples)
 
@@ -57,7 +58,7 @@ class ThompsonSampling:
         actions_chosen = np.argmax(action_prior, axis=0)    # num_est
         assert actions_chosen.shape[0] == self.num_est
 
-        action_counts = np.zeros(self.n_actions)
+        action_counts = np.zeros(self.num_actions)
         for action_chosen in actions_chosen:
             action_counts[action_chosen] += 1.0
 
@@ -68,9 +69,9 @@ class ThompsonSampling:
 
 class LLMAgent:
 
-    def __init__(self, n_actions, permute=True):
+    def __init__(self, num_actions, permute=True):
 
-        self.n_actions = n_actions
+        self.num_actions = num_actions
         self.permute = permute
         self.agent_history = None
 
@@ -97,7 +98,7 @@ class LLMAgent:
             history_copy = self.agent_history
 
         logprob_actions = []
-        for action in range(self.n_actions):
+        for action in range(self.num_actions):
 
             prompt = base_prompt
             prompt += "\n".join([f"- Took action {action} and got a good reward"
@@ -112,39 +113,31 @@ class LLMAgent:
         logprobs = torch.FloatTensor(logprob_actions)
         llm_probs = torch.softmax(logprobs, dim=0)
 
-        llm_probs = [llm_probs[i].item() for i in range(self.n_actions)]
+        llm_probs = [llm_probs[i].item() for i in range(self.num_actions)]
 
         return llm_probs
 
 
 class CalibrationStudy:
 
-    def __init__(self, agent_type, num_eps=25, warm_start_eps=5):
+    def __init__(self, agent_type, num_eps=100, warm_start_eps=5):
 
         self.num_eps = num_eps
         self.agent_type = agent_type
-
         self.warm_start_eps = warm_start_eps
 
     @staticmethod
-    def get_mean_returns_and_count(history):
+    def get_mean_returns_and_count(history, num_actions):
 
-        sum_action = dict()
-        counts = dict()
+        sum_action = np.zeros(num_actions)
+        counts = np.zeros(num_actions)
 
         for action, reward in history:
-
-            if action not in sum_action:
-                sum_action[action] = 0.0
-
-            if action not in counts:
-                counts[action] = 0.0
-
             sum_action[action] += reward
             counts[action] += 1
 
-        mean_action = {action: sum_action[action] / float(max(1, counts[action])) for action in sum_action}
-        return mean_action, counts
+        mean_action_reward = sum_action / float(max(1, counts))
+        return mean_action_reward, counts
 
     @staticmethod
     def take_action(prob):
@@ -158,11 +151,13 @@ class CalibrationStudy:
 
         return len(prob) - 1
 
-    def llm_sampling(self, env):
+    def study(self):
 
-        llm_agent = LLMAgent()
-        thompson_agent = ThompsonSampling()
+        env = BernoulliBandit()
+        llm_agent = LLMAgent(env.num_actions)
+        thompson_agent = ThompsonSampling(env.num_actions)
 
+        results = []
         history = []
 
         for action in range(env.num_actions):
@@ -174,35 +169,66 @@ class CalibrationStudy:
 
             # Parse the history and decide the next action
             print(f"Starting Round {i+1}")
-            mean_action, counts = self.get_mean_returns_and_count(history)
-
-            print(f"History: Action 1 (Count: {counts.get(1, 0.0)}, Mean Return: {mean_action.get(1, 0.0)} "
-                  f"and Action 2 (Count: {counts.get(2, 0.0)}, Mean Return: {mean_action.get(2, 0.0)}")
+            mean_action_reward, counts = self.get_mean_returns_and_count(history, env.num_actions)
 
             llm_agent_prob = llm_agent.get_prob()
             thompson_agent_prob = thompson_agent.get_prob()
 
-            print(f"Episode {i + 1}: Probability of action is: Action 1: {prob_action_1:3f}"
-                  f" and Action 2: {prob_action_2:3f}.")
+            mean_action_s = ", ".join([f"{mean_action_reward[i]:.3f}" for i in range(0, env.num_actions)])
+            counts_s = ", ".join([f"{counts[i]}" for i in range(0, env.num_actions)])
+            llm_agent_prob_s = ", ".join([f"{llm_agent_prob[i]:.3f}" for i in range(0, env.num_actions)])
+            thompson_agent_prob_s = ", ".join([f"{thompson_agent_prob[i]:.3f}" for i in range(0, env.num_actions)])
 
-            print(f"Episode {i + 1}: Bayes Probability of action is: Action 1: {bayes_prob[1]:3f} "
-                  f"and Action 2: {bayes_prob[2]:3f}.")
+            print(f"Episode {i + 1}: Action Return {mean_action_s} and Action Counts {counts_s}.")
+            print(f"Episode {i + 1}: LLM Agent Prob {llm_agent_prob_s}")
+            print(f"Episode {i + 1}: Thompson Sampling Agent Prob {thompson_agent_prob_s}")
 
-            prob = llm_agent_prob if self.agent_type == "llm" else thompson_agent_prob
+            if self.agent_type == "llm":
+                prob = llm_agent_prob
+            elif self.agent_type == "thompson":
+                prob = thompson_agent_prob
+            else:
+                raise AssertionError(f"Unhandled agent type {self.agent_type}")
+
             action = self.take_action(prob)
             reward = env.step(action)
             history.append((action, reward))
+
+            print(f"Episode {i + 1}: Took action {action} and got reward {reward} using agent type {self.agent_type}")
 
             # Update the agents.
             thompson_agent.update(action, reward)
             llm_agent.update(action, reward)
 
-        print("Experiment Over. Generating plot and saving the data.")
-        self.plot()
-        self.save()
+            result = {
+                "mean_action_return": mean_action_reward,
+                "action_counts": counts,
+                "llm_prob": llm_agent_prob,
+                "thompson_prob": thompson_agent_prob,
+                "action": action,
+                "reward": reward,
+            }
+            results.append(result)
+            print("\n\n")
 
-    def save(self):
-        pass
+        print("Experiment Over. Generating plot and saving the data.")
+
+        self.plot()
+        self.save(env, results)
+
+    def save(self, env, results):
+
+        setting = {
+
+        }
+
+        data = {
+            "setting": setting,
+            "results": results
+        }
+
+        with open("./results.pkl", "wb") as f:
+            pickle.dump(data, f)
 
     def plot(self):
 
@@ -231,5 +257,4 @@ class CalibrationStudy:
 
 
 if __name__ == '__main__':
-    env = BernoulliBandit()
     llm_sampling(num_eps=200, thompson_action=True)
