@@ -2,6 +2,7 @@ import pdb
 import torch
 import pickle
 import random
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -54,42 +55,83 @@ class ThompsonSampling:
             action_samples = beta.rvs(a=self.params[i]["a"], b=self.params[i]["b"], size=self.num_est)
             all_action_samples.append(action_samples)
 
-        action_prior = np.vstack(all_action_samples)        # K x num_est
-        actions_chosen = np.argmax(action_prior, axis=0)    # num_est
+        action_prior = np.vstack(all_action_samples)  # K x num_est
+        actions_chosen = np.argmax(action_prior, axis=0)  # num_est
         assert actions_chosen.shape[0] == self.num_est
 
         action_counts = np.zeros(self.num_actions)
         for action_chosen in actions_chosen:
             action_counts[action_chosen] += 1.0
 
-        action_prob = action_counts / float(self.num_est)   # num_est
+        action_prob = action_counts / float(self.num_est)  # num_est
 
         return action_prob
 
 
 class LLMAgent:
 
-    def __init__(self, num_actions, permute=True):
+    def __init__(self, num_actions, use_log_prob=True, permute=True, num_permute=1, num_action_sample=5):
 
         self.num_actions = num_actions
-        self.permute = permute
         self.agent_history = None
 
+        self.use_log_prob = use_log_prob
+        self.permute = permute
+        # No point using many permutations when not permuting
+        self.num_permute = num_permute if self.permute else 1
+        self.num_action_sample = num_action_sample
+
         self.llm = GPT3()
+
+        self.base_prompt = "I am trying to solve a problem where I have two possible actions: action 1 and action 2. " \
+                           "For each action, I get either a good reward or a bad reward. An action can give me both " \
+                           "good or bad reward with different probabilities. I want to eventually take an action " \
+                           "that gives the good reward with higher probability. In the past, I have taken the " \
+                           "following actions and received the feedback as stated below:\n"
 
     def update(self, action, reward):
         self.agent_history.append((action, reward))
 
     def get_prob(self):
 
-        # TODO: generate all prob for each action
-        # TODO: generate
+        if self.use_log_prob:
+            prob = self.get_prob_via_logprob()
+        else:
+            prob = self.get_prob_via_generation()
 
-        base_prompt = "I am trying to solve a problem where I have two possible actions: action 1 and action 2. " \
-                      "For each action, I get either a good reward or a bad reward. An action can give me both " \
-                      "good or bad reward with different probabilities. I want to eventually take an action that gives " \
-                      "the good reward with higher probability. In the past, I have taken the following actions and " \
-                      "received the feedback as stated below:\n"
+        return prob
+
+    def get_prob_via_generation(self):
+
+        batch_llm_probs = []
+        for _ in range(self.num_permute):
+            if self.permute:
+                history_copy = list(self.agent_history)
+                random.shuffle(history_copy)
+            else:
+                history_copy = self.agent_history
+
+            logprob_actions = []
+            for action in range(self.num_actions):
+                prompt = self.base_prompt
+                prompt += "\n".join([f"- Took action {action} and got a good reward"
+                                     if reward == 1 else f"- Took action {action} and got a bad reward"
+                                     for action, reward in history_copy])
+
+                prompt += f"\n Based on the above feedback, I should choose action {action}."
+
+                logprob_action = self.llm.logprob(prompt)
+                logprob_actions.append(logprob_action)
+
+            logprobs = torch.FloatTensor(logprob_actions)
+            llm_probs = torch.softmax(logprobs, dim=0)
+
+            llm_probs = [llm_probs[i].item() for i in range(self.num_actions)]
+            batch_llm_probs.append(llm_probs)
+
+        return llm_probs
+
+    def get_prob_via_logprob(self):
 
         if self.permute:
             history_copy = list(self.agent_history)
@@ -99,11 +141,10 @@ class LLMAgent:
 
         logprob_actions = []
         for action in range(self.num_actions):
-
-            prompt = base_prompt
+            prompt = self.base_prompt
             prompt += "\n".join([f"- Took action {action} and got a good reward"
-                                if reward == 1 else f"- Took action {action} and got a bad reward"
-                                for action, reward in history_copy])
+                                 if reward == 1 else f"- Took action {action} and got a bad reward"
+                                 for action, reward in history_copy])
 
             prompt += f"\n Based on the above feedback, I should choose action {action}."
 
@@ -151,7 +192,7 @@ class CalibrationStudy:
 
         return len(prob) - 1
 
-    def study(self):
+    def run(self):
 
         env = BernoulliBandit()
         llm_agent = LLMAgent(env.num_actions)
@@ -168,7 +209,7 @@ class CalibrationStudy:
         for i in range(self.num_eps):
 
             # Parse the history and decide the next action
-            print(f"Starting Round {i+1}")
+            print(f"Starting Round {i + 1}")
             mean_action_reward, counts = self.get_mean_returns_and_count(history, env.num_actions)
 
             llm_agent_prob = llm_agent.get_prob()
@@ -213,7 +254,7 @@ class CalibrationStudy:
 
         print("Experiment Over. Generating plot and saving the data.")
 
-        self.plot()
+        self.plot(results)
         self.save(env, results)
 
     def save(self, env, results):
@@ -230,7 +271,7 @@ class CalibrationStudy:
         with open("./results.pkl", "wb") as f:
             pickle.dump(data, f)
 
-    def plot(self):
+    def plot(self, results):
 
         plt.clf()
         plt.title(f"Experiments on Bernoulli Bandit. Warm start: {warm_start_eps}, Prob type {prob_type}.")
@@ -255,6 +296,11 @@ class CalibrationStudy:
         pdb.set_trace()
 
 
-
 if __name__ == '__main__':
-    llm_sampling(num_eps=200, thompson_action=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--env", default='temporal_diabcombolock', help="name of the environment e.g., montezuma")
+    parser.add_argument("--name", default="run-exp", help="Name of the experiment")
+    args = parser.parse_args()
+
+    study = CalibrationStudy(agent_type=args.agent)
+    study.run()
