@@ -94,57 +94,55 @@ class LLMAgent:
 
     def get_prob(self):
 
-        if self.use_log_prob:
-            prob = self.get_prob_via_logprob()
-        else:
-            prob = self.get_prob_via_generation()
-
-        return prob
-
-    def get_prob_via_generation(self):
-
         batch_llm_probs = []
         for _ in range(self.num_permute):
+
             if self.permute:
                 history_copy = list(self.agent_history)
                 random.shuffle(history_copy)
             else:
                 history_copy = self.agent_history
 
-            logprob_actions = []
-            for action in range(self.num_actions):
-                prompt = self.base_prompt
-                prompt += "\n".join([f"- Took action {action} and got a good reward"
-                                     if reward == 1 else f"- Took action {action} and got a bad reward"
-                                     for action, reward in history_copy])
+            if self.use_log_prob:
+                prob = self.get_prob_via_logprob(history=history_copy)
+            else:
+                prob = self.get_prob_via_generation(history=history_copy)
 
-                prompt += f"\n Based on the above feedback, I should choose action {action}."
+            batch_llm_probs.append(prob)
 
-                logprob_action = self.llm.logprob(prompt)
-                logprob_actions.append(logprob_action)
+        # Take mean
 
-            logprobs = torch.FloatTensor(logprob_actions)
-            llm_probs = torch.softmax(logprobs, dim=0)
+        return prob
 
-            llm_probs = [llm_probs[i].item() for i in range(self.num_actions)]
-            batch_llm_probs.append(llm_probs)
-
-        return llm_probs
-
-    def get_prob_via_logprob(self):
-
-        if self.permute:
-            history_copy = list(self.agent_history)
-            random.shuffle(history_copy)
-        else:
-            history_copy = self.agent_history
+    def get_prob_via_generation(self, history):
 
         logprob_actions = []
         for action in range(self.num_actions):
             prompt = self.base_prompt
             prompt += "\n".join([f"- Took action {action} and got a good reward"
                                  if reward == 1 else f"- Took action {action} and got a bad reward"
-                                 for action, reward in history_copy])
+                                 for action, reward in history])
+
+            prompt += f"\n Based on the above feedback, I should choose action"
+
+            logprob_action = self.llm.generate(prompt, max_tokens=5)
+            logprob_actions.append(logprob_action)
+
+        logprobs = torch.FloatTensor(logprob_actions)
+        llm_probs = torch.softmax(logprobs, dim=0)
+
+        llm_probs = np.array([llm_probs[i].item() for i in range(self.num_actions)])
+
+        return llm_probs
+
+    def get_prob_via_logprob(self, history):
+
+        logprob_actions = []
+        for action in range(self.num_actions):
+            prompt = self.base_prompt
+            prompt += "\n".join([f"- Took action {action} and got a good reward"
+                                 if reward == 1 else f"- Took action {action} and got a bad reward"
+                                 for action, reward in history])
 
             prompt += f"\n Based on the above feedback, I should choose action {action}."
 
@@ -154,7 +152,7 @@ class LLMAgent:
         logprobs = torch.FloatTensor(logprob_actions)
         llm_probs = torch.softmax(logprobs, dim=0)
 
-        llm_probs = [llm_probs[i].item() for i in range(self.num_actions)]
+        llm_probs = np.array([llm_probs[i].item() for i in range(self.num_actions)])
 
         return llm_probs
 
@@ -297,8 +295,9 @@ class CalibrationStudy:
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", default='temporal_diabcombolock', help="name of the environment e.g., montezuma")
+    parser.add_argument("--warmup", default=5, type=int, help="number of warmup episodes")
     parser.add_argument("--name", default="run-exp", help="Name of the experiment")
     args = parser.parse_args()
 
