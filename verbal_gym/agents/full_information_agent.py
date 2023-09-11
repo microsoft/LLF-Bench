@@ -14,11 +14,11 @@ class FullInformationAgent(Agent):
 
     system_prompt = dedent("""
         You are an expert decision making agent. You will see "Problem
-        Description" that tell you want to problem is about (such as the goal of
+        Description" that tells you what the problem is about (such as the goal of
         the task, the action space you should choose from, the rules, the
-        constraints, etc.) In addition, you will be presented with the feedback
-        of all the acitons. You goal is to choose the right actions solve the
-        task, according to "Problem Description".
+        constraints, etc.). In addition, you will be presented with the feedback
+        of all the actions. Your goal is to choose the right actions to solve the
+        task as fast as possible, according to "Problem Description".
     """)
 
     def __init__(self, llm, n_actions, verbose=False):
@@ -28,7 +28,7 @@ class FullInformationAgent(Agent):
         self.verbose = verbose
         self.prompt_template = dedent("""\
 
-        You're given with the problem below:
+        You're presented with the problem below:
 
         Problem Description: {}
 

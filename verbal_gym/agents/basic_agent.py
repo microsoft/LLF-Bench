@@ -10,11 +10,11 @@ class BasicAgent(Agent):
 
     system_prompt = dedent("""
     You are an agent tasked to solve an interactive problem with verbal
-    feedback. You will see "Problem Description" that tell you want to problem
+    feedback. You will see "Problem Description" that tells you what the problem
     is about (such as the goal of the task, the action space you should choose
-    from, the rules, the constraints, etc.) After you choose an action, you will
-    see the feedback from the environment. You goal is to choose the right
-    actions solve the task as fast as possible, according to "Problem
+    from, the rules, the constraints, etc.). After you choose an action, you will
+    see the feedback from the environment. Your goal is to choose the right
+    actions to solve the task as fast as possible, according to "Problem
     Description".
     """)
 
@@ -45,7 +45,7 @@ class BasicAgent(Agent):
         self.ignore_observation = ignore_observation
 
         self.prompt_template = dedent("""\
-            You're given with the problem below:
+            You're presented with the problem below:
 
             Problem Description: {}
 

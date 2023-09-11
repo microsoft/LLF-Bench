@@ -25,7 +25,7 @@ You are an advanced reasoning agent that can improve based on self refection.
 You have attempted to do the following task before and failed. 
 The following reflection(s) give a plan to avoid failing to doing the task in the same way you did previously. 
 Use them to improve your strategy of correctly doing the given task.
-In a few sentences, Diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. 
+In a few sentences, diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. 
 Use complete sentences.  
 
 {{#if exists_reflection_examples}}
@@ -74,11 +74,11 @@ class ReflexionAgent(BasicAgent):
         self.prompt = SimpleGuidanceParser("""
 {{#system~}}
 You are an agent tasked to solve an interactive problem with verbal
-feedback. You will see "Problem Description" that tell you want to problem
+feedback. You will see "Problem Description" that tells you what the problem
 is about (such as the goal of the task, the action space you should choose
-from, the rules, the constraints, etc.) After you choose an action, you will
-see the feedback from the environment. You goal is to choose the right
-actions solve the task as fast as possible, according to "Problem
+from, the rules, the constraints, etc.). After you choose an action, you will
+see the feedback from the environment. Your goal is to choose the right
+actions to solve the task as fast as possible, according to "Problem
 Description".
 {{~/system}}
 
