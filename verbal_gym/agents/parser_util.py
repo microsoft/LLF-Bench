@@ -113,9 +113,6 @@ class SimpleGuidanceParser:
         if each_key not in kwargs:
             return template
 
-        if each_key not in kwargs:
-            raise Exception(f"Key '{each_key}' for each statement not found in provided arguments.")
-
         examples = kwargs[each_key]
 
         # Regular expression to extract keys after 'this.'
