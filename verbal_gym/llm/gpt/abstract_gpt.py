@@ -43,17 +43,21 @@ class AbstractGPT(LLM):
     def generate(self,
                  prompt, *,
                  logprobs=None,  # None or int. If int, return top-k logprobs.
-                 timeout,  # Maximum time to wait if failure occurs before re-trying
-                 temperature,  # temperature of the generation
-                 max_tokens,  # maximum number of tokens to generate
+                 timeout,        # Maximum time to wait if failure occurs before re-trying
+                 temperature,    # temperature of the generation
+                 max_tokens,     # maximum number of tokens to generate
                  max_attempts):  # maximum number of attempts to call the model
 
         if len(self.system_prompt)>0:
             prompt = f'System: {self.system_prompt}\nUser: {prompt}'
 
-        return self.generate(prompt, max_tokens=max_tokens, logprobs=logprobs, temperature=temperature, MAX_WAITTIME_SEC=timeout)
+        return self._generate(prompt,
+                              max_tokens=max_tokens,
+                              logprobs=logprobs,
+                              temperature=temperature,
+                              MAX_WAITTIME_SEC=timeout)
 
-    def generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, MAX_WAITTIME_SEC=300):
+    def _generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, MAX_WAITTIME_SEC=300):
         """
             Call GPT in a retrying mode
 
@@ -70,6 +74,8 @@ class AbstractGPT(LLM):
             the entire text if echo is True, otherwise, only of the generation.
         """
 
+        # Setting echo to False as we dont want to support it
+        echo = False
         response = self.call_gpt(prompt,
                                  max_tokens=max_tokens,
                                  logprobs=logprobs,
@@ -79,28 +85,30 @@ class AbstractGPT(LLM):
 
         generation = response["choices"][0]["text"]
         logprobs = response["choices"][0]["logprobs"] if logprobs is not None else None
-        # if logprobs is not None:
-        #     if echo:
-        #         # GPT does not compute logprob of the first token
-        #         first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
-        #         assert first_tk_logprob == 0 or first_tk_logprob is None
-        #         rest_tk_logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
-        #     else:
-        #         logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
-        # else:
-        #     logprob = None
 
-        #     # If echo was set to true when logprobs is None, then we dont return the prompt but add it here
-        #     # This is not the most desirable, but we cannot add echo: True with logprobs to None for models like GPT3.5
-        #     # as it gives error
-        #     if echo:
-        #         text = prompt + text
+        if logprobs is not None:
+            if echo:
+                # GPT does not compute logprob of the first token
+                first_tk_logprob = response["choices"][0]["logprobs"]["token_logprobs"][0]
+                assert first_tk_logprob == 0 or first_tk_logprob is None
+                logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"][1:])
+            else:
+                logprob = sum(response["choices"][0]["logprobs"]["token_logprobs"])
+        else:
+            logprob = None
 
-        # info = {
-        #     "logprob": logprob,
-        #     "echo": echo
-        # }
-        info = {'logprobs': logprobs, 'response': response}
+            # If echo was set to true when logprobs is None, then we dont return the prompt but add it here
+            # This is not the most desirable, but we cannot add echo: True with logprobs to None for models like GPT3.5
+            # as it gives error
+            if echo:
+                generation = prompt + generation
+
+        info = {
+            "logprob": logprob,
+            "echo": echo,
+            'response': response
+        }
+
         return generation, info
 
     def call_gpt(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, echo=False, MAX_WAITTIME_SEC=300):
