@@ -66,7 +66,7 @@ def get_parser():
     parser.add_argument('--model', type=str, default='azure:gpt-35-turbo')
     parser.add_argument("--logfile", type=str, default="./results.txt")
     parser.add_argument('--buffer_size', type=int, default=5)
-    parser.add_argument('--max_iter', type=int, default=10)
+    parser.add_argument('--max_iter', type=int, default=4)
     return parser
 
 

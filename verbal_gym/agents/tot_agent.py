@@ -23,10 +23,14 @@ You are an advanced reasoning agent that can identify the most promising avenue 
 {{#user~}}
 You will be given a list of justifications produced by a decision-maker to reason about the optimal decision for their problem.
 Pick the most promising justification from the list that will likely lead to the correct answer and optimal decision for the decision-maker.
-Moreover, if you think that there is no further reasoning necessary, indicate so using the 'done' flag.
-Your output should always be a string in the format id:done where id is the index of the most promising justification in the list of justifications.
-For example, given the list <justification>justification1</justification><justification>justification2</justification><justification>justification3</justification>, 
-if you think justification2 is the most promising and complete, your output should be 1:True.
+Moreover, if you think that there is no further reasoning necessary, indicate so using a boolean 'done' flag.
+Your output should always be a string in the format done:id where id is the index of the most promising justification in the list of justifications.
+For example, given the list <justification>justification0</justification><justification>justification1</justification><justification>justification2</justification>, 
+if you think justification1 is the most promising and complete, your output should be True:1.
+If however you think that justification0 is the most promising but not yet complete, your answer should be False:0.
+The text below contains all of the information that the decision-maker knows about their problem so far.
+Put yourself in the shoes of the decision-maker and commit to taking an action now.
+In that way they may gather additional information that can help you make a more informed guess in the future.
 
 Decision-Maker's Problem Description: {{observation}}
 
@@ -36,10 +40,9 @@ Here are all the previous interactions and feedbacks that the decision-maker has
 {{world_info}}
 ##########                        
 
-{{~#each responses}}
+{{#each responses}}
 <justification>
-{{action_name}}: {{this.action}}
-Justification: {{this.response}}
+{{this.response}}
 </justification>
 {{~/each}}
 
@@ -73,6 +76,8 @@ You will be given a problem faced by a decision-maker, along with a set of actio
 The decision-maker is considering a particular action as the optimal choice.
 If you disagree that the particular action is not optimal, respond only with the single word "ERROR".
 Otherwise, provide a justification why the action is indeed optimal. Use reasons like "<selected action> is better than <other action> because".
+Even if you need additional information to make the optimal decision, you need to commit to a decision that best hedges against uncertainty now.
+As the decision-maker continues interacting, they may gather additional information that may help you make a more informed guess in the future.
                                            
 Decision-Maker's Problem Description: {{observation}}
                                            
@@ -81,10 +86,6 @@ Here are all the previous interactions and feedbacks that the decision-maker has
 
 {{world_info}}
 ##########
-                        
-{{~#each actions}}
-{{action_name}}: {{this.action}}
-{{~/each}}
 
 Considered optimal {{action_name}}: {{optimal_action}}
 {{#if exists_justification}}
@@ -92,6 +93,11 @@ The following justification(s) were provided already. Augment them to convince t
 Justification:
 {{optimal_justification}}
 {{/if}}
+
+Available Actions:
+{{#each actions}}
+{{action_name}}: {{this.action}}
+{{~/each}}
 
 {{~/user}}
 
@@ -102,9 +108,10 @@ Justification:
         self.action_name = action_name
         
     def __call__(self, observation, world_info, actions, optimal_action, optimal_justification):
-        response, _ = self.llm.generate(self.parser(actions=actions, action_name=self.action_name,
-                                        observation=observation, optimal_action=str(optimal_action), world_info=world_info, 
-                                        exists_justification = optimal_justification is not None, optimal_justification = optimal_justification))
+        text = self.parser(observation=observation, world_info=world_info, actions=actions, action_name=self.action_name,
+                                         optimal_action=str(optimal_action), 
+                                        exists_justification = optimal_justification is not None, optimal_justification = optimal_justification)
+        response, _ = self.llm.generate(text)
         return response
 
 
@@ -139,18 +146,22 @@ class ToTAgent(BasicAgent):
         self.permute_history = permute_history
         self.max_iter = max_iter
         self.docstring = None
-
+        
     def simulate_feedback_for_discrete_action(self, world_info, action_list):
         # Create the environment
         dataset = []
         
         for action_item in action_list:
-            thought = self.thinker_agent(self.docstring, world_info, action_list, action_item['action'], None)
+            justification = None
+            if 'response' in action_item.keys():
+                justification = action_item['response']
+            thought = self.thinker_agent(self.docstring, world_info, action_list, action_item['action'], justification)
             
-            if self.logger is not None:
-                self.logger.log(f"Action {action_item['action']}\n")
-                self.logger.log(f"Thought: {thought}\n\n")
-            
+            if self.verbose:
+                if self.logger is not None:
+                    self.logger.log(f"Action {action_item['action']}\n")
+                    self.logger.log(f"Thought: {thought}\n\n")
+                
             if not thought.startswith("ERROR"):
                 dataset.append({'action': action_item['action'], 'response': thought})
 
@@ -168,28 +179,44 @@ class ToTAgent(BasicAgent):
             action_list.append({'action': str(action)})
 
         vote = None
-        for i in range(self.max_iter):
+        selected_action = None
+        for i in range(self.max_iter):           
             self.simulated_feedback = self.simulate_feedback_for_discrete_action(world_info, action_list)
+            for action_item in self.simulated_feedback:
+                action_id = int(action_item['action'])
+                if 'response' in action_list[action_id].keys():
+                    action_list[action_id]['response'] += ";" + action_item['response']
+                else:
+                    action_list[action_id]['response'] = action_item['response']
             
             vote = self.voter_agent(self.docstring, world_info, self.simulated_feedback)
-            done = vote.split(':')[1]
+            if self.verbose:
+                if self.logger is not None:
+                    self.logger.log(f"Vote: {vote}\n")
+            tokens = vote.split(':')
+            done = tokens[0]
             if done.startswith('True'):
+                index = int(tokens[1])
+                print(index, self.simulated_feedback)
+                selected_action = self.simulated_feedback[index]['action']
                 break
         
-        action = int(vote.split(':')[0])
-        selected_action = action_list[action]['action']
-
         if self.n_actions is not None:
-            action = extract_action(selected_action, self.n_actions)
-
+            print(vote)
+            selected_action = extract_action(vote, self.n_actions, ':')
+            
         if self.verbose:
             if self.logger is not None:
-                self.logger.log(f"Action:\n\n{action}\n")
+                self.logger.log(f"Selected Action:\n\n{selected_action}\n")
 
             print_color(f'Action:\n\n{action}\n', 'red')
 
-        self.history.append({'action': action, 'feedback': None})
-
+        # update buffer and get world info
+        self.buffer.append(observation=obs,
+                           action=selected_action,
+                           feedback=None,
+                           next_observation=None)
+        
         return action
 
     def paraphrase(self, sentence):
