@@ -1,6 +1,8 @@
 import re
 
 # Currently do not support nested if-statement or for-loop
+# Handlebar syntax: https://github.com/guidance-ai/guidance/tree/main#template-syntax
+# https://handlebarsjs.com/
 
 class SimpleGuidanceParser:
 
@@ -91,7 +93,7 @@ class SimpleGuidanceParser:
         return value
 
     def identify_loop_keywords(self, template):
-        pattern = r"{{~#each (\w+)}}"
+        pattern = r"{{#each (\w+)}}"
 
         # Use findall to extract all matches
         keywords = re.findall(pattern, template)
@@ -101,7 +103,7 @@ class SimpleGuidanceParser:
     def populate_template_for_each(self, template, each_key, **kwargs):
         # We don't support nested for-loop
 
-        before_each_match = re.search(r"(.*?){{~#each " + each_key + "}}", template, re.DOTALL)
+        before_each_match = re.search(r"(.*?){{#each " + each_key + "}}", template, re.DOTALL)
         before_each = before_each_match.group(1).strip() if before_each_match else None
 
         # Extract the portion between {{~/each}} and {{~/user}}
@@ -120,7 +122,7 @@ class SimpleGuidanceParser:
         keys = re.findall(r"{{this\.(.*?)}}", template)
 
         # Getting the template part inside the {{~#each}} and {{~/each}} tags
-        template_inside_each = re.search(r"{{~#each "+each_key+"}}(.*?){{~/each}}", template, re.DOTALL).group(1).strip()
+        template_inside_each = re.search(r"{{#each "+each_key+"}}(.*?){{~/each}}", template, re.DOTALL).group(1).strip()
 
         # Generating the text for each dictionary in examples
         populated_texts = []
@@ -200,7 +202,7 @@ def usage_test_2():
 
     {{#user~}}
     Here are some instructions you wrote for the previous assignments:
-    {{~#each examples}}
+    {{#each examples}}
     {{role}}'s Assignment: {{this.assignment}}
 
     Your Instruction: 
@@ -208,7 +210,7 @@ def usage_test_2():
     ---------------
     {{~/each}}
 
-    {{~#each feedbacks}}
+    {{#each feedbacks}}
     {{role}}'s feedback: {{this.feedback}}
     ---------------
     {{~/each}}
