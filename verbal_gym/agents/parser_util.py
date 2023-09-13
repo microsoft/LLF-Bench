@@ -1,5 +1,7 @@
 import re
 
+# Currently do not support nested if-statement or for-loop
+
 class SimpleGuidanceParser:
 
     def __init__(self, template_text, verbose=False, reduce_linebreaks=True):
@@ -21,7 +23,10 @@ class SimpleGuidanceParser:
         for block_type, content in labeled_blocks:
             # if statement is handled first, because this decides if the content should stay or disappear
             content = self.parse_if_block(content, **kwargs)
-            content = self.populate_template_for_each(content , **kwargs)
+            each_keys = self.identify_loop_keywords(content)
+            for key in each_keys:
+                content = self.populate_template_for_each(content, key, **kwargs)
+            # content = self.populate_template_for_each(content , **kwargs)
             content = self.populate_vars(content, **kwargs)
             if self.reduce_linebreaks:
                 # match multiple line breaks and replace with a single line break
@@ -85,21 +90,26 @@ class SimpleGuidanceParser:
             return ""
         return value
 
-    def populate_template_for_each(self, template, **kwargs):
+    def identify_loop_keywords(self, template):
+        pattern = r"{{~#each (\w+)}}"
+
+        # Use findall to extract all matches
+        keywords = re.findall(pattern, template)
+
+        return keywords
+
+    def populate_template_for_each(self, template, each_key, **kwargs):
         # We don't support nested for-loop
 
-        before_each_match = re.search(r"(.*?){{~#each examples}}", template, re.DOTALL)
+        before_each_match = re.search(r"(.*?){{~#each " + each_key + "}}", template, re.DOTALL)
         before_each = before_each_match.group(1).strip() if before_each_match else None
 
         # Extract the portion between {{~/each}} and {{~/user}}
-        after_each_match = re.search(r"{{~/each}}(.*?)", template, re.DOTALL)
+        after_each_match = re.search(r"{{~/each}}(.*?)$", template, re.DOTALL)
         after_each = after_each_match.group(1).strip() if after_each_match else None
 
-        each_key_match = re.search(r"~#each (\w+)", template)
-        if not each_key_match:
+        if each_key not in kwargs:
             return template
-
-        each_key = each_key_match.group(1)
 
         if each_key not in kwargs:
             raise Exception(f"Key '{each_key}' for each statement not found in provided arguments.")
@@ -110,7 +120,7 @@ class SimpleGuidanceParser:
         keys = re.findall(r"{{this\.(.*?)}}", template)
 
         # Getting the template part inside the {{~#each}} and {{~/each}} tags
-        template_inside_each = re.search(r"{{~#each \w+}}(.*?){{~/each}}", template, re.DOTALL).group(1).strip()
+        template_inside_each = re.search(r"{{~#each "+each_key+"}}(.*?){{~/each}}", template, re.DOTALL).group(1).strip()
 
         # Generating the text for each dictionary in examples
         populated_texts = []
