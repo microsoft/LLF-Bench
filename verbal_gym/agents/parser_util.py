@@ -190,6 +190,7 @@ def usage_test_1():
 
     print(results)
 
+
 def usage_test_2():
     parsed_text = """
     {{#system~}}
@@ -206,8 +207,13 @@ def usage_test_2():
     {{this.instruction}}
     ---------------
     {{~/each}}
+
+    {{~#each feedbacks}}
+    {{role}}'s feedback: {{this.feedback}}
+    ---------------
+    {{~/each}}
     {{~/user}}
-    
+
     {{#user~}}
 
     Now, you are given a new assignment, and you want to see if you can update the instructions to help the student write a poem that satisfies the new assignment.
@@ -221,12 +227,16 @@ def usage_test_2():
         {"assignment": "Describe a sunny day.", "instruction": "Think of the warmth of the sun..."}
     ]
 
+    feedbacks = [
+        {"feedback": "Good job!"}
+    ]
+
     new_assignment = "Compose a poem about winter."
     parser = SimpleGuidanceParser(parsed_text, verbose=True)
-    results = parser(examples=examples, new_assignment=new_assignment, role="Teacher")
+    results = parser(examples=examples, feedbacks=feedbacks, new_assignment=new_assignment, role="Teacher")
     print(results)
 
-    results = parser(examples=[], new_assignment=new_assignment)
+    results = parser(examples=[], feedbacks=[], new_assignment=new_assignment)
     print(results)
 
 if __name__ == '__main__':
