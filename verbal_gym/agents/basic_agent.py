@@ -45,7 +45,7 @@ class BasicAgent(Agent):
         self.ignore_observation = ignore_observation
 
         self.prompt_template = dedent("""\
-            You're presented with the problem below:
+            You're given with the problem below:
 
             Problem Description: {}
 
