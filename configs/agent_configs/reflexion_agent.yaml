@@ -1,0 +1,5 @@
+agent_name: reflexion_agent  # this is for verification
+model: azure:gpt-35-turbo
+temperature: 0.0
+permute_history: true
+buffer_size: 5

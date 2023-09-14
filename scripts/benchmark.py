@@ -37,6 +37,20 @@ def create_agent(agent_config, env, verbose=False):
         from verbal_gym.agents.random_agent import RandomAgent
         assert n_actions is not None
         agent = RandomAgent(n_actions)
+    elif agent_name=='reflexion_agent':
+        from verbal_gym.agents.reflexion_agent import ReflexionAgent, ReflectAgent
+        # Reflexion agent
+        reflection_agent = ReflectAgent(make_llm(agent_config['model'],
+                                             system_prompt=ReflectAgent.system_prompt,
+                                             temperature=agent_config['temperature']), 
+                                        max_history=agent_config['buffer_size'], action_name=action_name)
+        agent = ReflexionAgent(make_llm(agent_config['model'], system_prompt=ReflexionAgent.system_prompt, temperature=agent_config['temperature']),
+                                n_actions=n_actions,
+                                action_name=action_name,
+                                verbose=verbose,
+                                permute_history=agent_config['permute_history'],
+                                reflection_agent=reflection_agent,
+                                buffer_size=agent_config['buffer_size'])
     elif agent_name=='full_info_agent':
         from verbal_gym.envs.env_wrapper import FullInformationWrapper
         from verbal_gym.agents.full_information_agent import FullInformationAgent
