@@ -197,13 +197,10 @@ class ToTAgent(BasicAgent):
             done = tokens[0]
             if done.startswith('True'):
                 index = int(tokens[1])
-                print(index, self.simulated_feedback)
                 selected_action = self.simulated_feedback[index]['action']
                 break
         
-        if self.n_actions is not None:
-            print(vote)
-            selected_action = extract_action(vote, self.n_actions, ':')
+        selected_action = extract_action(vote, self.n_actions, ':')
             
         if self.verbose:
             if self.logger is not None:

@@ -45,6 +45,26 @@ def create_agent(agent_config, env, verbose=False):
         agent = FullInformationAgent(make_llm(agent_config['model'],system_prompt=FullInformationAgent.system_prompt),
                                         n_actions=n_actions,
                                         verbose=verbose)
+    elif agent_name=='tot_agent':
+        from verbal_gym.agents.posterior_agents import ParaphraseAgent
+        from verbal_gym.agents.tot_agent import ToTAgent, VoterAgent, ThinkerAgent
+        assert n_actions is not None
+        # Tree of Thought agent
+        paraphrase_agent = None if not agent_config['paraphrase'] else \
+                           ParaphraseAgent(make_llm(agent_config['paraphrase_model'], system_prompt=ParaphraseAgent.system_prompt, temperature=agent_config['paraphrase_temperature']))
+        voter_agent = VoterAgent(make_llm(agent_config['model'], system_prompt=VoterAgent.system_prompt, temperature=agent_config['temperature']),
+                               action_name=action_name)
+        thinker_agent = ThinkerAgent(make_llm(agent_config['model'], system_prompt=ThinkerAgent.system_prompt, temperature=agent_config['temperature']),
+                               action_name=action_name)
+        agent = ToTAgent(make_llm(agent_config['model'],system_prompt=VoterAgent.system_prompt, temperature=agent_config['temperature']),
+                                        n_actions=n_actions,
+                                        voter_agent=voter_agent,
+                                        thinker_agent=thinker_agent,
+                                        verbose=verbose,
+                                        permute_history=agent_config['permute_history'],
+                                        paraphrase_agent=paraphrase_agent,
+                                        max_iter=agent_config['max_iter']
+                                        )
     else:
         raise NotImplementedError
     return agent
