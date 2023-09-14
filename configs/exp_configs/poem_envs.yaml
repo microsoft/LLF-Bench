@@ -11,3 +11,4 @@ agent_config:
   file:
     - configs/agent_configs/basic_agent.yaml
     - configs/agent_configs/posterior_agent.yaml
+    - configs/agent_configs/reflexion_agent.yaml

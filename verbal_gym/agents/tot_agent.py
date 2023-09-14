@@ -26,8 +26,8 @@ Pick the most promising justification from the list that will likely lead to the
 Moreover, if you think that there is no further reasoning necessary, indicate so using a boolean 'done' flag.
 Your output should always be a string in the format done:id where id is the index of the most promising justification in the list of justifications.
 For example, given the list <justification>justification0</justification><justification>justification1</justification><justification>justification2</justification>, 
-if you think justification1 is the most promising and complete, your output should be True:1.
-If however you think that justification0 is the most promising but not yet complete, your answer should be False:0.
+if you think justification1 is the most promising and complete, your output should be True:1
+If however you think that justification0 is the most promising but not yet complete, your answer should be False:0
 The text below contains all of the information that the decision-maker knows about their problem so far.
 Put yourself in the shoes of the decision-maker and commit to taking an action now.
 In that way they may gather additional information that can help you make a more informed guess in the future.

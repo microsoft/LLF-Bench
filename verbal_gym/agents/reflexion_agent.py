@@ -6,7 +6,7 @@ from collections import deque
 
 from verbal_gym.agents.parser_util import SimpleGuidanceParser
 from verbal_gym.agents.basic_agent import BasicAgent
-
+from verbal_gym.agents.utils import extract_action
 from verbal_gym.utils.misc_utils import print_color
 
 
@@ -30,7 +30,7 @@ Use complete sentences.
 
 {{#if exists_reflection_examples}}
 Here are some examples:
-{{~#each examples}}
+{{#each examples}}
 Problem Description: {{this.observation}}
 {{action_name}}: {{this.action}}
 Feedback: {{this.feedback}}
@@ -91,8 +91,15 @@ Use them to improve your strategy of correctly solving the given problem.
 Reflection:
 {{reflection}}
 {{/if}}
-
+                                           
 Problem Description: {{observation}}
+
+{{#if discrete_actions}}
+Your response should only include a number surrounded by #s. The number should be an integer from 0 and less than {{n_actions}}. You must follow this format!!!
+For example, to output the second action, you need to produce {{action_name}}: #2#
+{{/if}}
+                                           
+
 {{action_name}}:
 {{~/user}}
 
@@ -112,14 +119,18 @@ Problem Description: {{observation}}
         exists_reflection = True if len(self.history) > 0 else False
         if exists_reflection:
             reflection = self.history[-1]['reflection']
-            messages = self.prompt(observation=observation,
+            messages = self.prompt(observation=self.docstring,
                                    action_name=self.action_name,
                                    reflection=reflection,
-                                   exists_reflection=exists_reflection)
+                                   exists_reflection=exists_reflection,
+                                   discrete_actions=self.n_actions is not None,
+                                   n_actions=str(self.n_actions))
         else:
-            messages = self.prompt(observation=observation,
+            messages = self.prompt(observation=self.docstring,
                                    action_name=self.action_name,
-                                   exists_reflection=False)
+                                   exists_reflection=False,
+                                   discrete_actions=self.n_actions is not None,
+                                   n_actions=str(self.n_actions))
         action, _ = self.llm.generate(messages)
 
         if self.verbose:
@@ -128,12 +139,13 @@ Problem Description: {{observation}}
             print_color(f'Agent:\n\n{action}\n', "green")
 
         # generate reflection
-        reflection = self.reflection_agent(observation, action, feedback)
-        self.history.append({'observation': observation,
+        reflection = self.reflection_agent(self.docstring, action, feedback)
+        self.history.append({'observation': self.docstring,
                              'action': action,
                              'feedback': feedback,
                              'reflection': reflection})
-
+        if self.n_actions is not None:
+            action = extract_action(action, self.n_actions)
         return action
 
     @property
