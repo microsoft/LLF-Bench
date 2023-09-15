@@ -4,12 +4,14 @@ from agents.posterior_agents import PosteriorAgent
 from agents.model_based_agents import ModelBasedAgent
 from agents.full_information_agent import FullInformationAgent
 from agents.tot_agent import ToTAgent
+from agents.zero_shot_agent import ZeroshotLLM
 
 
 class AgentSelector:
 
     def __init__(self):
-        self.agent_classes = [RandomAgent, BasicAgent, PosteriorAgent, FullInformationAgent, ModelBasedAgent, ToTAgent]
+        self.agent_classes = [RandomAgent, BasicAgent, ZeroshotLLM, PosteriorAgent, FullInformationAgent,
+                              ModelBasedAgent, ToTAgent]
         self.name2class = dict()
 
         for agent_class in self.agent_classes:
