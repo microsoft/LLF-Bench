@@ -213,8 +213,7 @@ class ToTAgent(BasicAgent):
             if done.startswith('True'):
                 break
         
-        tokens = vote.split(':')    
-        index = int(tokens[1])
+        index = extract_action(vote, self.n_actions, separator=':')
         selected_action = self.simulated_feedback[index]['action']
                 
         if self.verbose:
