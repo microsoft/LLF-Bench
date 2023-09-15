@@ -65,6 +65,17 @@ def main(args):
     fig.tight_layout(pad=3.0)
     plt.savefig(os.path.join(log_dir, 'plots.png'))
 
+    # Print average over envs
+    print('\n')
+    scores = {}
+    for plot_name in results:
+        for agent_name in results[plot_name]:
+            if agent_name not in scores:
+                scores[agent_name] = []
+            scores[agent_name].append(results[plot_name][agent_name]['mean'])
+    for agent_name in scores:
+        print(f"{agent_name}: mean {np.mean(scores[agent_name]):.2f} std {np.std(scores[agent_name]):.2f}")
+
 
 
 if __name__=='__main__':
