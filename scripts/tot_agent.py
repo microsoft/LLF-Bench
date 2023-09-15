@@ -43,7 +43,8 @@ def main(args, logger):
                                paraphrase_agent=paraphrase_agent,
                                logger=logger,
                                buffer_size=args.buffer_size,
-                               max_iter=args.max_iter
+                               max_iter=args.max_iter,
+                               num_simulated_actions=args.num_simulated_actions
                                )
     scores = evaluate_agent(tot_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print_color('ToT agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
@@ -67,6 +68,7 @@ def get_parser():
     parser.add_argument("--logfile", type=str, default="./results.txt")
     parser.add_argument('--buffer_size', type=int, default=5)
     parser.add_argument('--max_iter', type=int, default=4)
+    parser.add_argument('--num_simulated_actions', type=int, default=4)
     return parser
 
 

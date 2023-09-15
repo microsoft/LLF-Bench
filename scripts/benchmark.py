@@ -62,7 +62,6 @@ def create_agent(agent_config, env, verbose=False):
     elif agent_name=='tot_agent':
         from verbal_gym.agents.posterior_agents import ParaphraseAgent
         from verbal_gym.agents.tot_agent import ToTAgent, VoterAgent, ThinkerAgent
-        assert n_actions is not None
         # Tree of Thought agent
         paraphrase_agent = None if not agent_config['paraphrase'] else \
                            ParaphraseAgent(make_llm(agent_config['paraphrase_model'], system_prompt=ParaphraseAgent.system_prompt, temperature=agent_config['paraphrase_temperature']))
@@ -77,7 +76,8 @@ def create_agent(agent_config, env, verbose=False):
                                         verbose=verbose,
                                         permute_history=agent_config['permute_history'],
                                         paraphrase_agent=paraphrase_agent,
-                                        max_iter=agent_config['max_iter']
+                                        max_iter=agent_config['max_iter'],
+                                        num_simulated_actions=agent_config['num_simulated_actions']
                                         )
     else:
         raise NotImplementedError
