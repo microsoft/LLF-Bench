@@ -189,7 +189,9 @@ class ToTAgent(BasicAgent):
         vote = None
         selected_action = None
         for i in range(self.max_iter):           
-            self.simulated_feedback = self.simulate_feedback_for_discrete_action(world_info, action_list)
+            returned_data = self.simulate_feedback_for_discrete_action(world_info, action_list)
+            if len(returned_data)>0:
+                self.simulated_feedback = returned_data
             for action_item in self.simulated_feedback:
                 if self.n_actions is not None:
                     action_id = int(action_item['action'])
@@ -204,7 +206,10 @@ class ToTAgent(BasicAgent):
                 else:
                     action_list[action_id]['response'] = action_item['response']
             
-            vote = self.voter_agent(self.docstring, world_info, self.simulated_feedback)
+            if len(self.simulated_feedback)>1:
+                vote = self.voter_agent(self.docstring, world_info, self.simulated_feedback)
+            else:
+                vote = "True:0"
             if self.verbose:
                 if self.logger is not None:
                     self.logger.log(f"Vote: {vote}\n")
@@ -213,7 +218,9 @@ class ToTAgent(BasicAgent):
             if done.startswith('True'):
                 break
         
-        index = extract_action(vote, len(self.simulated_feedback), separator=':')
+        index = 0
+        if len(self.simulated_feedback)>1:
+            index = extract_action(vote, len(self.simulated_feedback), separator=':')
         selected_action = self.simulated_feedback[index]['action']
                 
         if self.verbose:
