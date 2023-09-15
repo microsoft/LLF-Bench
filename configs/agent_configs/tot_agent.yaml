@@ -7,3 +7,4 @@ paraphrase: true
 paraphrase_at_given: true  # set true to run faster
 permute_history: true
 max_iter: 5
+num_simulated_actions: 4

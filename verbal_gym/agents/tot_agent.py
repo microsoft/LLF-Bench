@@ -128,7 +128,7 @@ class ToTAgent(BasicAgent):
 
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
                  voter_agent=None, thinker_agent=None, permute_history=True, 
-                 paraphrase_agent=None, logger=None, buffer_size=5, max_iter=10):
+                 paraphrase_agent=None, logger=None, buffer_size=5, max_iter=10, num_simulated_actions=4):
         super().__init__(llm, n_actions, verbose=verbose, action_name=action_name, buffer_size=buffer_size)
         self.permute_history = permute_history
         self.paraphrase_agent = paraphrase_agent
@@ -146,6 +146,7 @@ class ToTAgent(BasicAgent):
         self.permute_history = permute_history
         self.max_iter = max_iter
         self.docstring = None
+        self.num_simulated_actions = num_simulated_actions
         
     def simulate_feedback_for_discrete_action(self, world_info, action_list):
         # Create the environment
@@ -171,19 +172,33 @@ class ToTAgent(BasicAgent):
         # Update history. History only contains things which actually happened
         self.buffer.update(feedback=feedback, next_observation=obs)
         world_info = self.world_info
-        if self.n_actions is None:
-            raise NotImplementedError
         
         action_list = []
-        for action in range(self.n_actions):
-            action_list.append({'action': str(action)})
-
+        if self.n_actions is not None:
+            for action in range(self.n_actions):
+                action_list.append({'action': str(action)})
+        else:
+            user_prompt = self.prompt_template.format(self.docstring, world_info)
+            user_prompt += "\n Ensure that your answer differs from these existing answers (if any).\n"
+            for i in range(self.num_simulated_actions):
+                response, _ = self.llm.generate(user_prompt)
+                action = response.split(self.action_name+':')[-1]
+                action_list.append({'action': action})
+                user_prompt += "\n "+self.action_name + ": "+action+"\n"
+            
         vote = None
         selected_action = None
         for i in range(self.max_iter):           
             self.simulated_feedback = self.simulate_feedback_for_discrete_action(world_info, action_list)
             for action_item in self.simulated_feedback:
-                action_id = int(action_item['action'])
+                if self.n_actions is not None:
+                    action_id = int(action_item['action'])
+                else:
+                    action_id = 0
+                    for j in range(len(action_list)):
+                        if action_list[j]['action'] == action_item['action']:
+                            action_id = j
+                            break
                 if 'response' in action_list[action_id].keys():
                     action_list[action_id]['response'] += ";" + action_item['response']
                 else:
@@ -196,25 +211,27 @@ class ToTAgent(BasicAgent):
             tokens = vote.split(':')
             done = tokens[0]
             if done.startswith('True'):
-                index = int(tokens[1])
-                selected_action = self.simulated_feedback[index]['action']
                 break
         
-        selected_action = extract_action(vote, self.n_actions, ':')
-            
+        tokens = vote.split(':')    
+        index = int(tokens[1])
+        selected_action = self.simulated_feedback[index]['action']
+                
         if self.verbose:
             if self.logger is not None:
                 self.logger.log(f"Selected Action:\n\n{selected_action}\n")
 
-            print_color(f'Action:\n\n{action}\n', 'red')
+            print_color(f'Action:\n\n{selected_action}\n', 'red')
 
         # update buffer and get world info
         self.buffer.append(observation=obs,
                            action=selected_action,
                            feedback=None,
                            next_observation=None)
-        
-        return action
+
+        if self.n_actions is not None:
+            selected_action = int(selected_action)        
+        return selected_action
 
     def paraphrase(self, sentence):
         return self.paraphrase_agent.paraphrase(sentence) if self.paraphrase_agent is not None else sentence
