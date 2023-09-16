@@ -22,7 +22,8 @@ def main(args):
     # TODO should save the stdout
 
     # Posterior agent
-    paraphrase_agent = None if args.not_paraphrase else ParaphraseAgent(make_llm(args.model, system_prompt=ParaphraseAgent.system_prompt, temperature=args.temperature))
+    paraphrase_agent = None if args.not_paraphrase else \
+        ParaphraseAgent(make_llm(args.model, system_prompt=ParaphraseAgent.system_prompt, temperature=args.temperature))
     gpt_agent = PosteriorAgent(make_llm(args.model, system_prompt=PosteriorAgent.system_prompt, temperature=args.temperature),
                                n_actions,
                                action_name=action_name,
@@ -35,9 +36,10 @@ def main(args):
     return scores
 
 
-
 def get_parser():
+
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--n_episodes', type=int, default=10)
     parser.add_argument('--horizon', type=int, default=10)
