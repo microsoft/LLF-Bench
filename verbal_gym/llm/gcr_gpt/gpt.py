@@ -1,4 +1,4 @@
-from verbal_gym.llm.gpt.abstract_gpt import AbstractGPT
+from verbal_gym.llm.gcr_gpt.abstract_gpt import AbstractGPT
 
 
 class GPT3(AbstractGPT):

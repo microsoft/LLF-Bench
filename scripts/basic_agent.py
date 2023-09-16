@@ -31,7 +31,6 @@ def main(args):
     scores = evaluate_agent(gpt_agent, env, horizon=horizon, n_episodes=n_episodes, n_workers=args.n_workers)
     print_color('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
 
-
     if n_actions is not None:  # finite action, so we can test RandomAgent and FullInformationAgent as well.
         # Random agent
         random_agent = RandomAgent(n_actions)
@@ -46,14 +45,16 @@ def main(args):
         system_prompt = FullInformationAgent.system_prompt
         llm = GPT(system_prompt)
         gpt_agent = FullInformationAgent(llm,
-                                        n_actions=n_actions,
-                                        verbose=args.verbose)
+                                         n_actions=n_actions,
+                                         verbose=args.verbose)
 
-        scores = evaluate_agent(gpt_agent, env, horizon=horizon,
+        scores = evaluate_agent(gpt_agent,
+                                env,
+                                horizon=horizon,
                                 n_episodes=n_episodes,
                                 n_workers=args.n_workers,
                                 return_full_information=True)
-        print_color('Oralce LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
+        print_color('Oracle LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()), 'red')
 
 
 def get_parser():

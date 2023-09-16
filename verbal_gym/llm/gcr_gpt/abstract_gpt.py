@@ -1,8 +1,9 @@
 import os
 import pdb
 import time
-import requests
 import json
+import requests
+
 from verbal_gym.llm.llm import LLM
 
 
@@ -42,20 +43,36 @@ class AbstractGPT(LLM):
 
     def generate(self,
                  prompt, *,
-                 logprobs=None,  # None or int. If int, return top-k logprobs.
-                 timeout,        # Maximum time to wait if failure occurs before re-trying
-                 temperature,    # temperature of the generation
-                 max_tokens,     # maximum number of tokens to generate
-                 max_attempts):  # maximum number of attempts to call the model
+                 logprobs=None,
+                 timeout=300,
+                 temperature=0.0,
+                 max_tokens=None,
+                 max_attempts=1,
+                 return_response=True):
+        """
+        :param prompt:  None or int. If int, return top-k logprobs.
+        :param logprobs:
+        :param timeout:      maximum time to wait if failure occurs before re-trying
+        :param temperature:  temperature of the generation
+        :param max_tokens:   maximum number of tokens to generate
+        :param max_attempts: maximum number of attempts to call the model
+        :param return_response: If true, then also return the full response, otherwise, just return the generation
+        :return: generated string
+        """
 
-        if len(self.system_prompt)>0:
+        if len(self.system_prompt) > 0:
             prompt = f'System: {self.system_prompt}\nUser: {prompt}'
 
-        return self._generate(prompt,
-                              max_tokens=max_tokens,
-                              logprobs=logprobs,
-                              temperature=temperature,
-                              MAX_WAITTIME_SEC=timeout)
+        generation, info = self._generate(prompt,
+                                          max_tokens=max_tokens,
+                                          logprobs=logprobs,
+                                          temperature=temperature,
+                                          MAX_WAITTIME_SEC=timeout)
+
+        if return_response:
+            return generation, info
+        else:
+            return generation
 
     def _generate(self, prompt, max_tokens=None, logprobs=None, temperature=0.0, MAX_WAITTIME_SEC=300):
         """

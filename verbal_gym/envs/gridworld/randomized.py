@@ -32,7 +32,9 @@ class RandomizedGridworld(gym.Env):
                          "you if you are in that room. Each room can have a door along the North, South, East and " \
                          "West direction. You can follow a direction to go from one room to another. " \
                          "If there is no door along that direction, then you will remain in the room. You will start " \
-                         "in a room. Your goal is to navigate to another room which has the treasure."
+                         "in a room. Your goal is to navigate to another room which has the treasure. You have an action" \
+                         "space of size 4. Action 0 leads to going North. Action 1 leads to going East. " \
+                         "Action 2 leads going west. Action 3 leads to going South."
 
         if feedback_level == "bandit":
             self.feedback_level = RandomizedGridworld.Bandit

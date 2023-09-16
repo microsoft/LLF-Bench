@@ -35,11 +35,11 @@ def make_llm(model, **kwargs):
 
     if backend == 'gcr':
         if model == 'text-davinci-003':
-            from verbal_gym.llm.gpt.gpt import GPT3
+            from verbal_gym.llm.gcr_gpt.gpt import GPT3
             return GPT3(model, **kwargs)
 
         elif model in ('gpt-35', 'gpt-3.5', 'gpt-35-turbo', 'gpt-3.5-turbo'):
-            from verbal_gym.llm.gpt.gpt import GPT35
+            from verbal_gym.llm.gcr_gpt.gpt import GPT35
             return GPT35(model, **kwargs)
 
         else:
