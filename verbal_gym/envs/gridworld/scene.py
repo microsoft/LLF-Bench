@@ -1,7 +1,7 @@
 import random
 
 from collections import deque
-from envs.gridworld.room import Room
+from verbal_gym.envs.gridworld.room import Room
 
 
 class Scene:

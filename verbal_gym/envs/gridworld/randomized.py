@@ -1,5 +1,6 @@
 import pdb
 import gym
+import sys
 import random
 
 from collections import deque
@@ -18,6 +19,7 @@ class RandomizedGridworld(gym.Env):
         # Action space consists of 4 actions: North, South, East and West
         self.num_actions = 4
         self.action_space = gym.spaces.Discrete(self.num_actions)
+        self.observation_space = gym.spaces.Text(sys.maxsize)
 
         self.num_rooms = num_rooms
         self.horizon = horizon
