@@ -3,12 +3,12 @@ Adapted from https://github.com/noahshinn024/reflexion/blob/main/hotpotqa_runs/p
 """
 
 from collections import deque
+from textwrap import dedent, indent
 
 from verbal_gym.agents.parser_util import SimpleGuidanceParser
 from verbal_gym.agents.basic_agent import BasicAgent
 from verbal_gym.agents.utils import extract_action
 from verbal_gym.utils.misc_utils import print_color
-
 
 class ReflectAgent:
 
@@ -16,40 +16,40 @@ class ReflectAgent:
 
     def __init__(self, llm, max_history=5, action_name='Action'):
         self.llm = llm
-        self.parser = SimpleGuidanceParser("""
-{{#system~}}
-You are an advanced reasoning agent that can improve based on self refection. 
-{{~/system}}
-
-{{#user~}}
-You have attempted to do the following task before and failed. 
-The following reflection(s) give a plan to avoid failing to doing the task in the same way you did previously. 
-Use them to improve your strategy of correctly doing the given task.
-In a few sentences, diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. 
-Use complete sentences.  
-
-{{#if exists_reflection_examples}}
-Here are some examples:
-{{#each examples}}
-Problem Description: {{this.observation}}
-{{action_name}}: {{this.action}}
-Feedback: {{this.feedback}}
-Reflection: {{this.reflection}}
-
-{{~/each}}
-{{/if}}
-
-Previous trial:
-Problem Description: {{observation}}
-{{action_name}}: {{action}}
-Feedback: {{feedback}}
-Reflection:
-{{~/user}}
-
-{{#assistant~}}
-{{gen 'reflection' temperature=0.7}}
-{{~/assistant}}
-""")
+        self.parser = SimpleGuidanceParser(dedent("""
+        {{#system~}}
+        You are an advanced reasoning agent that can improve based on self refection. 
+        {{~/system}}
+        
+        {{#user~}}
+        You have attempted to do the following task before and failed. 
+        The following reflection(s) give a plan to avoid failing to doing the task in the same way you did previously. 
+        Use them to improve your strategy of correctly doing the given task.
+        In a few sentences, diagnose a possible reason for failure and devise a new, concise, high level plan that aims to mitigate the same failure. 
+        Use complete sentences.  
+        
+        {{#if exists_reflection_examples}}
+        Here are some examples:
+        {{#each examples}}
+        Problem Description: {{this.observation}}
+        {{action_name}}: {{this.action}}
+        Feedback: {{this.feedback}}
+        Reflection: {{this.reflection}}
+        
+        {{~/each}}
+        {{/if}}
+        
+        Previous trial:
+        Problem Description: {{observation}}
+        {{action_name}}: {{action}}
+        Feedback: {{feedback}}
+        Reflection:
+        {{~/user}}
+        
+        {{#assistant~}}
+        {{gen 'reflection' temperature=0.7}}
+        {{~/assistant}}
+        """))
         self.action_name = action_name
         self.reflection_examples = deque(maxlen=max_history)
 
@@ -71,42 +71,42 @@ class ReflexionAgent(BasicAgent):
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
                  reflection_agent=None, permute_history=True, buffer_size=5):
         super().__init__(llm, n_actions, verbose=verbose, action_name=action_name)
-        self.prompt = SimpleGuidanceParser("""
-{{#system~}}
-You are an agent tasked to solve an interactive problem with verbal
-feedback. You will see "Problem Description" that tells you what the problem
-is about (such as the goal of the task, the action space you should choose
-from, the rules, the constraints, etc.). After you choose an action, you will
-see the feedback from the environment. Your goal is to choose the right
-actions to solve the task as fast as possible, according to "Problem
-Description".
-{{~/system}}
-
-{{#user~}}
-{{#if exists_reflection}}
-You have attempted to solve the problem before and failed. 
-The following reflection(s) give a plan to avoid failing to solve the problem in the same way you did previously. 
-Use them to improve your strategy of correctly solving the given problem.
-
-Reflection:
-{{reflection}}
-{{/if}}
-                                           
-Problem Description: {{observation}}
-
-{{#if discrete_actions}}
-Your response should only include a number surrounded by #s. The number should be an integer from 0 and less than {{n_actions}}. You must follow this format!!!
-For example, to output the second action, you need to produce {{action_name}}: #2#
-{{/if}}
-                                           
-
-{{action_name}}:
-{{~/user}}
-
-{{#assistant~}}
-{{gen 'poem' temperature=0.7}}
-{{~/assistant}}
-""")
+        self.prompt = SimpleGuidanceParser(dedent("""
+        {{#system~}}
+        You are an agent tasked to solve an interactive problem with verbal
+        feedback. You will see "Problem Description" that tells you what the problem
+        is about (such as the goal of the task, the action space you should choose
+        from, the rules, the constraints, etc.). After you choose an action, you will
+        see the feedback from the environment. Your goal is to choose the right
+        actions to solve the task as fast as possible, according to "Problem
+        Description".
+        {{~/system}}
+        
+        {{#user~}}
+        {{#if exists_reflection}}
+        You have attempted to solve the problem before and failed. 
+        The following reflection(s) give a plan to avoid failing to solve the problem in the same way you did previously. 
+        Use them to improve your strategy of correctly solving the given problem.
+        
+        Reflection:
+        {{reflection}}
+        {{/if}}
+                                                   
+        Problem Description: {{observation}}
+        
+        {{#if discrete_actions}}
+        Your response should only include a number surrounded by #s. The number should be an integer from 0 and less than {{n_actions}}. You must follow this format!!!
+        For example, to output the second action, you need to produce {{action_name}}: #2#
+        {{/if}}
+                                                   
+        
+        {{action_name}}:
+        {{~/user}}
+        
+        {{#assistant~}}
+        {{gen 'poem' temperature=0.7}}
+        {{~/assistant}}
+        """))
         self.reflection_agent = reflection_agent
         self.reflection_agent.action_name = action_name # we do a quick sync here
 

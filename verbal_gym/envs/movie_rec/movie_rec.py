@@ -131,7 +131,7 @@ class RecommendationQueryGenerator:
     GENRES = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 'Documentary', 'Drama',
               'Fantasy', 'Film Noir', 'History', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi',
               'Sport', 'Superhero', 'Thriller', 'War', 'Western']
-    AGE_RESTRICTED = ["child-friendly", "mature", "family-friendly"]
+    AGE_RESTRICTED = ["child-friendly", "R-rated", "family-friendly"]
 
     def __init__(self):
         pass
@@ -506,7 +506,7 @@ class MovieRec(gym.Env):
             if profile_age_restriction in {'child-friendly', 'family-friendly'}:
                 if factual_info['child_friendly'] is False:
                     items.append(title)
-            elif profile_age_restriction == 'mature':
+            elif profile_age_restriction == 'R-rated':
                 if factual_info['adult_only'] is False:
                     items.append(title)
 
