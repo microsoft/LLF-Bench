@@ -1,8 +1,5 @@
-import re
-
-
 # print with colors (modified from Huihan's lflf)
-def print_color(message, color=None):
+def print_color(message, color=None, logger=None):
     colors = {
         'red': '\033[91m',
         'green': '\033[92m',
@@ -12,6 +9,9 @@ def print_color(message, color=None):
         'cyan': '\033[96m'
     }
     print(f"{colors.get(color, '')}{message}\033[0m")  # Default to no color if invalid color is provided
+
+    if logger is not None:
+        logger.log(message)
 
 
 def extract_int(txt):
