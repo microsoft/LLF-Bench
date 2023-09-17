@@ -81,7 +81,7 @@ def get_parser():
 
     # Gridworld experiment only
     parser.add_argument('--num_rooms', type=int, default=20)
-    parser.add_argument('--feedback_type', type=str, default="gold", choices=["binary", "gold", "oracle"])
+    parser.add_argument('--feedback_type', type=str, default="gold", choices=["bandit", "gold", "oracle"])
 
     return parser
 
