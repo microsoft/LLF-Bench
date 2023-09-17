@@ -3,12 +3,12 @@ import gym
 import argparse
 import logging
 
-from utils.multiprocess_logger import MultiprocessingLoggerManager
 from verbal_gym.llm import make_llm
 from verbal_gym.agents.basic_agent import BasicAgent
 from verbal_gym.utils.utils import set_seed
 from verbal_gym.utils.utils import evaluate_agent
 from verbal_gym.utils.misc_utils import print_color
+from verbal_gym.utils.multiprocess_logger import MultiprocessingLoggerManager
 
 
 def main(args):
@@ -17,7 +17,7 @@ def main(args):
     horizon = args.horizon
 
     # Create the environment
-    env = gym.make(args.env_name)
+    env = gym.make(args.env_name, num_rooms=20, horizon=10, fixed=True, feedback_level="oracle", goal_dist=4)
     set_seed(args.seed, env)
 
     n_actions = env.action_space.n if isinstance(env.action_space, gym.spaces.Discrete) else None

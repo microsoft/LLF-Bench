@@ -1,6 +1,3 @@
-import re
-
-
 # print with colors (modified from Huihan's lflf)
 def print_color(message, color=None, logger=None):
     colors = {

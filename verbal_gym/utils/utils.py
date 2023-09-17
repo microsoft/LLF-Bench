@@ -9,6 +9,11 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
         assert hasattr(env,'get_full_information')
 
     observation = env.reset()
+
+    # If environment provides logging facility, then log the environment
+    if hasattr(env, "log_env"):
+        env.log_env(logger=logger)
+
     default_docstring = 'This is an interactive decision making problem with verbal feedback.'
 
     # in case the environment does not have docstring
@@ -33,11 +38,11 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
         new_observation, reward, done, info = env.step(action)
 
         if logger is not None:
-            logger.log(f" Observation: {observation}\n "
-                       f"Action: {action}\n "
-                       f"Reward: {reward}\n "
-                       f"Feedback: {info.get('feedback', None)}\n"
-                       f"New Observation: {new_observation}\n\n")
+            logger.log(f" Observation: {observation}; "
+                       f"Action: {action}; "
+                       f"Reward: {reward}; "
+                       f"Feedback: {info.get('feedback', None)};"
+                       f"New Observation: {new_observation}\n")
 
         observation = new_observation
 

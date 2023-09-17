@@ -138,7 +138,6 @@ class RandomizedGridworld(gym.Env):
         self.current_timestep = 0.0
 
         self.current_scene = self.make_scene()
-        self.current_scene.print()
 
         self.current_room = self.current_scene.get_start_room()
         self.goal_prev_visited = False
@@ -146,6 +145,9 @@ class RandomizedGridworld(gym.Env):
         obs = self.make_room_obs(self.current_room)
 
         return obs
+
+    def log_env(self):
+        self.current_scene.log_scene()
 
     def step(self, action):
 
