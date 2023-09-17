@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 
-def rollout(agent, env, *, horizon, return_full_information=False, log_data=False):
+def rollout(agent, env, *, horizon, return_full_information=False, log_data=False, logger=None):
     """ A basic agent evaluation loop. """
 
     if return_full_information:
@@ -30,7 +30,16 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
         else:                       # Regular agent
             action = agent.act(observation, feedback)
 
-        observation, reward, done, info = env.step(action)
+        new_observation, reward, done, info = env.step(action)
+
+        if logger is not None:
+            logger.log(f" Observation: {observation}\n "
+                       f"Action: {action}\n "
+                       f"Reward: {reward}\n "
+                       f"Feedback: {info.get('feedback', None)}\n"
+                       f"New Observation: {new_observation}\n\n")
+
+        observation = new_observation
 
         if log_data:
             for k in data.keys():
@@ -43,13 +52,15 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
     return sum_of_rewards, data
 
 
-def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, log_data=False, n_workers=1):
+def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, log_data=False,
+                   n_workers=1, logger=None):
     """ Evaluate an agent with n_episodes rollouts. """
 
     _rollout = lambda: rollout(agent, env,
                                horizon=horizon,
                                log_data=log_data,
-                               return_full_information=return_full_information)
+                               return_full_information=return_full_information,
+                               logger=logger)
 
     if n_workers > 1:
         import ray
