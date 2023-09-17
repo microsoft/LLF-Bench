@@ -1,5 +1,7 @@
 import os
 import gym
+import time
+import pickle
 import argparse
 import logging
 
@@ -17,7 +19,13 @@ def main(args):
     horizon = args.horizon
 
     # Create the environment
-    env = gym.make(args.env_name, num_rooms=20, horizon=10, fixed=True, feedback_level="oracle", goal_dist=4)
+    env = gym.make(args.env_name,
+                   num_rooms=args.num_rooms,
+                   horizon=args.horizon,
+                   fixed=True,
+                   feedback_level=args.feedback_type,
+                   min_goal_dist=4)
+
     set_seed(args.seed, env)
 
     n_actions = env.action_space.n if isinstance(env.action_space, gym.spaces.Discrete) else None
@@ -45,6 +53,17 @@ def main(args):
                 color='red',
                 logger=logger)
 
+    # Save a small file with argparse values, so that we dont have to parse the text log
+    results = {
+        "setting": {k: v for k, v in vars(args).items()},
+        "scores": scores,
+        "mean_score": scores.mean(),
+        "std_score": scores.std()
+    }
+
+    with open(f"{args.save_path}/results.pkl", "wb") as f:
+        pickle.dump(results, f)
+
 
 def get_parser():
 
@@ -54,18 +73,33 @@ def get_parser():
     parser.add_argument('--save_path', type=str, default="results")
     parser.add_argument('--logname', type=str, default="basic_agent_log.txt")
     parser.add_argument('--horizon', type=int, default=10)
-    parser.add_argument('--env_name',type=str, default='verbal-BanditTenArmedRandomRandom-v0')
+    parser.add_argument('--env_name', type=str, default='verbal-BanditTenArmedRandomRandom-v0')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--model', type=str, default='azure:gpt-35-turbo')
 
+    # Gridworld experiment only
+    parser.add_argument('--num_rooms', type=int, default=20)
+    parser.add_argument('--feedback_type', type=str, default="gold", choices=["binary", "gold", "oracle"])
+
     return parser
 
 
 if __name__ == '__main__':
+
     parser = get_parser()
     args = parser.parse_args()
+
+    exp = f"experiment_env_{args.env_name}_num_rooms_{args.num_rooms}_feedback_{args.feedback_type}_" \
+          f"episodes_{args.n_episodes}_horizon_{args.horizon}_model_{args.model}"
+
+    exp_folder = f"{args.save_path}/{exp}"
+
+    if os.path.exists(exp_folder):
+        exp_folder = exp_folder + f"{int(time.time())}"
+
+    args.save_path = exp_folder
 
     if not os.path.exists(args.save_path):
         os.makedirs(args.save_path)

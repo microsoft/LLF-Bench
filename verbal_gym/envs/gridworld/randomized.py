@@ -13,7 +13,7 @@ class RandomizedGridworld(gym.Env):
     # Feedback level
     Bandit, Gold, Oracle = range(3)
 
-    def __init__(self, num_rooms=20, horizon=20, fixed=True, feedback_level="gold", goal_dist=4):
+    def __init__(self, num_rooms=20, horizon=20, fixed=True, feedback_level="gold", min_goal_dist=4):
         super(RandomizedGridworld, self).__init__()
 
         # Action space consists of 4 actions: North, South, East and West
@@ -24,7 +24,7 @@ class RandomizedGridworld(gym.Env):
         self.num_rooms = num_rooms
         self.horizon = horizon
         assert self.horizon >= 5, "Horizon must be at least 5 to allow agent to somewhat explore the world"
-        self.goal_dist = goal_dist
+        self.min_goal_dist = min_goal_dist
 
         self.fixed = fixed
 
@@ -118,7 +118,7 @@ class RandomizedGridworld(gym.Env):
 
         # Add key in a room at least k steps away
         rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items()
-                 if self.goal_dist < len(path) < self.horizon - 5 and ngbr_room != goal_room]
+                 if self.min_goal_dist < len(path) < self.horizon - 5 and ngbr_room != goal_room]
 
         if len(rooms) == 0:
             rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if ngbr_room != goal_room]
@@ -146,8 +146,8 @@ class RandomizedGridworld(gym.Env):
 
         return obs
 
-    def log_env(self):
-        self.current_scene.log_scene()
+    def log_env(self, logger):
+        self.current_scene.log_scene(logger)
 
     def step(self, action):
 
