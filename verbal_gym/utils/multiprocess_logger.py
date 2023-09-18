@@ -12,7 +12,15 @@ def logtxt(fname, s):
     f = open(fname, 'a')
     f.write('{str(datetime.now())}: {s}\n')  # had a f prefix TODO
     f.close()
-                                
+
+
+class Queue:
+    def __init__(self):
+        self.queue = []
+    def get(self):
+        return self.queue.pop(0) if len(self.queue) else None
+    def put(self, item):
+        self.queue.append(item)
 
 class MultiprocessingLoggerManager(object):
 
