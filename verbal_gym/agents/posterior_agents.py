@@ -1,6 +1,6 @@
 import numpy as np
-from textwrap import dedent, indent
 
+from textwrap import dedent, indent
 from verbal_gym.agents.basic_agent import BasicAgent
 
 
@@ -29,11 +29,17 @@ class PosteriorAgent(BasicAgent):
     NAME = "PosteriorAgent"
 
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
-                permute_history=True, paraphrase_agent=None, paraphrase_at_given=True):
-        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name)
+                 permute_history=True, paraphrase_agent=None, paraphrase_at_given=True, ignore_observation=True):
+
+        super().__init__(llm, n_actions,
+                         verbose=verbose,
+                         action_name=action_name,
+                         ignore_observation=ignore_observation)
+
         self.permute_history = permute_history
         self.paraphrase_agent = paraphrase_agent
         self.paraphrase_at_given = paraphrase_at_given
+        self.ignore_observation = ignore_observation
 
         if paraphrase_at_given:
             # We overwrite buffer.update and buffer.append
@@ -49,11 +55,17 @@ class PosteriorAgent(BasicAgent):
 
     @property
     def world_info(self):
-        if len(self.buffer)==0:
+
+        if len(self.buffer) == 0:
             return 'None'
+
         if self.ignore_observation:
             paraphrase = self.paraphrase if not self.paraphrase_at_given else lambda x: x
-            world_info = [indent(f'{self.action_name}: {item["action"]}\n\nFeedback: {paraphrase(item["feedback"])}\n\n\n','\t') for item in self.buffer]
+
+            world_info = [indent(
+                f'{self.action_name}: {item["action"]}\n\nFeedback: {paraphrase(item["feedback"])}\n\n\n','\t')
+                for item in self.buffer]
+
             world_info = np.random.permutation(world_info) if self.permute_history else world_info
             world_info = '\n'.join(world_info)
         else:

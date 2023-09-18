@@ -2,13 +2,18 @@ import random
 import numpy as np
 
 
-def rollout(agent, env, *, horizon, return_full_information=False, log_data=False):
+def rollout(agent, env, *, horizon, return_full_information=False, log_data=False, logger=None):
     """ A basic agent evaluation loop. """
 
     if return_full_information:
         assert hasattr(env,'get_full_information')
 
     observation = env.reset()
+
+    # If environment provides logging facility, then log the environment
+    if hasattr(env, "log_env"):
+        env.log_env(logger=logger)
+
     default_docstring = 'This is an interactive decision making problem with verbal feedback.'
 
     # in case the environment does not have docstring
@@ -30,7 +35,16 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
         else:                       # Regular agent
             action = agent.act(observation, feedback)
 
-        observation, reward, done, info = env.step(action)
+        new_observation, reward, done, info = env.step(action)
+
+        if logger is not None:
+            logger.log(f" Observation: {observation}; "
+                       f"Action: {action}; "
+                       f"Reward: {reward}; "
+                       f"Feedback: {info.get('feedback', None)};"
+                       f"New Observation: {new_observation}\n")
+
+        observation = new_observation
 
         if log_data:
             for k in data.keys():
@@ -43,13 +57,15 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
     return sum_of_rewards, data
 
 
-def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, log_data=False, n_workers=1):
+def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, log_data=False,
+                   n_workers=1, logger=None):
     """ Evaluate an agent with n_episodes rollouts. """
 
     _rollout = lambda: rollout(agent, env,
                                horizon=horizon,
                                log_data=log_data,
-                               return_full_information=return_full_information)
+                               return_full_information=return_full_information,
+                               logger=logger)
 
     if n_workers > 1:
         import ray

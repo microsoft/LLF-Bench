@@ -1,5 +1,6 @@
 import os
 
+
 def standardize_model_name(model):
     if model in ('gpt-35', 'gpt-3.5', 'gpt-35-turbo', 'gpt-3.5-turbo'):
         model = 'gpt-35-turbo'
@@ -15,8 +16,10 @@ def make_llm(model, **kwargs):
     available_backends = []
     if os.getenv('AZURE_OPENAI_KEY') is not None:
         available_backends.append('azure')
+
     if os.getenv('OPENAI_API_KEY') is not None:
         available_backends.append('openai')
+
     if os.getenv("GCR_GPT_KEY") is not None and os.getenv("GCR_GPT_URL") is not None:
         available_backends.append('gcr')
 
@@ -30,13 +33,15 @@ def make_llm(model, **kwargs):
 
     model = standardize_model_name(model)
 
-    if backend=='gcr':
-        if model=='text-davinci-003':
-            from verbal_gym.llm.gpt.gpt import GPT3
+    if backend == 'gcr':
+        if model == 'text-davinci-003':
+            from verbal_gym.llm.gcr_gpt.gpt import GPT3
             return GPT3(model, **kwargs)
+
         elif model in ('gpt-35', 'gpt-3.5', 'gpt-35-turbo', 'gpt-3.5-turbo'):
-            from verbal_gym.llm.gpt.gpt import GPT35
+            from verbal_gym.llm.gcr_gpt.gpt import GPT35
             return GPT35(model, **kwargs)
+
         else:
             raise ValueError("Unknown LLM model: {}".format(model))
 

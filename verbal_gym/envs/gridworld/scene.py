@@ -1,7 +1,7 @@
 import random
 
 from collections import deque
-from envs.gridworld.room import Room
+from verbal_gym.envs.gridworld.room import Room
 
 
 class Scene:
@@ -178,17 +178,17 @@ class Scene:
 
         return gold_direction
 
-    def print(self):
+    def log_scene(self, logger):
 
-        print(f"Start room {self.start_room.get_name()} and Key room {self.goal_room.get_name()}\n")
+        logger.log(f"Start room {self.start_room.get_name()} and Key room {self.goal_room.get_name()}\n")
 
         for room in self.rooms:
             objects = room.get_objects()
             if len(objects) == 0:
-                print(f"Room {room.get_name()}: containing no objects.")
+                logger.log(f"Room {room.get_name()}: containing no objects.")
             else:
                 obj_names = ", ".join(objects)
-                print(f"Room {room.get_name()}: containing objects {obj_names}")
+                logger.log(f"Room {room.get_name()}: containing objects {obj_names}")
             for dir_to, new_room in self.doors[room].items():
-                print(f"\t - Taking {dir_to} path leads to {new_room.get_name()}.")
-            print("\n\n")
+                logger.log(f"\t - Taking {dir_to} path leads to {new_room.get_name()}.")
+            logger.log("\n\n")

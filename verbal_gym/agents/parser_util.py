@@ -20,7 +20,7 @@ class SimpleGuidanceParser:
         typed_messages = []
         # messages = [{"role": "system", "content": self.system_prompt},
         #             {"role": "user", "content": prompt}]
-        assert labeled_blocks[0][0] == 'system', "The first block must be a system block"
+        # assert labeled_blocks[0][0] == 'system', "The first block must be a system block"
 
         for block_type, content in labeled_blocks:
             # if statement is handled first, because this decides if the content should stay or disappear

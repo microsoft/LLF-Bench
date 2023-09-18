@@ -1,5 +1,6 @@
 import pdb
 import gym
+import sys
 import random
 
 from collections import deque
@@ -12,17 +13,18 @@ class RandomizedGridworld(gym.Env):
     # Feedback level
     Bandit, Gold, Oracle = range(3)
 
-    def __init__(self, num_rooms=20, horizon=20, fixed=True, feedback_level="gold", goal_dist=4):
+    def __init__(self, num_rooms=20, horizon=20, fixed=True, feedback_level="gold", min_goal_dist=4):
         super(RandomizedGridworld, self).__init__()
 
         # Action space consists of 4 actions: North, South, East and West
         self.num_actions = 4
         self.action_space = gym.spaces.Discrete(self.num_actions)
+        self.observation_space = gym.spaces.Text(sys.maxsize)
 
         self.num_rooms = num_rooms
         self.horizon = horizon
         assert self.horizon >= 5, "Horizon must be at least 5 to allow agent to somewhat explore the world"
-        self.goal_dist = goal_dist
+        self.min_goal_dist = min_goal_dist
 
         self.fixed = fixed
 
@@ -30,7 +32,9 @@ class RandomizedGridworld(gym.Env):
                          "you if you are in that room. Each room can have a door along the North, South, East and " \
                          "West direction. You can follow a direction to go from one room to another. " \
                          "If there is no door along that direction, then you will remain in the room. You will start " \
-                         "in a room. Your goal is to navigate to another room which has the treasure."
+                         "in a room. Your goal is to navigate to another room which has the treasure. You have an action" \
+                         "space of size 4. Action 0 leads to going North. Action 1 leads to going East. " \
+                         "Action 2 leads going west. Action 3 leads to going South."
 
         if feedback_level == "bandit":
             self.feedback_level = RandomizedGridworld.Bandit
@@ -114,7 +118,7 @@ class RandomizedGridworld(gym.Env):
 
         # Add key in a room at least k steps away
         rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items()
-                 if self.goal_dist < len(path) < self.horizon - 5 and ngbr_room != goal_room]
+                 if self.min_goal_dist < len(path) < self.horizon - 5 and ngbr_room != goal_room]
 
         if len(rooms) == 0:
             rooms = [ngbr_room for ngbr_room, path in scene.bfs_path.items() if ngbr_room != goal_room]
@@ -134,7 +138,6 @@ class RandomizedGridworld(gym.Env):
         self.current_timestep = 0.0
 
         self.current_scene = self.make_scene()
-        self.current_scene.print()
 
         self.current_room = self.current_scene.get_start_room()
         self.goal_prev_visited = False
@@ -142,6 +145,9 @@ class RandomizedGridworld(gym.Env):
         obs = self.make_room_obs(self.current_room)
 
         return obs
+
+    def log_env(self, logger):
+        self.current_scene.log_scene(logger)
 
     def step(self, action):
 
