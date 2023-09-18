@@ -1,11 +1,31 @@
 import gym
 import copy
+import numpy as np
+from verbal_gym.llm import DEFAULT_LLM
 
 class TerminalFreeWrapper(gym.Wrapper):
     #  Set terminal to False always
     def step(self, action):
         observation, reward, terminal, info = self.env.step(action)
         return observation, reward, False, info
+
+class RandomActionOrderWrapper(gym.Wrapper):
+
+    def __init__(self, env):
+        assert isinstance(env.action_space, gym.spaces.Discrete)
+        super().__init__(env)
+        self.__action_table = None
+
+    def reset(self):
+        self.__action_table = [i for i in range(self.env.action_space.n)]
+        np.random.shuffle(self.__action_table)
+        return self.env.reset()
+
+    def step(self, action):
+        action = self.__action_table[action]
+        observation, reward, terminal, info = self.env.step(action)
+        return observation, reward, terminal, info
+
 
 class VerbalGymWrapper(gym.Wrapper):
     """
@@ -16,10 +36,27 @@ class VerbalGymWrapper(gym.Wrapper):
         verbal feedback.
     """
 
-    def __init__(self, env, docstring):
+    def __init__(self, env, docstring,
+                 paraphrase=False,
+                 paraphrase_prompt="You're an expert in paraphrasing. Please paraphrase the following text: \n\n{}\n\n.",
+                 temperature=0.0):
         """ The user should provide a text description of the problem. """
         super().__init__(env)
-        self.docstring = docstring
+        if not hasattr(env, 'docstring'):
+            self.docstring = docstring
+
+        # these are verbal gym specific
+        self._vg_docstring = docstring
+        self._vg_paraphrase = paraphrase
+        self._vg_paraphrase_prompt = paraphrase_prompt
+        self._vg_temperature = temperature
+
+    def reset(self):
+        observation = self.env.reset()
+        if self._vg_paraphrase:
+            prompt = self._vg_paraphrase_prompt.format(self.docstring)
+            self.docstring = DEFAULT_LLM.generate(prompt=prompt, temperature=self._vg_temperature)[0]
+        return observation
 
     def step(self, action):
         observation, reward, terminal, info = self.env.step(action)
