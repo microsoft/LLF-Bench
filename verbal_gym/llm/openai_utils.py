@@ -1,5 +1,6 @@
 import openai
 import time, os
+from verbal_gym.utils.misc_utils import print_color
 
 OPENAI_API_INITIALIZED = False
 API_MODE_AZURE = True
