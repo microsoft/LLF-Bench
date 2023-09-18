@@ -73,9 +73,9 @@ class BasicAgent(Agent):
                     You have in the past taken the following path which consists of observations you saw, the actions
                     you took, and the feedback you got for those actions:
 
-                     {}
+                    {}
 
-                     You are currently observing the following {}.
+                    You are currently observing the following {}.
 
                     Choose your action according to the problem description, your past history of actions, and your
                     current observation and explain why.
@@ -123,7 +123,7 @@ class BasicAgent(Agent):
                 world_info = 'None'
             else:
                 world_info = "\n".join([
-                    f"Observation: {dp['observation']}\n Action: {dp['action']}\n Feedback: {dp['feedback']}"
+                    f"Observation: {dp['observation']}\nAction: {dp['action']}\nFeedback: {dp['feedback']}\n"
                     for dp in self.buffer])
 
         return world_info
