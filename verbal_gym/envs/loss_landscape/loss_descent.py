@@ -43,6 +43,26 @@ class LossLandscapeBase(gym.Env):
 
         self._seed = self.seed(seed)
 
+        self.docstring = dedent("""
+        You are trying to minimize the output (y) of a function by choosing input (x).
+        You get to observe y once you choose the value of x, where x is a 2-dimensional vector.
+        This means x = [x1, x2], where x1 and x2 are real numbers.
+        The goal is to choose x such that y is as small as possible.
+
+        The range of x1 and x2 is [{}, {}].
+        Please do not choose x outside of this range.
+
+        Choose x within {} attempts.
+        You can choose to stop at any time.
+
+        Output format:
+        x = [x1, x2]
+        
+        """)
+
+        self.docstring = self.docstring.strip()
+        self.docstring = self.docstring.format(self.x_low, self.x_high, self.horizon)
+
     def get_optimal_solution(self):
         return self.optimal_sol
 
@@ -53,35 +73,13 @@ class LossLandscapeBase(gym.Env):
         x = np.round(x, self.precision_digit)
         self.prev_x = x
 
+        y = self.callable_func(x)
+
         self.left_attempts = self.horizon
 
-        self.task_description = dedent("""
-        You are trying to minimize the output (y) of a function by choosing input (x).
-        You get to observe y once you choose the value of x, where x is a 2-dimensional vector.
-        This means x = [x1, x2], where x1 and x2 are real numbers.
-        The goal is to choose x such that y is as small as possible.
+        obs = "x={}\nFunction outputs y = {}\nYou have {} attempts left!".format(x.tolist(), y, self.left_attempts)
 
-        The range of x1 and x2 is [{}, {}].
-        Please do not choose x outside of this range.
-        
-        You are starting at x = [{}, {}].
-        The output of the function at this point is y = {}.
-        
-        Choose x within {} attempts.
-        You can choose to stop at any time.
-        
-        Output format:
-        x = [x1, x2]
-        
-        Output the next x that will make this function output the smallest y.
-        x =
-        """)
-        self.task_description = self.task_description.strip()
-        y = self.callable_func(x)
-        self.task_description = self.task_description.format(self.x_low, self.x_high, x[0], x[1], y,
-                                                             self.horizon)
-
-        return self.task_description
+        return obs
 
     def seed(self, seed=None):
         """Seed the PRNG of this space and possibly the PRNGs of subspaces."""
@@ -134,9 +132,9 @@ class LossLandscapeBase(gym.Env):
         if self.feedback == 0.5:
             feedback += '\n\n'
             if np.abs(dx1) > np.abs(dx2):
-                feedback += "Changing x1 (the first dimension of x) will decrease y faster than changing x2."
+                feedback += " x = [x1, x2]: Trying out a different number for x1 will minimize y more."
             else:
-                feedback += "Changing x2 (the second dimension of x) will decrease y faster than changing x1."
+                feedback += "x = [x1, x2]: Trying out a different number for x2 will minimize y more."
         elif self.feedback == 1:
             feedback += '\n\n'
             x1_direction = 'decrease' if dx1 > 0 else 'increase' # take the opposite of gradient
