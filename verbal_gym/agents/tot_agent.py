@@ -28,6 +28,8 @@ Your output should always be a string in the format done:id where id is the inde
 For example, given the list <justification>justification0</justification><justification>justification1</justification><justification>justification2</justification>, 
 if you think justification1 is the most promising and complete, your output should be True:1
 If however you think that justification0 is the most promising but not yet complete, your answer should be False:0
+Note that id must always be the index into the list of justifications, not the identifier of any actions contained inside the justifications!
+
 The text below contains all of the information that the decision-maker knows about their problem so far.
 Put yourself in the shoes of the decision-maker and commit to taking an action now.
 In that way they may gather additional information that can help you make a more informed guess in the future.
@@ -129,7 +131,7 @@ class ToTAgent(BasicAgent):
     def __init__(self, llm, n_actions, verbose=False, action_name='Action',
                  voter_agent=None, thinker_agent=None, permute_history=True, 
                  paraphrase_agent=None, logger=None, buffer_size=5, max_iter=10, num_simulated_actions=4):
-        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name, buffer_size=buffer_size)
+        super().__init__(llm, n_actions, verbose=verbose, action_name=action_name, buffer_size=buffer_size, ignore_observation=True)
         self.permute_history = permute_history
         self.paraphrase_agent = paraphrase_agent
 
@@ -142,21 +144,22 @@ class ToTAgent(BasicAgent):
             self.thinker_agent.action_name = action_name # we do a quick sync here
 
         self.logger = logger
+        self.action_list = None
 
         self.permute_history = permute_history
         self.max_iter = max_iter
         self.docstring = None
         self.num_simulated_actions = num_simulated_actions
         
-    def simulate_feedback_for_discrete_action(self, world_info, action_list):
+    def simulate_feedback_for_discrete_action(self, world_info):
         # Create the environment
         dataset = []
         
-        for action_item in action_list:
+        for action_item in self.action_list:
             justification = None
             if 'response' in action_item.keys():
                 justification = action_item['response']
-            thought = self.thinker_agent(self.docstring, world_info, action_list, action_item['action'], justification)
+            thought = self.thinker_agent(self.docstring, world_info, self.action_list, action_item['action'], justification)
             
             if self.verbose:
                 if self.logger is not None:
@@ -173,51 +176,75 @@ class ToTAgent(BasicAgent):
         self.buffer.update(feedback=feedback, next_observation=obs)
         world_info = self.world_info
         
-        action_list = []
-        if self.n_actions is not None:
-            for action in range(self.n_actions):
-                action_list.append({'action': str(action)})
-        else:
-            user_prompt = self.prompt_template.format(self.docstring, world_info)
-            user_prompt += "\n Ensure that your answer differs from these existing answers (if any).\n"
-            for i in range(self.num_simulated_actions):
-                response, _ = self.llm.generate(user_prompt)
-                action = response.split(self.action_name+':')[-1]
-                action_list.append({'action': action})
-                user_prompt += "\n "+self.action_name + ": "+action+"\n"
-            
+        if self.action_list is None:
+            self.action_list = []
+            if self.n_actions is not None:
+                for action in range(self.n_actions):
+                    self.action_list.append({'action': str(action)})
+            else:
+                user_prompt = self.prompt_template.format(self.docstring, world_info)
+                user_prompt += "\n Ensure that your answer differs from these existing answers (if any).\n"
+                for i in range(self.num_simulated_actions):
+                    response, _ = self.llm.generate(user_prompt)
+                    action = response.split(self.action_name+':')[-1]
+                    self.action_list.append({'action': action})
+                    user_prompt += "\n "+self.action_name + ": "+action+"\n"
+                
         vote = None
         selected_action = None
-        for i in range(self.max_iter):           
-            returned_data = self.simulate_feedback_for_discrete_action(world_info, action_list)
-            if len(returned_data)>0:
-                self.simulated_feedback = returned_data
-            for action_item in self.simulated_feedback:
-                if self.n_actions is not None:
-                    action_id = int(action_item['action'])
-                else:
-                    action_id = 0
-                    for j in range(len(action_list)):
-                        if action_list[j]['action'] == action_item['action']:
-                            action_id = j
-                            break
-                if 'response' in action_list[action_id].keys():
-                    action_list[action_id]['response'] += ";" + action_item['response']
-                else:
-                    action_list[action_id]['response'] = action_item['response']
-            
+        returned_data = self.simulate_feedback_for_discrete_action(world_info)
+        if len(returned_data)>0:
+            self.simulated_feedback = returned_data
+
+        for action_item in self.simulated_feedback:
+            if self.n_actions is not None:
+                action_id = int(action_item['action'])
+            else:
+                action_id = 0
+                for j in range(len(self.action_list)):
+                    if self.action_list[j]['action'] == action_item['action']:
+                        action_id = j
+                        break
+            if 'response' in self.action_list[action_id].keys():
+                self.action_list[action_id]['response'] += ";" + action_item['response']
+            else:
+                self.action_list[action_id]['response'] = action_item['response']
+
+        for i in range(self.max_iter):               
             if len(self.simulated_feedback)>1:
                 vote = self.voter_agent(self.docstring, world_info, self.simulated_feedback)
             else:
                 vote = "True:0"
+
             if self.verbose:
                 if self.logger is not None:
                     self.logger.log(f"Vote: {vote}\n")
+            
             tokens = vote.split(':')
             done = tokens[0]
             if done.startswith('True'):
                 break
-        
+
+            index = extract_action(vote, len(self.simulated_feedback), separator=':')
+            voted_action = self.simulated_feedback[index]['action']
+            action_id = None
+            if self.n_actions is not None:
+                action_id = int(voted_action)
+            else:
+                action_id = 0
+                for j in range(len(self.action_list)):
+                    if self.action_list[j]['action'] == voted_action:
+                        action_id = j
+                        break
+            action_item = self.action_list[action_id]
+            justification = None
+            if 'response' in action_item.keys():
+                justification = action_item['response']
+            thought = self.thinker_agent(self.docstring, world_info, self.action_list, action_item['action'], justification)
+                
+            if not thought.startswith("ERROR"):
+                self.simulated_feedback[index]['response'] += ";" + thought
+                           
         index = 0
         if len(self.simulated_feedback)>1:
             index = extract_action(vote, len(self.simulated_feedback), separator=':')
