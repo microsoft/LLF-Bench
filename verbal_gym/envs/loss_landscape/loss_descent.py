@@ -57,7 +57,6 @@ class LossLandscapeBase(gym.Env):
 
         Output format:
         x = [x1, x2]
-        
         """)
 
         self.docstring = self.docstring.strip()
@@ -99,7 +98,8 @@ class LossLandscapeBase(gym.Env):
             if stop_word in text:
                 return None, True
 
-        pattern = r'\[(-?\d+\.?\d*),\s*(-?\d+\.?\d*)\]'
+        # pattern = r'\[(-?\d+\.?\d*),\s*(-?\d+\.?\d*)\]'
+        pattern = r'\[(-?\d+\.?\d*(?:e[-+]?\d+)?),\s*(-?\d+\.?\d*(?:e[-+]?\d+)?)\]'
         match = re.search(pattern, text)
         if match is None:
             return None, False
@@ -123,7 +123,7 @@ class LossLandscapeBase(gym.Env):
             return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {'feedback': 'You have reached the minimum!'}
 
         obs = "Function outputs y = {}\nYou have {} attempts left!".format(loss, self.left_attempts)
-        feedback = "y is not minimized yet. Keep going!"
+        feedback = "" # y is not minimized yet. Keep going!
 
         if self.feedback != 0:
             dx = self.grad_func(x)
@@ -132,15 +132,16 @@ class LossLandscapeBase(gym.Env):
         if self.feedback == 0.5:
             feedback += '\n\n'
             if np.abs(dx1) > np.abs(dx2):
-                feedback += " x = [x1, x2]: Trying out a different number for x1 will minimize y more."
+                feedback += f"You chose {action}. However, try a different number for first number {x[0]} will minimize y more."
             else:
-                feedback += "x = [x1, x2]: Trying out a different number for x2 will minimize y more."
+                # feedback += "x = [x1, x2]: Try a different number for x2 will minimize y more."
+                feedback += f"You chose {action}. However, try a different number for second number {x[1]} will minimize y more."
         elif self.feedback == 1:
             feedback += '\n\n'
-            x1_direction = 'decrease' if dx1 > 0 else 'increase' # take the opposite of gradient
-            x2_direction = 'decrease' if dx2 > 0 else 'increase'
-            feedback += f"You should {x1_direction} x1 (the first dimension of x) to decrease y.\n"
-            feedback += f"You should {x2_direction} x2 (the second dimension of x) to decrease y."
+            x1_direction = 'Smaller' if dx1 > 0 else 'Larger' # take the opposite of gradient
+            x2_direction = 'Smaller' if dx2 > 0 else 'Larger'
+            feedback += f"You chose {action}. Output a {x1_direction} number than the first number {x[0]} to minimize y.\n"
+            feedback += f"You chose {action}. Output a {x2_direction} number than the second number {x[1]} to minimize y.\n"
 
         self.prev_x = x
         self.left_attempts -= 1
@@ -161,6 +162,12 @@ Valley shaped functions:
 - [Rosenbrock Function](https://www.sfu.ca/~ssurjano/rosen.html)
 - [Six-Hump Camel Function](https://www.sfu.ca/~ssurjano/camel6.html)
 - [Three-Hump Camel Function](https://www.sfu.ca/~ssurjano/camel3.html)
+
+Suggestion:
+Do not use the following functions:
+Bohachevsky, RotatedHyperEllipsoid, Matyas, ThreeHumpCamel
+
+Because LLM is quick to guess [0, 0], and that's often the "correct" answer.
 """
 
 class Bohachevsky(LossLandscapeBase):
@@ -200,13 +207,13 @@ class Matyas(LossLandscapeBase):
 
 class McCormick(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
-        func = lambda x: np.sin(x[0] + x[1]) + (x[0] - x[1]) ** 2 - 1.5 * x[0] + 2.5 * x[1] + 1
+        func = lambda x: jnp.sin(x[0] + x[1]) + (x[0] - x[1]) ** 2 - 1.5 * x[0] + 2.5 * x[1] + 1
         super().__init__(callable_func=func,
                             x_low=-1.5, x_high=4, min_y=-1.9133, optimal_sol=np.array([-0.54719, -1.54719]),
                             feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
 
 class Rosenbrock(LossLandscapeBase):
-    def __init__(self, a=1, b=100, feedback=0, seed=None, horizon=10):
+    def __init__(self, a=1, b=1, feedback=0, seed=None, horizon=10): # b = 100
         # https://en.wikipedia.org/wiki/Rosenbrock_function
         # all of them are lambda functions that expect Numpy array of shape (2,)
         two_dim_rosenbrock = lambda x: (a - x[0])**2 + b * (x[1] - x[0]**2)**2
