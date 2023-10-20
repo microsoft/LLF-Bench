@@ -44,7 +44,7 @@ def _call_model(messages, model, temperature, timeout, logprobs=None, max_tokens
         del config['logprobs']  # logprobs is not supported by GPT3.5 or newer
         response = openai.ChatCompletion.create(**config)
         info = {'logprobs': None, 'response': response}
-        return response['choices'][0]['message']['content'], info
+        return response['choices'][0]['message'].get('content', ''), info
 
 
 def init_openai_api(api_mode_azure=True):
@@ -96,6 +96,7 @@ def call_model(messages, model, temperature, timeout, wait_time=2, max_tokens=No
             exit(1)
         except Exception as e:
             print(f"Unexpected exception: {e}")
+            print(f"Message: {messages}")
             #exit(1)
             #import pdb; pdb.set_trace()
             time.sleep(timeout)
