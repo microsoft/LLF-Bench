@@ -1,71 +1,42 @@
 import random
 import numpy as np
+from verbal_gym.utils.loggers import ListLogger
 
 
-def rollout(agent, env, *, horizon, return_full_information=False, log_data=False, logger=None):
-    """ A basic agent evaluation loop. """
+def rollout(agent, env, *, horizon, oracle=False, get_logger=None):
+    """ A generic agent evaluation loop. """
 
-    if return_full_information:
-        assert hasattr(env,'get_full_information')
+    # If logger is not provided, then use a default logger
+    get_logger = get_logger or ListLogger
+    logger = get_logger()
 
-    observation = env.reset()
-
-    # If environment provides logging facility, then log the environment
-    if hasattr(env, "log_env"):
-        env.log_env(logger=logger)
-
-    default_docstring = 'This is an interactive decision making problem with verbal feedback.'
-
-    # in case the environment does not have docstring
-    docstring = getattr(env, 'docstring', observation if isinstance(observation, str) else default_docstring)
-
-    agent.reset(docstring)
-
+    observation = env.reset()  # this is a dict with keys: observation, feedback, instruction
     info = {}
     sum_of_rewards = 0.0
-    data = dict(observations=[observation], actions=[], rewards=[], dones=[], infos=[])
-
     for i in range(horizon):
 
-        feedback = info.get('feedback', None)
+        if oracle:  # XXX Oracle: the agent gets privileged information
+            observation['oracle_info'] = info.get('oracle_info')
 
-        if return_full_information:  # Oracle: the agent gets privileged information
-            full_information = info.get('full_information', env.get_full_information())
-            action = agent.act(observation, feedback, full_information=full_information)
-        else:                       # Regular agent
-            action = agent.act(observation, feedback)
-
+        action = agent.act(observation)
         new_observation, reward, done, info = env.step(action)
+        logger.log(observation=observation, action=action, reward=reward, done=done, info=info)
 
-        if logger is not None:
-            logger.log(f" Observation: {observation}; "
-                       f"Action: {action}; "
-                       f"Reward: {reward}; "
-                       f"Feedback: {info.get('feedback', None)};"
-                       f"New Observation: {new_observation}\n")
-
-        observation = new_observation
-
-        if log_data:
-            for k in data.keys():
-                data[k].append(locals()[k[:-1]])  # removing s at the end
         sum_of_rewards += reward
-
+        observation = new_observation
         if done:
             break
 
-    return sum_of_rewards, data
+    return sum_of_rewards, logger.content
 
 
-def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, log_data=False,
-                   n_workers=1, logger=None):
+def evaluate_agent(agent, env, *, horizon, n_episodes, oracle=False, get_logger=None, n_workers=1):
     """ Evaluate an agent with n_episodes rollouts. """
 
     _rollout = lambda: rollout(agent, env,
                                horizon=horizon,
-                               log_data=log_data,
-                               return_full_information=return_full_information,
-                               logger=logger)
+                               oracle=oracle,
+                               get_logger=get_logger)
 
     if n_workers > 1:
         import ray
@@ -79,7 +50,7 @@ def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=F
     scores = [score for score, _ in results]
     scores = np.array(scores)
     data = [data for _, data in results]
-    return (scores, data) if log_data else scores
+    return (scores, data)
 
 
 def set_seed(seed, env=None):

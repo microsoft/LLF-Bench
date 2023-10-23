@@ -1,14 +1,21 @@
+import numpy as np
+from typing import Union, Dict, Any
+
 class Agent:
     """ An agent that interacts with an environment with verbal feedback. """
 
     NAME = "AbstractAgent"
 
-    def __init__(self, *args, **kwargs):
-        # TODO: pass env_spec
-        self.docstring = None
+    def act(self, observation: Union[str, Dict[str, Any]]) -> Any:
+        """ This is called at each step.
 
-    def reset(self, docstring):
-        self.docstring = docstring
+            Args:
+                observation: the observation from the environment. It can be a
+                string or a dict with keys "observation", "feedback", and
+                "task".
 
-    def act(self, *args, **kwargs):
+            Returns:
+                action: the action to take. It can be an int, a float, a string,
+                and np.ndarray depending on the environment.
+        """
         raise NotImplementedError

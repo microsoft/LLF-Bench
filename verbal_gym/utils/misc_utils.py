@@ -10,9 +10,6 @@ def print_color(message, color=None, logger=None):
     }
     print(f"{colors.get(color, '')}{message}\033[0m")  # Default to no color if invalid color is provided
 
-    if logger is not None:
-        logger.log(message)
-
 
 def extract_int(txt):
     return [int(s) for s in txt.split() if s.isdigit()]

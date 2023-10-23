@@ -3,6 +3,53 @@ import copy
 import numpy as np
 from verbal_gym.llm import DEFAULT_LLM
 
+class VerbalGymWrapper(gym.Wrapper):
+    """
+        This is the wrapper that turns a gym environment into a verbal gym
+        environment.
+
+        In verbal-gym, the environment's reward is not provided to the agent.
+        Instead the agent learns from info of instructions, observations, and
+        their feedback.
+
+        We present this info to the agent via the an observation dict, which has
+        keys: 'instruction', 'observation', 'feedback'. The 'instruction' is a
+        string containing the task instruction and optionally examples or other
+        prior information that might help explain the task. The 'observation' is
+        a (partial) observation of the environment state. The 'feedback' is a
+        string containing formative feedback for learning (which is a
+        replacement for reward in RL). If any attribute is missing, it is
+        represented as None. But at the beginning `instruction` must not be None
+        and 'feedback' must be None.
+
+        This wrapper is backward compatible with text-based gym environments,
+        which returns a string as observation. In this case, the initial
+        observation is treated as the instruction, and the reward is textualized
+        and treated as the feedback.
+
+    """
+
+    def format_check(self, observation):
+        assert isinstance(observation, dict), "The observation must be a dict."
+        assert 'observation' in observation and 'feedback' in observation and 'instruction' in observation, "The observation must be a dict with keys: observation, feedback, instruction."
+
+    def reset(self):
+        observation = self.env.reset()
+        if type(observation)==str:  # backward compatibility
+            observation = dict(instruction=observation, observation=None, feedback=None)
+        self.format_check(observation)
+        assert observation['feedback'] is None, "The feedback must be None in the initial observation"
+        assert observation['instruction'] is not None, "The instruction must be provided in the initial observation"
+        return observation
+
+    def step(self, action):
+        observation, reward, terminal, info = self.env.step(action)
+        if type(observation)==str:  # backward compatibility
+            observation = dict(instruction=None, observation=observation, feedback=f"You received a reward of {reward}.")
+        self.format_check(observation)
+        return observation, reward, terminal, info
+
+
 class TerminalFreeWrapper(gym.Wrapper):
     #  Set terminal to False always
     def step(self, action):
@@ -27,44 +74,6 @@ class RandomActionOrderWrapper(gym.Wrapper):
         return observation, reward, terminal, info
 
 
-class VerbalGymWrapper(gym.Wrapper):
-    """
-        This is basic example wrapper that turns a gym environment into a verbal
-        gym environment. Each verbal gym environment has a `docstring` attribute
-        that describes the problem. In addition, the `step` function should
-        return a feedback string, in info['feedback'], which describes the
-        verbal feedback.
-    """
-
-    def __init__(self, env, docstring,
-                 paraphrase=False,
-                 paraphrase_prompt="You're an expert in paraphrasing. Please paraphrase the following text: \n\n{}\n\n.",
-                 temperature=0.0):
-        """ The user should provide a text description of the problem. """
-        super().__init__(env)
-        if not hasattr(env, 'docstring'):
-            self.docstring = docstring
-
-        # these are verbal gym specific
-        self._vg_docstring = docstring
-        self._vg_paraphrase = paraphrase
-        self._vg_paraphrase_prompt = paraphrase_prompt
-        self._vg_temperature = temperature
-
-    def reset(self):
-        observation = self.env.reset()
-        if self._vg_paraphrase:
-            prompt = self._vg_paraphrase_prompt.format(self.docstring)
-            self.docstring = DEFAULT_LLM.generate(prompt=prompt, temperature=self._vg_temperature)[0]
-        return observation
-
-    def step(self, action):
-        observation, reward, terminal, info = self.env.step(action)
-        if 'feedback' not in info:
-            info['feedback'] = 'You get a reward of {}.'.format(reward)
-        return observation, reward, terminal, info
-
-
 class FullInformationWrapper(gym.Wrapper):
     """
         This wrapper assumes env supports pickle serialization.
@@ -73,7 +82,7 @@ class FullInformationWrapper(gym.Wrapper):
         assert isinstance(env.action_space, gym.spaces.Discrete)
         super().__init__(env)
 
-    def get_full_information(self):
+    def oracle_info(self):
         full_information = dict()
         for i in range(self.env.action_space.n):
             env = copy.deepcopy(self.env)
@@ -88,5 +97,5 @@ class FullInformationWrapper(gym.Wrapper):
 
     def step(self, action):
         observation, reward, terminal, info = self.env.step(action)
-        info['full_information'] = self.get_full_information()
+        info['oracle_info'] = self.oracle_info()
         return observation, reward, terminal, info

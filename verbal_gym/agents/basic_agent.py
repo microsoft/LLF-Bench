@@ -1,5 +1,5 @@
 from textwrap import dedent, indent
-
+from typing import Union, Dict, Any
 from verbal_gym.agents.abstract_agent import Agent
 from verbal_gym.utils.misc_utils import print_color
 from verbal_gym.agents.utils import extract_action, ReplayBuffer
@@ -128,7 +128,12 @@ class BasicAgent(Agent):
 
         return world_info
 
-    def act(self, observation, feedback, **kwargs):
+    def act(self, observation: Union[str, Dict[str, Any]]) -> Any:
+
+        obs_dict = observation
+        instruction, observation, feedback = obs_dict['instruction'], obs_dict['observation'], obs_dict['feedback']
+        if instruction is not None:
+            self.reset(instruction)
 
         # update with the latest feedback (ignored in the first call)
         self.buffer.update(feedback=feedback, next_observation=observation)
