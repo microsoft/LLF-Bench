@@ -3,8 +3,11 @@ import gym
 from gym.envs.registration import register
 from verbal_gym.envs.env_wrapper import VerbalGymWrapper, TerminalFreeWrapper, RandomActionOrderWrapper
 from verbal_gym.utils.benchmark_utils import generate_combinations_dict
+from verbal_gym.envs.utils import format
 import gym_bandits
 from gym.utils import seeding
+from .prompts import *
+
 
 environments = (
     'BanditTenArmedRandomFixed-v0',
@@ -29,44 +32,40 @@ class BanditGymWrapper(gym.Wrapper):
         self.feedback_type = feedback_type
         assert self.instruction_type in INSTRUCTION_TYPES
         assert self.feedback_type in FEEDBACK_TYPES
+        self._feedback_types = list(FEEDBACK_TYPES)
+        self._feedback_types.remove('m')
 
     def reset(self):
-        self._bandit_env.__init__()  # gym_bandits resets the problem at the init for some reasons.
+        self._bandit_env.__init__()  # gym_bandits implement the reset at the init for some reason.
         self.env.reset()  # bandit env has no observation
         docstring =  self._bandit_env.__doc__
         n_actions = self.env.action_space.n
-        instruction = docstring+f"\nFind the best action as fast as possible. Your action is an integer between 0 and {n_actions-1}."
+        instruction = docstring +'\n' + format(b_instruction, low=0, high=n_actions-1)
         if self.instruction_type=='p':  # Give info of a bad action.
             bad_action = np.random.choice(np.delete(np.arange(self.env.action_space.n), self._best_arm))
-            instruction += f"\nHint: Action {bad_action} is not the right one, as it gets an expected reward of {self._expected_reward(bad_action)}."
+            instruction += '\n'+format(p_instruction, bad_action=bad_action, reward=self._expected_reward(bad_action))
         if self.instruction_type=='c':
-            instruction += f"\nHint: The optimal action is {self._best_arm}."
-
+            instruction += '\n'+format(c_instruction, best_arm=self._best_arm)
         return dict(instruction=instruction, observation=None, feedback=None)
 
     def step(self, action):
         observation, reward, terminal, info = self.env.step(action)
 
-        feedback = f"You received a reward of {reward}."
-
-        feedback_types = FEEDBACK_TYPES.copy()
-        feedback_types.remove('m')
-        feedback_type = np.random.choice(feedback_types) if self.feedback_type=='m' else self.feedback_type
-
+        feedback = format(r_feedback, reward=reward)  # reward feedback
+        feedback_type = np.random.choice(self._feedback_types) if self.feedback_type=='m' else self.feedback_type
         if feedback_type == 'hp':  # hindsight positive: explaination on why something is correct
             if action == self._best_arm:
-                feedback +=  f" This is the best arm, as it has the highest expected reward."
+                feedback += " "+format(hp_feedback)
         elif feedback_type == 'hn':  # hindsight negative: explaination on why something is incorrect
             if action != self._best_arm:
-                feedback += f" This is not the best arm, as it does not have the highest expected reward."
+                feedback += " "+format(hn_feedback)
         elif feedback_type == 'fp':  # future positive: suggestion of things to do
-            feedback += f" You will receive an expected reward of {self._expected_reward(self._best_arm)} if you choose action {self._best_arm}."
+            feedback += " "+format(hp_feedback, best_arm=self._best_arm, reward=self._expected_reward(self._best_arm))
         elif feedback_type == 'fn':  # future negative: suggestion of things to avoid
             bad_action = np.random.choice(np.delete(np.arange(self.env.action_space.n), self._best_arm))
-            feedback += f" Hint: Action {bad_action} is not the right one, as it gets an expected reward of {self._expected_reward(bad_action)}."
+            feedback += " "+format(fn_feedback, bad_action=bad_action, reward=self._expected_reward(bad_action))
         elif feedback_type == 'n':
             feedback = None
-
         observation = dict(instruction=None, observation=None, feedback=feedback)
         return observation, reward, terminal, info
 
