@@ -9,7 +9,7 @@ from gym.utils import seeding
 from .prompts import *
 
 
-environments = (
+ENVIRONMENTS = (
     'BanditTenArmedRandomFixed-v0',
     'BanditTenArmedRandomRandom-v0',
     'BanditTenArmedGaussian-v0',
@@ -107,7 +107,7 @@ def make_verbal_env(env_name,
 
 
 configs = generate_combinations_dict(
-                dict(env_name=environments,
+                dict(env_name=ENVIRONMENTS,
                      feedback_type=FEEDBACK_TYPES,
                      instruction_type=INSTRUCTION_TYPES))
 
@@ -119,7 +119,7 @@ for config in configs:
         kwargs=config,
     )
 
-for env_name in environments:
+for env_name in ENVIRONMENTS:
     # default version (backwards compatibility)
     register(
         id=f"verbal-{env_name}",
