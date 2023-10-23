@@ -6,7 +6,7 @@ from verbal_gym.utils.benchmark_utils import generate_combinations_dict
 import gym_bandits
 from gym.utils import seeding
 
-environments = [
+environments = (
     'BanditTenArmedRandomFixed-v0',
     'BanditTenArmedRandomRandom-v0',
     'BanditTenArmedGaussian-v0',
@@ -15,10 +15,10 @@ environments = [
     'BanditTwoArmedHighHighFixed-v0',
     'BanditTwoArmedHighLowFixed-v0',
     'BanditTwoArmedLowLowFixed-v0',
-]
+)
 
-INSTRUCTION_TYPES = ['b', 'p', 'c']
-FEEDBACK_TYPES = ['m', 'n', 'r', 'hp', 'hn', 'fp', 'fn']
+INSTRUCTION_TYPES = ('b', 'p', 'c')
+FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
 
 class BanditGymWrapper(gym.Wrapper):
 
@@ -35,13 +35,12 @@ class BanditGymWrapper(gym.Wrapper):
         self.env.reset()  # bandit env has no observation
         docstring =  self._bandit_env.__doc__
         n_actions = self.env.action_space.n
-        instruction = docstring+f"\nYou find the best action as fast as possible. Your action is an integer between 0 and {n_actions-1}."
+        instruction = docstring+f"\nFind the best action as fast as possible. Your action is an integer between 0 and {n_actions-1}."
         if self.instruction_type=='p':  # Give info of a bad action.
             bad_action = np.random.choice(np.delete(np.arange(self.env.action_space.n), self._best_arm))
             instruction += f"\nHint: Action {bad_action} is not the right one, as it gets an expected reward of {self._expected_reward(bad_action)}."
         if self.instruction_type=='c':
             instruction += f"\nHint: The optimal action is {self._best_arm}."
-            print(self._best_arm)
 
         return dict(instruction=instruction, observation=None, feedback=None)
 
