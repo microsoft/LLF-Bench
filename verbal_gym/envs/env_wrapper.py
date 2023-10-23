@@ -1,7 +1,7 @@
 import gym
 import copy
 import numpy as np
-from verbal_gym.llm import DEFAULT_LLM
+from typing import Dict, Any, Tuple
 
 class VerbalGymWrapper(gym.Wrapper):
     """
@@ -29,11 +29,11 @@ class VerbalGymWrapper(gym.Wrapper):
 
     """
 
-    def format_check(self, observation):
+    def format_check(self, observation: Dict[str, Any]):
         assert isinstance(observation, dict), "The observation must be a dict."
         assert 'observation' in observation and 'feedback' in observation and 'instruction' in observation, "The observation must be a dict with keys: observation, feedback, instruction."
 
-    def reset(self):
+    def reset(self) -> Dict[str, str]:
         observation = self.env.reset()
         if type(observation)==str:  # backward compatibility
             observation = dict(instruction=observation, observation=None, feedback=None)
@@ -42,7 +42,7 @@ class VerbalGymWrapper(gym.Wrapper):
         assert observation['instruction'] is not None, "The instruction must be provided in the initial observation"
         return observation
 
-    def step(self, action):
+    def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, Dict[str, Any]]:
         observation, reward, terminal, info = self.env.step(action)
         if type(observation)==str:  # backward compatibility
             observation = dict(instruction=None, observation=observation, feedback=f"You received a reward of {reward}.")
@@ -69,9 +69,17 @@ class RandomActionOrderWrapper(gym.Wrapper):
         return self.env.reset()
 
     def step(self, action):
-        action = self.__action_table[action]
+        action = self.internal_action(action)
         observation, reward, terminal, info = self.env.step(action)
         return observation, reward, terminal, info
+
+    def internal_action(self, action):
+        # map action from the external action space to the internal action space
+        return self.__action_table[action]
+
+    def external_action(self, action):
+        # map action from the internal action space to the external action space
+        return self.__action_table.index(action)
 
 
 class FullInformationWrapper(gym.Wrapper):

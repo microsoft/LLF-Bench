@@ -19,23 +19,27 @@ def main(args):
     horizon = args.horizon
 
     # Create the environment
-    env = gym.make(args.env_name,
-                   num_rooms=args.num_rooms,
-                   horizon=args.horizon,
-                   fixed=True,
-                   feedback_level=args.feedback_type,
-                   min_goal_dist=4)
-
+    set_seed(args.seed)
+    env = gym.make(args.env_name)
     set_seed(args.seed, env)
+
+    # TODO Should have a separate if condition
+    #    horizon=args.horizon,
+    #    num_rooms=args.num_rooms,
+    #    fixed=True,
+    #    feedback_level=args.feedback_type,
+    #    min_goal_dist=4)
+
+
 
     n_actions = env.action_space.n if isinstance(env.action_space, gym.spaces.Discrete) else None
     action_name = 'Action'
     if any([name in args.env_name for name in ('Haiku', 'Tanka', 'LineSyllableConstrainedPoem', 'SyllableConstrainedPoem')]):
         action_name = 'Poem'
 
-    log_manager = MultiprocessingLoggerManager(file_path=f"{args.save_path}/{args.logname}",
-                                               logging_level=logging.INFO)
-    logger = log_manager.get_logger("Main")
+    # log_manager = MultiprocessingLoggerManager(file_path=f"{args.save_path}/{args.logname}",
+    #                                            logging_level=logging.INFO)
+    # logger = log_manager.get_logger("Main")
 
     # Basic agent
     system_prompt = BasicAgent.system_prompt
@@ -46,12 +50,11 @@ def main(args):
                             env=env,
                             horizon=horizon,
                             n_episodes=n_episodes,
-                            n_workers=args.n_workers,
-                            logger=logger)
+                            n_workers=args.n_workers)
 
     print_color('Basic LLM agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()),
-                color='red',
-                logger=logger)
+                color='red')
+                # logger=logger)
 
     # Save a small file with argparse values, so that we dont have to parse the text log
     results = {
@@ -73,7 +76,7 @@ def get_parser():
     parser.add_argument('--save_path', type=str, default="results")
     parser.add_argument('--logname', type=str, default="basic_agent_log.txt")
     parser.add_argument('--horizon', type=int, default=10)
-    parser.add_argument('--env_name', type=str, default='verbal-BanditTenArmedRandomRandom-v0')
+    parser.add_argument('--env_name', type=str, default='verbal-BanditTenArmedRandomRandom-b-m-v0')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
