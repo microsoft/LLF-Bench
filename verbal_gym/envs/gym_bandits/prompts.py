@@ -1,7 +1,7 @@
 
 # This file contains the prompts for the verbal instructions and feedback.
 
-b_instruction = [
+b_instruction = (
     "Find the best action as fast as possible. Your action is an integer between {low} and {high}.",
     "Quickly identify the optimal action. Your action should be an integer within the range of {low} and {high}.",
     "Determine the most suitable action swiftly. Your action must be an integer from {low} to {high}.",
@@ -23,9 +23,9 @@ b_instruction = [
     "Discover the prime action in no time. Your action is an integer between the limits of {low} and {high}.",
     "Uncover the top action at a fast pace. Your action is an integer from the range of {low} to {high}.",
     "Ascertain the superior action promptly. Your action is an integer between the range of {low} and {high}.",
-]
+)
 
-p_instruction = [
+p_instruction = (
     "Hint: Action {bad_action} is not the right one, as it gets an expected reward of {reward}.",
     "Suggestion: The action {bad_action} is incorrect as it receives an expected reward of {reward}.",
     "Note: The action {bad_action} is not appropriate since it obtains an expected reward of {reward}.",
@@ -47,9 +47,9 @@ p_instruction = [
     "Tip: The action {bad_action} is not exact as it earns an expected reward of {reward}.",
     "Pointer: The action {bad_action} is not proper as it achieves an expected reward of {reward}.",
     "Indication: The action {bad_action} is not fitting as it attains an expected reward of {reward}.",
-]
+)
 
-c_instruction = [
+c_instruction = (
     "Hint: The optimal action is {best_arm}",
     "Suggestion: The best action to take is {best_arm}",
     "Tip: The most suitable action is {best_arm}",
@@ -71,9 +71,9 @@ c_instruction = [
     "Insinuation: The peerless action is {best_arm}",
     "Implication: The unrivaled action is {best_arm}",
     "Allusion: The unparalleled action is {best_arm}",
-]
+)
 
-r_feedback = [
+r_feedback = (
     "You received a reward of {reward}.",
     "You have been awarded {reward}.",
     "You've been given a reward of {reward}.",
@@ -95,9 +95,9 @@ r_feedback = [
     "You've been appreciated with a reward of {reward}.",
     "You've been praised with a reward of {reward}.",
     "You've been credited with a reward of {reward}.",
-]
+)
 
-hp_feedback = [
+hp_feedback = (
     "This is the best arm, as it has the highest expected reward.",
     "This arm is superior, given that it possesses the maximum anticipated reward.",
     "This is the top arm, since it carries the greatest expected payoff.",
@@ -119,9 +119,9 @@ hp_feedback = [
     "This is the most superior arm, as it has the highest expected reward.",
     "This is the most exceptional arm, as it has the highest expected reward.",
     "This is the most distinguished arm, as it has the highest expected reward.",
-]
+)
 
-hn_feedback = [
+hn_feedback = (
     "This is not the best arm, as it does not have the highest expected reward.",
     "This arm is not the best, as its expected reward is not the highest.",
     "The expected reward of this arm is not the highest, hence it is not the best.",
@@ -143,9 +143,9 @@ hn_feedback = [
     "This arm is not the best, as it does not bear the highest expected reward.",
     "This arm is not the best, as it does not own the highest expected reward.",
     "This arm is not the best, as it does not maintain the highest expected reward.",
-]
+)
 
-fp_feedback = [
+fp_feedback = (
     "You will receive an expected reward of {reward} if you choose action {best_arm}.",
     "An expected reward of {reward} will be received if you select action {best_arm}.",
     "If you opt for action {best_arm}, you'll get an expected reward of {reward}.",
@@ -167,9 +167,9 @@ fp_feedback = [
     "You'll be rewarded with {reward} if you take action {best_arm}.",
     "An expected reward of {reward} is what you'll get if you choose action {best_arm}.",
     "You're expected to receive a reward of {reward} if action {best_arm} is your choice.",
-]
+)
 
-fn_feedback = [
+fn_feedback = (
     "Hint: Action {bad_action} is not the right one, as it gets an expected reward of {reward}."
     "Suggestion: The action {bad_action} is incorrect as it receives an expected reward of {reward}.",
     "Advice: The action {bad_action} is not appropriate since it yields an expected reward of {reward}.",
@@ -191,4 +191,4 @@ fn_feedback = [
     "Instruction: The action {bad_action} is not the right tactic as it accumulates an expected reward of {reward}.",
     "Guideline: The action {bad_action} is not the right strategy as it amasses an expected reward of {reward}.",
     "Clue: The action {bad_action} is not the right procedure as it collects an expected reward of {reward}.",
-]
+)

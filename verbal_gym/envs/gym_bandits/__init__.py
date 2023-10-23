@@ -118,3 +118,11 @@ for config in configs:
         entry_point='verbal_gym.envs.gym_bandits:make_verbal_env',
         kwargs=config,
     )
+
+for env_name in environments:
+    # default version (backwards compatibility)
+    register(
+        id=f"verbal-{env_name}",
+        entry_point='verbal_gym.envs.gym_bandits:make_verbal_env',
+        kwargs=dict(env_name=env_name, feedback_type='r', instruction_type='b')
+    )

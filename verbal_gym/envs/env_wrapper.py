@@ -29,7 +29,7 @@ class VerbalGymWrapper(gym.Wrapper):
 
     """
 
-    def format_check(self, observation: Dict[str, Any]):
+    def obs_check(self, observation: Dict[str, Any]):
         assert isinstance(observation, dict), "The observation must be a dict."
         assert 'observation' in observation and 'feedback' in observation and 'instruction' in observation, "The observation must be a dict with keys: observation, feedback, instruction."
 
@@ -37,7 +37,7 @@ class VerbalGymWrapper(gym.Wrapper):
         observation = self.env.reset()
         if type(observation)==str:  # backward compatibility
             observation = dict(instruction=observation, observation=None, feedback=None)
-        self.format_check(observation)
+        self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation"
         assert observation['instruction'] is not None, "The instruction must be provided in the initial observation"
         return observation
@@ -46,7 +46,7 @@ class VerbalGymWrapper(gym.Wrapper):
         observation, reward, terminal, info = self.env.step(action)
         if type(observation)==str:  # backward compatibility
             observation = dict(instruction=None, observation=observation, feedback=f"You received a reward of {reward}.")
-        self.format_check(observation)
+        self.obs_check(observation)
         return observation, reward, terminal, info
 
 
