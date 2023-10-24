@@ -12,6 +12,7 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         "gym==0.25.2",
+        "parse==1.19.1"
         # "Cython==0.29.36",
         "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits",
         # poem_env

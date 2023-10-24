@@ -1,6 +1,8 @@
 import gym
 import numpy as np
 from typing import Dict, Any, Tuple, Union, List
+from verbal_gym.envs.utils import format
+import parse
 
 """
 
@@ -92,12 +94,44 @@ class VerbalGymWrapper(gym.Wrapper):
         self._feedback_types.remove('m')
         self.paraphrase_idx = paraphrase_idx
 
-    def format(self, prompts : List[str], **kwargs):
+    def format(self, prompts : List[str], _idx=None, **kwargs):
         """ A helper method for selecting from a set of paraphrased prompts."""
-        if self.paraphrase_idx is None:
-            return np.random.choice(prompts).format(**kwargs)
+        return format(prompts, _idx=_idx or self.paraphrase_idx, **kwargs)
+
+    def reformat(self, original: str, prompts : List[str], template=None):
+        """ A helper method for reformatting a string using a template.
+
+            Args:
+                original: The original string to be reformatted.
+
+                prompts: A list of prompt templates to select from in
+                reformatting.
+
+                template: The template to use in reformatting. If None, the
+                first prompt in `prompts` as the template to reformat
+                `original`.
+
+                If there are multiple matches, it finds the pattern using the
+                first match, paraphrase the found pattern, and then use the
+                paraphrased pattern to replace the occurences of the found pattern.
+
+                For example,
+
+                orignal = 'This is an apple. This is an orange. This is an apple.'
+                template = 'This is an {fruit}.'
+                prompts = ['This is not an {fruit}']
+                paraphrased = 'This is not an apple. This is an orange. This is not an apple.'
+
+        """
+        template = template or prompts[0]
+        parsed = parse.search(template, original)
+        if parsed is None:
+            paraphrased = original
         else:
-            prompts[self.paraphrase_idx % len(prompts)].format(**kwargs)
+            old = template.format(**parsed.named)
+            new = self.format(prompts, **parsed.named)
+            paraphrased = original.replace(old, new)
+        return paraphrased
 
     def obs_check(self, observation: Dict[str, Any]):
         """ This is a sanity check for the observation dict."""

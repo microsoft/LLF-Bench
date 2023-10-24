@@ -46,7 +46,7 @@ tanka_b_instruction = (
     "Can you generate a Tanka for me? It's a five-line poem with a syllable count of 5-7-5-7-7.",
 )
 
-line_syb_constrained_poem_b_instruction = (
+line_syllable_constrained_poem_b_instruction = (
     "Can you write me a poem? It should have {k} lines. The number of syllables for the lines in the poem should follow a {pattern} pattern.",
     "Could you compose a poem for me? It needs to have {k} lines. The syllable count for each line should adhere to a {pattern} pattern.",
     "Can you pen a poem for me? It must contain {k} lines. The syllable distribution for each line should match a {pattern} pattern.",
@@ -70,7 +70,7 @@ line_syb_constrained_poem_b_instruction = (
     "Can you write a poem for me? It should be divided into {k} lines. The syllable count for each line should align with a {pattern} pattern."    ,
 )
 
-syllable_constrained_b_instruction = (
+syllable_constrained_poem_b_instruction = (
     "Can you produce a short poem where each line has {syllable} syllables?",
     "Could you create a brief poem where each verse contains {syllable} syllables?",
     "Can you compose a concise poem with each line having {syllable} syllables?",
@@ -93,7 +93,6 @@ syllable_constrained_b_instruction = (
     "Can you devise a short poem where each verse is composed with {syllable} syllables?",
     "Could you craft a brief poem where each line is designed with {syllable} syllables?",
 )
-
 
 r_feedback_neg = (
     "The generated {form_name} is incorrect.",
@@ -144,51 +143,51 @@ r_feedback_pos = (
 )
 
 hn_feedback = (
-    "The generated {form_name} is incorrect. This is because the {form_name} needs to have exactly {k} lines."
-    "The produced {form_name} is not correct. This is due to the requirement of {form_name} to have precisely {k} lines.",
-    "The created {form_name} is wrong. This is because the {form_name} must contain exactly {k} lines.",
-    "The {form_name} that was generated is inaccurate. This is because the {form_name} is required to have exactly {k} lines.",
-    "The {form_name} that has been generated is not right. This is because the {form_name} should have exactly {k} lines.",
-    "The generated {form_name} is erroneous. This is because the {form_name} is supposed to have exactly {k} lines.",
-    "The {form_name} that was produced is incorrect. This is because the {form_name} is expected to have exactly {k} lines.",
-    "The {form_name} that was created is not accurate. This is because the {form_name} needs to consist of exactly {k} lines.",
-    "The generated {form_name} is not valid. This is because the {form_name} is required to consist of exactly {k} lines.",
-    "The {form_name} that was generated is flawed. This is because the {form_name} should consist of exactly {k} lines.",
-    "The produced {form_name} is not precise. This is because the {form_name} is supposed to consist of exactly {k} lines.",
-    "The created {form_name} is faulty. This is because the {form_name} is expected to consist of exactly {k} lines.",
-    "The {form_name} that was generated is not exact. This is because the {form_name} needs to contain precisely {k} lines.",
-    "The generated {form_name} is not correct. This is due to the {form_name} requirement to have exactly {k} lines.",
-    "The {form_name} that was produced is wrong. This is because the {form_name} must have precisely {k} lines.",
-    "The created {form_name} is inaccurate. This is because the {form_name} is required to contain exactly {k} lines.",
-    "The {form_name} that was generated is not right. This is because the {form_name} should contain precisely {k} lines.",
-    "The generated {form_name} is erroneous. This is because the {form_name} is supposed to contain exactly {k} lines.",
-    "The {form_name} that was produced is incorrect. This is because the {form_name} is expected to contain precisely {k} lines.",
-    "The created {form_name} is not accurate. This is because the {form_name} needs to have exactly {k} lines.",
-    "The {form_name} that was generated is flawed. This is because the {form_name} should have exactly {k} lines.",
+    "This is because the {form_name} needs to have exactly {k} lines.",
+    "The reason is that the {form_name} must contain exactly {k} lines.",
+    "This is due to the {form_name} requiring exactly {k} lines.",
+    "The {form_name} is required to have precisely {k} lines, hence this.",
+    "This is because the {form_name} is expected to have exactly {k} lines.",
+    "The {form_name} should have exactly {k} lines, that's why.",
+    "This is because the {form_name} is supposed to contain exactly {k} lines.",
+    "The {form_name} needs to consist of exactly {k} lines, that's the reason.",
+    "This is because the {form_name} is required to consist of exactly {k} lines.",
+    "The {form_name} is expected to consist of exactly {k} lines, hence this.",
+    "This is due to the {form_name} being required to have exactly {k} lines.",
+    "The {form_name} must have exactly {k} lines, that's the reason.",
+    "This is because the {form_name} should contain exactly {k} lines.",
+    "The {form_name} is supposed to have exactly {k} lines, hence this.",
+    "This is because the {form_name} needs to be made up of exactly {k} lines.",
+    "The {form_name} is required to be made up of exactly {k} lines, that's why.",
+    "This is due to the {form_name} needing to contain exactly {k} lines.",
+    "The {form_name} should be made up of exactly {k} lines, hence this.",
+    "This is because the {form_name} is expected to be made up of exactly {k} lines.",
+    "The {form_name} is supposed to consist of exactly {k} lines, that's the reason.",
+    "This is due to the {form_name} being expected to have exactly {k} lines."
 )
 
 fp_feedback = (
-    "The generated {form_name} is incorrect. This is because the {form_name} needs to have exactly {k} lines. You wrote {observed_num} lines. Write {improv_direction} lines."
-    "The {form_name} that was produced is not correct. This is due to the requirement of exactly {k} lines for the {form_name}. You have written {observed_num} lines. Please write {improv_direction} lines.",
-    "The {form_name} you've generated is wrong. This is because the {form_name} should contain exactly {k} lines. You've written {observed_num} lines. You need to write {improv_direction} lines.",
-    "The created {form_name} is not right. This is because the {form_name} must have exactly {k} lines. You have penned {observed_num} lines. Please pen {improv_direction} lines.",
-    "The {form_name} you've made is incorrect. This is because the {form_name} should have exactly {k} lines. You've composed {observed_num} lines. You should compose {improv_direction} lines.",
-    "The {form_name} that was generated is not accurate. This is due to the {form_name} needing exactly {k} lines. You have written {observed_num} lines. Please write {improv_direction} lines.",
-    "The {form_name} you've created is wrong. This is because the {form_name} needs to consist of exactly {k} lines. You've written {observed_num} lines. You need to write {improv_direction} lines.",
-    "The generated {form_name} is not correct. This is because the {form_name} should have exactly {k} lines. You've written {observed_num} lines. You should write {improv_direction} lines.",
-    "The {form_name} you've produced is incorrect. This is because the {form_name} needs to contain exactly {k} lines. You've written {observed_num} lines. You need to write {improv_direction} lines.",
-    "The {form_name} that was created is not right. This is due to the {form_name} needing exactly {k} lines. You have written {observed_num} lines. Please write {improv_direction} lines.",
-    "The {form_name} you've generated is not accurate. This is because the {form_name} should consist of exactly {k} lines. You've written {observed_num} lines. You should write {improv_direction} lines.",
-    "The created {form_name} is incorrect. This is because the {form_name} must contain exactly {k} lines. You have penned {observed_num} lines. Please pen {improv_direction} lines.",
-    "The {form_name} you've made is wrong. This is because the {form_name} should have exactly {k} lines. You've composed {observed_num} lines. You should compose {improv_direction} lines.",
-    "The {form_name} that was generated is not correct. This is due to the {form_name} needing exactly {k} lines. You have written {observed_num} lines. Please write {improv_direction} lines.",
-    "The {form_name} you've created is incorrect. This is because the {form_name} needs to consist of exactly {k} lines. You've written {observed_num} lines. You need to write {improv_direction} lines.",
-    "The generated {form_name} is not right. This is because the {form_name} should have exactly {k} lines. You've written {observed_num} lines. You should write {improv_direction} lines.",
-    "The {form_name} you've produced is wrong. This is because the {form_name} needs to contain exactly {k} lines. You've written {observed_num} lines. You need to write {improv_direction} lines.",
-    "The {form_name} that was created is not accurate. This is due to the {form_name} needing exactly {k} lines. You have written {observed_num} lines. Please write {improv_direction} lines.",
-    "The {form_name} you've generated is not correct. This is because the {form_name} should consist of exactly {k} lines. You've written {observed_num} lines. You should write {improv_direction} lines.",
-    "The created {form_name} is wrong. This is because the {form_name} must contain exactly {k} lines. You have penned {observed_num} lines. Please pen {improv_direction} lines.",
-    "The {form_name} you've made is incorrect. This is because the {form_name} should have exactly {k} lines. You've composed {observed_num} lines. You should compose {improv_direction} lines.",
+    "You wrote {observed_num} lines. Write {improv_direction} lines.",
+    "You've penned {observed_num} lines. Compose {improv_direction} lines.",
+    "You've scripted {observed_num} lines. Draft {improv_direction} lines.",
+    "You've authored {observed_num} lines. Create {improv_direction} lines.",
+    "You've crafted {observed_num} lines. Formulate {improv_direction} lines.",
+    "You've produced {observed_num} lines. Develop {improv_direction} lines.",
+    "You've generated {observed_num} lines. Construct {improv_direction} lines.",
+    "You've created {observed_num} lines. Pen {improv_direction} lines.",
+    "You've composed {observed_num} lines. Script {improv_direction} lines.",
+    "You've designed {observed_num} lines. Author {improv_direction} lines.",
+    "You've formed {observed_num} lines. Craft {improv_direction} lines.",
+    "You've developed {observed_num} lines. Produce {improv_direction} lines.",
+    "You've constructed {observed_num} lines. Generate {improv_direction} lines.",
+    "You've written down {observed_num} lines. Jot down {improv_direction} lines.",
+    "You've inscribed {observed_num} lines. Inscribe {improv_direction} lines.",
+    "You've put down {observed_num} lines. Put down {improv_direction} lines.",
+    "You've jotted down {observed_num} lines. Write down {improv_direction} lines.",
+    "You've recorded {observed_num} lines. Record {improv_direction} lines.",
+    "You've drafted {observed_num} lines. Write out {improv_direction} lines.",
+    "You've set down {observed_num} lines. Set down {improv_direction} lines.",
+    "You've noted {observed_num} lines. Note {improv_direction} lines.",
 )
 
 line_fp_feedback_1 = (
@@ -216,25 +215,25 @@ line_fp_feedback_1 = (
 )
 
 line_fp_feedback_2 = (
-    "The line: '{line}' has {count} syllables. It should only have {k} syllables. You should rewrite the line to have {improv_direction} syllables.",
-    "The sentence: '{line}' contains {count} syllables. Ideally, it should only contain {k} syllables. Please modify the sentence to include {improv_direction} syllables.",
-    "The phrase: '{line}' has {count} syllables. It is supposed to have only {k} syllables. You need to revise the phrase to have {improv_direction} syllables.",
-    "The string: '{line}' comprises {count} syllables. It should ideally comprise {k} syllables. You are advised to rewrite the string to comprise {improv_direction} syllables.",
-    "The text: '{line}' includes {count} syllables. It should only include {k} syllables. You should edit the text to include {improv_direction} syllables.",
-    "The verse: '{line}' has {count} syllables. It should have {k} syllables only. You should rephrase the verse to have {improv_direction} syllables.",
-    "The statement: '{line}' carries {count} syllables. It should carry only {k} syllables. You should reword the statement to carry {improv_direction} syllables.",
-    "The expression: '{line}' holds {count} syllables. It should hold only {k} syllables. You should restructure the expression to hold {improv_direction} syllables.",
-    "The utterance: '{line}' possesses {count} syllables. It should possess only {k} syllables. You should redraft the utterance to possess {improv_direction} syllables.",
-    "The quote: '{line}' contains {count} syllables. It should contain only {k} syllables. You should revise the quote to contain {improv_direction} syllables.",
-     "The excerpt: '{line}' has {count} syllables. It should have only {k} syllables. You should rework the excerpt to have {improv_direction} syllables.",
-     "The dialogue: '{line}' includes {count} syllables. It should include only {k} syllables. You should rewrite the dialogue to include {improv_direction} syllables.",
-     "The passage: '{line}' carries {count} syllables. It should carry only {k} syllables. You should rephrase the passage to carry {improv_direction} syllables.",
-     "The lyric: '{line}' holds {count} syllables. It should hold only {k} syllables. You should reword the lyric to hold {improv_direction} syllables.",
-     "The script: '{line}' possesses {count} syllables. It should possess only {k} syllables. You should redraft the script to possess {improv_direction} syllables.",
-     "The note: '{line}' contains {count} syllables. It should contain only {k} syllables. You should revise the note to contain {improv_direction} syllables.",
-     "The message: '{line}' has {count} syllables. It should have only {k} syllables. You should rework the message to have {improv_direction} syllables.",
-     "The comment: '{line}' includes {count} syllables. It should include only {k} syllables. You should rewrite the comment to include {improv_direction} syllables.",
-     "The annotation: '{line}' carries {count} syllables. It should carry only {k} syllables. You should rephrase the annotation to carry {improv_direction} syllables.",
-     "The remark: '{line}' holds {count} syllables. It should hold only {k} syllables. You should reword the remark to hold {improv_direction} syllables.",
-     "The proclamation: '{line}' possesses {count} syllables. It should possess only {k} syllables. You should redraft the proclamation to possess {improv_direction} syllables.",
+    'The line: "{line}" has {count} syllables. It should only have {k} syllables. You should rewrite the line to have {improv_direction} syllables.',
+    'The sentence: "{line}" contains {count} syllables. Ideally, it should only contain {k} syllables. Please modify the sentence to include {improv_direction} syllables.',
+    'The phrase: "{line}" has {count} syllables. It is supposed to have only {k} syllables. You need to revise the phrase to have {improv_direction} syllables.',
+    'The string: "{line}" comprises {count} syllables. It should ideally comprise {k} syllables. You are advised to rewrite the string to comprise {improv_direction} syllables.',
+    'The text: "{line}" includes {count} syllables. It should only include {k} syllables. You should edit the text to include {improv_direction} syllables.',
+    'The verse: "{line}" has {count} syllables. It should have {k} syllables only. You should rephrase the verse to have {improv_direction} syllables.',
+    'The statement: "{line}" carries {count} syllables. It should carry only {k} syllables. You should reword the statement to carry {improv_direction} syllables.',
+    'The expression: "{line}" holds {count} syllables. It should hold only {k} syllables. You should restructure the expression to hold {improv_direction} syllables.',
+    'The utterance: "{line}" possesses {count} syllables. It should possess only {k} syllables. You should redraft the utterance to possess {improv_direction} syllables.',
+    'The quote: "{line}" contains {count} syllables. It should contain only {k} syllables. You should revise the quote to contain {improv_direction} syllables.',
+    'The excerpt: "{line}" has {count} syllables. It should have only {k} syllables. You should rework the excerpt to have {improv_direction} syllables.',
+    'The dialogue: "{line}" includes {count} syllables. It should include only {k} syllables. You should rewrite the dialogue to include {improv_direction} syllables.',
+    'The passage: "{line}" carries {count} syllables. It should carry only {k} syllables. You should rephrase the passage to carry {improv_direction} syllables.',
+    'The lyric: "{line}" holds {count} syllables. It should hold only {k} syllables. You should reword the lyric to hold {improv_direction} syllables.',
+    'The script: "{line}" possesses {count} syllables. It should possess only {k} syllables. You should redraft the script to possess {improv_direction} syllables.',
+    'The note: "{line}" contains {count} syllables. It should contain only {k} syllables. You should revise the note to contain {improv_direction} syllables.',
+    'The message: "{line}" has {count} syllables. It should have only {k} syllables. You should rework the message to have {improv_direction} syllables.',
+    'The comment: "{line}" includes {count} syllables. It should include only {k} syllables. You should rewrite the comment to include {improv_direction} syllables.',
+    'The annotation: "{line}" carries {count} syllables. It should carry only {k} syllables. You should rephrase the annotation to carry {improv_direction} syllables.',
+    'The remark: "{line}" holds {count} syllables. It should hold only {k} syllables. You should reword the remark to hold {improv_direction} syllables.',
+    'The proclamation: "{line}" possesses {count} syllables. It should possess only {k} syllables. You should redraft the proclamation to possess {improv_direction} syllables.',
 )
