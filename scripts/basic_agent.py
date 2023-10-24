@@ -46,7 +46,7 @@ def main(args):
     llm = make_llm(args.model, system_prompt=system_prompt)
     gpt_agent = BasicAgent(llm, n_actions, verbose=args.verbose, action_name=action_name)
 
-    scores = evaluate_agent(agent=gpt_agent,
+    scores, data = evaluate_agent(agent=gpt_agent,
                             env=env,
                             horizon=horizon,
                             n_episodes=n_episodes,

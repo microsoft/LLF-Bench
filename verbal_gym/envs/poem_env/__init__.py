@@ -12,7 +12,7 @@ ENVIRONMENTS = (
     'SyllableConstrainedPoem',
 )
 INSTRUCTION_TYPES = ('b') #, 'p', 'c')
-FEEDBACK_TYPES = ('m', 'n', 'r', 'hn', 'fp')
+FEEDBACK_TYPES = ('m', 'r', 'hn', 'fp')
 
 
 
@@ -28,18 +28,15 @@ class PoemGymWrapper(gym.Wrapper):
         self._feedback_types.remove('m')
 
         self._feedback_type_table = {'r':0, 'hn':0.5, 'fp':1}
-        self.feedback = self._feedback_type_table[self.feedback_type]
 
-    # TODO paraphrase assignment
     def reset(self):
         instruction = self.env.reset()
         # TODO types of instructions
         return dict(instruction=instruction, observation=None, feedback=None)
 
-    # TODO paraphrase feedback
     def step(self, action):
         feedback_type = np.random.choice(self._feedback_types) if self.feedback_type=='m' else self.feedback_type
-        self.feedback = self._feedback_type_table[feedback_type]
+        self.env.feedback = self._feedback_type_table[feedback_type]
         observation, reward, terminal, info = self.env.step(action)
         observation = dict(instruction=None, observation=None, feedback=info['feedback'])
         del info['feedback']
