@@ -11,9 +11,9 @@ class BanditGymWrapper(VerbalGymWrapper):
     INSTRUCTION_TYPES = ('b', 'p', 'c')
     FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
 
-    def __init__(self, env, instruction_type, feedback_type):
+    def __init__(self, env, instruction_type, feedback_type, paraphrase_idx=None):
         env = TerminalFreeWrapper(RandomActionOrderWrapper(env))
-        super().__init__(env, instruction_type, feedback_type)
+        super().__init__(env, instruction_type, feedback_type, paraphrase_idx=paraphrase_idx)
 
     def _reset(self):
         self._bandit_env.__init__()  # gym_bandits implement the reset at the init for some reason.

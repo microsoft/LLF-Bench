@@ -2,8 +2,7 @@ import numpy as np
 import gym
 from gym.envs.registration import register
 from verbal_gym.utils.benchmark_utils import generate_combinations_dict
-from verbal_gym.envs.env_wrapper import VerbalGymWrapper, TerminalFreeWrapper
-
+from verbal_gym.envs.poem_env.wrapper import PoemGymWrapper
 
 ENVIRONMENTS = (
     'Haiku',
@@ -11,37 +10,6 @@ ENVIRONMENTS = (
     'LineSyllableConstrainedPoem',
     'SyllableConstrainedPoem',
 )
-INSTRUCTION_TYPES = ('b') #, 'p', 'c')
-FEEDBACK_TYPES = ('m', 'r', 'hn', 'fp')
-
-
-
-class PoemGymWrapper(gym.Wrapper):
-
-    def __init__(self, env, instruction_type, feedback_type):
-        super().__init__(env)
-        self.instruction_type = instruction_type
-        self.feedback_type = feedback_type
-        assert self.instruction_type in INSTRUCTION_TYPES
-        assert self.feedback_type in FEEDBACK_TYPES
-        self._feedback_types = list(FEEDBACK_TYPES)
-        self._feedback_types.remove('m')
-
-        self._feedback_type_table = {'r':0, 'hn':0.5, 'fp':1}
-
-    def reset(self):
-        instruction = self.env.reset()
-        # TODO types of instructions
-        return dict(instruction=instruction, observation=None, feedback=None)
-
-    def step(self, action):
-        feedback_type = np.random.choice(self._feedback_types) if self.feedback_type=='m' else self.feedback_type
-        self.env.feedback = self._feedback_type_table[feedback_type]
-        observation, reward, terminal, info = self.env.step(action)
-        observation = dict(instruction=None, observation=None, feedback=info['feedback'])
-        del info['feedback']
-        return observation, reward, terminal, info
-
 
 def make_poem_env(env_name,
                   instruction_type='b',
@@ -52,15 +20,14 @@ def make_poem_env(env_name,
     """ Make the original env and wrap it with the VerbalGymWrapper. """
     import importlib
     PoemCls = getattr(importlib.import_module("verbal_gym.envs.poem_env.formal_poems"), env_name)
-    env = PoemCls(feedback=0, silent=True, use_extractor=False)  # `feedback` doesn't matter here, as we will override it.
-    env = PoemGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
-    return VerbalGymWrapper(TerminalFreeWrapper(env))
+    env = PoemCls(feedback=0, silent=silent, use_extractor=use_extractor)  # `feedback` doesn't matter here, as we will override it.
+    return PoemGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 
 
 configs = generate_combinations_dict(
                 dict(env_name=ENVIRONMENTS,
-                     feedback_type=FEEDBACK_TYPES,
-                     instruction_type=INSTRUCTION_TYPES))
+                     feedback_type=PoemGymWrapper.FEEDBACK_TYPES,
+                     instruction_type=PoemGymWrapper.INSTRUCTION_TYPES))
 
 for config in configs:
     config['silent'] = True
