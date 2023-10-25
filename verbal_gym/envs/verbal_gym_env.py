@@ -80,9 +80,6 @@ class VerbalGymWrapper(gym.Wrapper):
                 reward, hp: hindsight positive, hn: hindsight negative, fp:
                 future positive, fn: future negative. Should be one of the
                 FEEDBACK_TYPES.
-
-                paraphrase_method: The index of the paraphrased prompt to use. If
-                None, a randomly selected prompt is used.
         """
         super().__init__(env)
         self.instruction_type = instruction_type
