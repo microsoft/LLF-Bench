@@ -92,7 +92,14 @@ class VerbalGymWrapper(gym.Wrapper):
         assert self.feedback_type in self.FEEDBACK_TYPES
         self._feedback_types = list(self.FEEDBACK_TYPES)
         self._feedback_types.remove('m')
-        self.paraphrase_idx = paraphrase_idx
+        self._paraphrase_idx = paraphrase_idx
+
+    @property
+    def paraphrase_idx(self):
+        return self._paraphrase_idx
+
+    def set_paraphrase_idx(self, idx):
+        self._paraphrase_idx = idx
 
     def format(self, prompts : List[str], _idx=None, **kwargs):
         """ A helper method for selecting from a set of paraphrased prompts."""

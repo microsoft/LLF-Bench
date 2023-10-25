@@ -11,7 +11,6 @@ class PoemGymWrapper(VerbalGymWrapper):
     def __init__(self, env, instruction_type, feedback_type, paraphrase_idx=None):
         super().__init__(TerminalFreeWrapper(env), instruction_type, feedback_type, paraphrase_idx=paraphrase_idx)
         self._feedback_type_table = {'r':0, 'hn':0.5, 'fp':1}
-        self._poem_env.paraphrase_idx = paraphrase_idx
 
     def _reset(self):  # TODO types of instructions
         instruction = self.env.reset()
