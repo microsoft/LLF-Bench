@@ -21,7 +21,7 @@ def main(args):
     # Create the environment
     set_seed(args.seed)
     env = gym.make(args.env_name)
-    # env.set_paraphrase_idx(0) # Uncomment this to use the first paraphrase
+    # env.set_paraphrase_method('llm') # Uncomment this to change the paraphraser
     set_seed(args.seed, env)
 
     # TODO Should have a separate if condition
