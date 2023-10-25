@@ -95,17 +95,17 @@ class VerbalGymWrapper(gym.Wrapper):
         self._paraphrase_idx = paraphrase_idx
 
     @property
-    def paraphrase_idx(self):
+    def paraphrase_idx(self) -> Union[None, int]:
         return self._paraphrase_idx
 
-    def set_paraphrase_idx(self, idx):
+    def set_paraphrase_idx(self, idx : Union[None, int]):
         self._paraphrase_idx = idx
 
-    def format(self, prompts : List[str], _idx=None, **kwargs):
+    def format(self, prompts : List[str], _idx : Union[None, int] = None, **kwargs) -> str:
         """ A helper method for selecting from a set of paraphrased prompts."""
         return format(prompts, _idx=_idx or self.paraphrase_idx, **kwargs)
 
-    def reformat(self, original: str, prompts : List[str], template=None):
+    def reformat(self, original: str, prompts : List[str], template=None) -> str:
         """ A helper method for reformatting a string using a template.
 
             Args:
