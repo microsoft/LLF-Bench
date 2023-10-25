@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from typing import Dict, Any, Tuple, Union, List
+from typing import Dict, Any, Tuple, Union, List, Callable
 from verbal_gym.envs.utils import format
 import parse
 
@@ -66,7 +66,7 @@ class VerbalGymWrapper(gym.Wrapper):
     INSTRUCTION_TYPES = ('b', 'p', 'c')
     FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
 
-    def __init__(self, env : gym.Env, instruction_type : str, feedback_type: str, paraphrase_idx : Union[None, int] = None):
+    def __init__(self, env : gym.Env, instruction_type : str, feedback_type: str):
         """
             Initialize the wrapper.
 
@@ -80,9 +80,6 @@ class VerbalGymWrapper(gym.Wrapper):
                 reward, hp: hindsight positive, hn: hindsight negative, fp:
                 future positive, fn: future negative. Should be one of the
                 FEEDBACK_TYPES.
-
-                paraphrase_idx: The index of the paraphrased prompt to use. If
-                None, a randomly selected prompt is used.
         """
         super().__init__(env)
         self.instruction_type = instruction_type
@@ -92,18 +89,34 @@ class VerbalGymWrapper(gym.Wrapper):
         assert self.feedback_type in self.FEEDBACK_TYPES
         self._feedback_types = list(self.FEEDBACK_TYPES)
         self._feedback_types.remove('m')
-        self._paraphrase_idx = paraphrase_idx
+        self._paraphrase_method = 'random'
 
     @property
-    def paraphrase_idx(self) -> Union[None, int]:
-        return self._paraphrase_idx
+    def paraphrase_method(self) -> Union[None, int]:
+        return self._paraphrase_method
 
-    def set_paraphrase_idx(self, idx : Union[None, int]):
-        self._paraphrase_idx = idx
+    def set_paraphrase_method(self, method : Union[str, int, Callable[[List[str],  Dict[str,str]], str]]):
+        """
+            Args:
+                method: The method to use in selecting the prompt.
 
-    def format(self, prompts : List[str], _idx : Union[None, int] = None, **kwargs) -> str:
+                It can be either 'random', 'llm', a callable, or an integer.
+                - 'random': a template would be randomly selected from `prompts`.
+                - 'llm': DEFAULT_LLM would be used to paraphrased the first (i.e.
+                  default) template in `prompts`.
+                - integer: it is used as the index to select from the template in
+                  `prompts`.
+                - callable: it overrides format method.
+        """
+        assert method=='random' or method=='llm' or type(method)==int or callable(method)
+        self._paraphrase_method = method
+
+    def format(self, prompts : List[str], **kwargs) -> str:
         """ A helper method for selecting from a set of paraphrased prompts."""
-        return format(prompts, _idx=_idx or self.paraphrase_idx, **kwargs)
+        if callable(self.paraphrase_method):
+            return self.paraphrase_method(prompts, **kwargs)  # This essentially overrides `format` method.
+        else:
+            return format(prompts, self.paraphrase_method, **kwargs)
 
     def reformat(self, original: str, prompts : List[str], template=None) -> str:
         """ A helper method for reformatting a string using a template.

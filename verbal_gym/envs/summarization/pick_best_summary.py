@@ -104,7 +104,7 @@ class PickBestSummary(gym.Env):
             summary = generation[len(good_prompt):]
             if self.reward_type == self.LOGPROB:
                 # reward = info["logprob"]
-                reward = sum(logprobs["token_logprobs"][1:])
+                reward = sum(info["token_logprobs"][1:])
 
             elif self.reward_type == self.Binary:
                 reward = 1.0 if i == 0 else 0.0
