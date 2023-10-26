@@ -12,7 +12,7 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         "gym==0.25.2",
-        "parse==1.19.1"
+        "parse==1.19.1",
         # "Cython==0.29.36",
         "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits",
         # poem_env
@@ -26,7 +26,8 @@ setup(
         'gpt': ['openai'],
         'ray': ['ray>=1.5',\
                 'numpy<1.24.0' # this is for compatibility with ray (due to pickle)
-                ]
+                ],
+        'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
     }
 
 )
