@@ -141,7 +141,6 @@ class VerbalGymWrapper(gym.Wrapper):
                 template = 'This is an {fruit}.'
                 prompts = ['This is not an {fruit}']
                 paraphrased = 'This is not an apple. This is an orange. This is not an apple.'
-
         """
         template = template or prompts[0]
         parsed = parse.search(template, original)

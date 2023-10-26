@@ -8,6 +8,7 @@ from textwrap import dedent, indent
 
 from gym.utils import seeding
 
+
 class LossLandscapeBase(gym.Env):
     def __init__(self, callable_func, x_low, x_high, min_y, optimal_sol,
                  feedback=0, seed=None, precision_digit=2, horizon=10):
@@ -43,11 +44,13 @@ class LossLandscapeBase(gym.Env):
 
         self._seed = self.seed(seed)
 
+        # Note: currently we treat the first line as "instruction"
         self.docstring = dedent("""
-        You are trying to minimize the output (y) of a function by choosing input (x).
+        You are trying to minimize the output (y) of a function by choosing input (x). The goal is to choose x such that y is as small as possible.
+        
         You get to observe y once you choose the value of x, where x is a 2-dimensional vector.
         This means x = [x1, x2], where x1 and x2 are real numbers.
-        The goal is to choose x such that y is as small as possible.
+        
 
         The range of x1 and x2 is [{}, {}].
         Please do not choose x outside of this range.
@@ -109,6 +112,7 @@ class LossLandscapeBase(gym.Env):
 
     def step(self, action):
         # observation, reward, terminal, info
+        didactic_feedback_dict = {}
 
         x, stop = self.text_extract(action)
         if x is None and stop is False:
@@ -120,11 +124,20 @@ class LossLandscapeBase(gym.Env):
         loss = self.callable_func(x)
 
         if np.abs(loss - self.min_y) < 1e-2:
-            return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {'feedback': 'You have reached the minimum!'}
+            # r_pos
+            didactic_feedback_dict['r_pos'] = 'You have reached the minimum!'
+            return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {
+                'feedback': 'You have reached the minimum!'}
 
+        # r_neg
         obs = "Function outputs y = {}\nYou have {} attempts left!".format(loss, self.left_attempts)
-        feedback = "" # y is not minimized yet. Keep going!
 
+        # TODO: what's the diff between r and observation?
+        didactic_feedback_dict['r_neg'] = "You have not reached the minimum!"
+        feedback = ""  # y is not minimized yet. Keep going!
+
+        # not changing original feedback
+        # not changing observation, which is r_pos, r_neg
         if self.feedback != 0:
             dx = self.grad_func(x)
             dx1, dx2 = dx[0], dx[1]
@@ -134,18 +147,57 @@ class LossLandscapeBase(gym.Env):
             if np.abs(dx1) > np.abs(dx2):
                 feedback += f"You chose {action}. However, try a different number for first number {x[0]} will minimize y more."
             else:
-                # feedback += "x = [x1, x2]: Try a different number for x2 will minimize y more."
                 feedback += f"You chose {action}. However, try a different number for second number {x[1]} will minimize y more."
         elif self.feedback == 1:
             feedback += '\n\n'
-            x1_direction = 'Smaller' if dx1 > 0 else 'Larger' # take the opposite of gradient
+            x1_direction = 'Smaller' if dx1 > 0 else 'Larger'  # take the opposite of gradient
             x2_direction = 'Smaller' if dx2 > 0 else 'Larger'
             feedback += f"You chose {action}. Output a {x1_direction} number than the first number {x[0]} to minimize y.\n"
-            feedback += f"You chose {action}. Output a {x2_direction} number than the second number {x[1]} to minimize y.\n"
+            feedback += f"You chose {action}. Output a {x2_direction} number than the second number {x[1]} to minimize y."
+
+        # this should be full each time
+        # hp', 'hn', 'fp', 'fn'
+
+        """
+        - (hp) hindsight positive: explaination on why the current action is correct
+        - (hn) hindsight negative: explaination on why the current action is incorrect
+        - (fp) future positive: suggestion of things (future action) to do
+        - (fn) future negative: suggestion of things (future action) to avoid        
+        """
+        change_x = self.prev_x - x  # change in x
+        change_x1, change_x2 = change_x[0], change_x[1]
+        prev_dx = self.grad_func(self.prev_x)
+        prev_dx1, prev_dx2 = prev_dx[0], prev_dx[1]
+        prev_x1_direction = 'Decreasing' if prev_dx1 > 0 else 'Increasing'  # take the opposite of gradient
+        prev_x2_direction = 'Decreasing' if prev_dx2 > 0 else 'Increasing'
+
+        # TODO: check this
+        if np.sign(change_x1) == np.sign(-prev_dx1):
+            didactic_feedback_dict['hp'] = f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} is correct.\n"
+        else:
+            didactic_feedback_dict['hn'] = f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} is incorrect.\n"
+
+        if np.sign(change_x2) == np.sign(-prev_dx2):
+            didactic_feedback_dict['hp'] += f"You chose {action} from {self.prev_x}. {prev_x2_direction} the second number {self.prev_x[1]} is correct."
+        else:
+            didactic_feedback_dict['hn'] += f"You chose {action} from {self.prev_x}. {prev_x2_direction} the second number {self.prev_x[1]} is incorrect."
+
+        dx = self.grad_func(x)
+        dx1, dx2 = dx[0], dx[1]
+        x1_direction = 'Smaller' if dx1 > 0 else 'Larger'  # take the opposite of gradient
+        x2_direction = 'Smaller' if dx2 > 0 else 'Larger'
+        didactic_feedback_dict['fp'] = f"You chose {action}. Output a {x1_direction} number than the first number in {x} to minimize y.\n"
+        didactic_feedback_dict['fp'] += f"You chose {action}. Output a {x2_direction} number than the second number in {x} to minimize y.\n"
+
+        flipped_x1_direction = 'Smaller' if dx1 < 0 else 'Larger'  # take the opposite of gradient
+        flipped_x2_direction = 'Smaller' if dx2 < 0 else 'Larger'
+        didactic_feedback_dict['fn'] = f"You chose {action}. Do not output a {flipped_x1_direction} number than the first number in {x} to minimize y."
+        didactic_feedback_dict['fn'] += f"You chose {action}. Do not output a {flipped_x2_direction} number than the second number in {x} to minimize y."
 
         self.prev_x = x
         self.left_attempts -= 1
-        return obs, -loss, False, {'feedback': feedback}
+        return obs, -loss, False, {'feedback': feedback, 'didactic_feedback': didactic_feedback_dict}
+
 
 # now we wrap all loss functions by inheriting this class
 """
@@ -170,70 +222,82 @@ Bohachevsky, RotatedHyperEllipsoid, Matyas, ThreeHumpCamel
 Because LLM is quick to guess [0, 0], and that's often the "correct" answer.
 """
 
+
 class Bohachevsky(LossLandscapeBase):
     def __init__(self, func_choice=1, feedback=0, seed=None, horizon=10):
         assert func_choice in [1, 2, 3], "func_choice must be 1, 2, or 3"
         if func_choice == 1:
-            func = lambda x: x[0] ** 2 + 2 * x[1] ** 2 - 0.3 * jnp.cos(3 * jnp.pi * x[0]) - 0.4 * jnp.cos(4 * jnp.pi * x[1]) + 0.7
+            func = lambda x: x[0] ** 2 + 2 * x[1] ** 2 - 0.3 * jnp.cos(3 * jnp.pi * x[0]) - 0.4 * jnp.cos(
+                4 * jnp.pi * x[1]) + 0.7
         elif func_choice == 2:
-            func = lambda x: x[0] ** 2 + 2 * x[1] ** 2 - 0.3 * jnp.cos(3 * jnp.pi * x[0]) * jnp.cos(4 * jnp.pi * x[1]) + 0.3
+            func = lambda x: x[0] ** 2 + 2 * x[1] ** 2 - 0.3 * jnp.cos(3 * jnp.pi * x[0]) * jnp.cos(
+                4 * jnp.pi * x[1]) + 0.3
         else:
             func = lambda x: x[0] ** 2 + 2 * x[1] ** 2 - 0.3 * jnp.cos(3 * jnp.pi * x[0] + 4 * jnp.pi * x[1]) + 0.3
 
         super().__init__(callable_func=func,
-                            x_low=-100, x_high=100, min_y=0, optimal_sol=np.zeros(2),
-                            feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+                         x_low=-100, x_high=100, min_y=0, optimal_sol=np.zeros(2),
+                         feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+
 
 class RotatedHyperEllipsoid(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
         func = lambda x: x[0] ** 2 + (x[0] ** 2 + x[1] ** 2)
         super().__init__(callable_func=func,
-                            x_low=-65.536, x_high=65.536, min_y=0, optimal_sol=np.zeros(2),
-                            feedback=feedback, seed=seed, horizon=horizon)
+                         x_low=-65.536, x_high=65.536, min_y=0, optimal_sol=np.zeros(2),
+                         feedback=feedback, seed=seed, horizon=horizon)
+
 
 class Booth(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
         func = lambda x: (x[0] + 2 * x[1] - 7) ** 2 + (2 * x[0] + x[1] - 5) ** 2
         super().__init__(callable_func=func,
-                            x_low=-10, x_high=10, min_y=0, optimal_sol=np.array([1, 3]),
-                            feedback=feedback, seed=seed, horizon=horizon)
+                         x_low=-10, x_high=10, min_y=0, optimal_sol=np.array([1, 3]),
+                         feedback=feedback, seed=seed, horizon=horizon)
+
 
 class Matyas(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
         func = lambda x: 0.26 * (x[0] ** 2 + x[1] ** 2) - 0.48 * x[0] * x[1]
         super().__init__(callable_func=func,
-                            x_low=-10, x_high=10, min_y=0, optimal_sol=np.zeros(2),
-                            feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+                         x_low=-10, x_high=10, min_y=0, optimal_sol=np.zeros(2),
+                         feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+
 
 class McCormick(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
         func = lambda x: jnp.sin(x[0] + x[1]) + (x[0] - x[1]) ** 2 - 1.5 * x[0] + 2.5 * x[1] + 1
         super().__init__(callable_func=func,
-                            x_low=-1.5, x_high=4, min_y=-1.9133, optimal_sol=np.array([-0.54719, -1.54719]),
-                            feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+                         x_low=-1.5, x_high=4, min_y=-1.9133, optimal_sol=np.array([-0.54719, -1.54719]),
+                         feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+
 
 class Rosenbrock(LossLandscapeBase):
-    def __init__(self, a=1, b=1, feedback=0, seed=None, horizon=10): # b = 100
+    def __init__(self, a=1, b=1, feedback=0, seed=None, horizon=10):  # b = 100
         # https://en.wikipedia.org/wiki/Rosenbrock_function
         # all of them are lambda functions that expect Numpy array of shape (2,)
-        two_dim_rosenbrock = lambda x: (a - x[0])**2 + b * (x[1] - x[0]**2)**2
+        two_dim_rosenbrock = lambda x: (a - x[0]) ** 2 + b * (x[1] - x[0] ** 2) ** 2
         super().__init__(callable_func=two_dim_rosenbrock,
                          x_low=-5, x_high=10, min_y=0, optimal_sol=np.ones(2),
                          feedback=feedback, seed=seed, horizon=horizon)
 
+
 class SixHumpCamel(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
-        func = lambda x: (4 - 2.1 * x[0]**2 + (x[0]**4)/3) * x[0]**2 + x[0] * x[1] + (-4 + 4 * x[1]**2) * x[1]**2
+        func = lambda x: (4 - 2.1 * x[0] ** 2 + (x[0] ** 4) / 3) * x[0] ** 2 + x[0] * x[1] + (-4 + 4 * x[1] ** 2) * x[
+            1] ** 2
         # note that SixHumpCamel has two global minima
         # also the range on x is x1 = [-3, 3], x2 = [-2, 2]
         # but we use x1 = [-2, 2], x2 = [-3, 3] for simplicity
         super().__init__(callable_func=func,
-                            x_low=-2, x_high=2, min_y=-1.0316, optimal_sol=[np.array([0.0898, -0.7126]), np.array([-0.0898, 0.7126])],
-                            feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+                         x_low=-2, x_high=2, min_y=-1.0316,
+                         optimal_sol=[np.array([0.0898, -0.7126]), np.array([-0.0898, 0.7126])],
+                         feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+
 
 class ThreeHumpCamel(LossLandscapeBase):
     def __init__(self, feedback=0, seed=None, horizon=10):
-        func = lambda x: 2 * x[0]**2 - 1.05 * x[0]**4 + (x[0]**6)/6 + x[0] * x[1] + x[1]**2
+        func = lambda x: 2 * x[0] ** 2 - 1.05 * x[0] ** 4 + (x[0] ** 6) / 6 + x[0] * x[1] + x[1] ** 2
         super().__init__(callable_func=func,
-                            x_low=-5, x_high=5, min_y=0, optimal_sol=np.array([0, 0]),
-                            feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
+                         x_low=-5, x_high=5, min_y=0, optimal_sol=np.array([0, 0]),
+                         feedback=feedback, seed=seed, horizon=horizon, precision_digit=4)
