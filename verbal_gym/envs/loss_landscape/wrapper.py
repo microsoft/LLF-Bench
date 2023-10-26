@@ -20,14 +20,13 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
         super().__init__(TerminalFreeWrapper(env), instruction_type, feedback_type)
 
     def _reset(self):  # TODO types of instructions
-        instruction = self.env.docstring
+        instruction = self._loss_env.docstring
         obs = self.env.reset()
 
         instruction = self.reformat(instruction, loss_b_instruction)
         return dict(instruction=instruction, observation=obs, feedback=None)
 
     def _step(self, action):
-        self._poem_env.feedback = self._feedback_type_table[self._feedback_type]
         observation, reward, terminal, info = self.env.step(action)
         didactic_feedback = info['didactic_feedback']
         del info['feedback']
