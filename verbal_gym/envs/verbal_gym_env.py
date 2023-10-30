@@ -138,10 +138,10 @@ class VerbalGymWrapper(gym.Wrapper):
 
                 For example,
 
-                orignal = 'This is an apple. This is an orange. This is an apple.'
+                orignal = 'This is an apple. This is a banana. This is an apple.'
                 template = 'This is an {fruit}.'
                 prompts = ['This is not an {fruit}']
-                paraphrased = 'This is not an apple. This is an orange. This is not an apple.'
+                paraphrased = 'This is not an apple. This is a banana. This is not an apple.'
         """
         template = template or prompts[0]
         parsed = parse.search(template, original)
