@@ -28,6 +28,7 @@ An example env name is: gridworld-b-fn-v0
 
 """
 
+
 class VerbalGymWrapper(gym.Wrapper):
     """
         This is the wrapper that turns a gym environment into a verbal gym
@@ -66,7 +67,7 @@ class VerbalGymWrapper(gym.Wrapper):
     INSTRUCTION_TYPES = ('b', 'p', 'c')
     FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
 
-    def __init__(self, env : gym.Env, instruction_type : str, feedback_type: str):
+    def __init__(self, env: gym.Env, instruction_type: str, feedback_type: str):
         """
             Initialize the wrapper.
 
@@ -83,8 +84,8 @@ class VerbalGymWrapper(gym.Wrapper):
         """
         super().__init__(env)
         self.instruction_type = instruction_type
-        self.feedback_type = feedback_type # This is the external api.
-        self._feedback_type = feedback_type # This is the feedback type that is used in the current step.
+        self.feedback_type = feedback_type          # This is the external api.
+        self._feedback_type = feedback_type         # This is the feedback type that is used in the current step.
         assert self.instruction_type in self.INSTRUCTION_TYPES
         assert self.feedback_type in self.FEEDBACK_TYPES
         self._feedback_types = list(self.FEEDBACK_TYPES)
@@ -95,7 +96,7 @@ class VerbalGymWrapper(gym.Wrapper):
     def paraphrase_method(self) -> Union[None, int]:
         return self._paraphrase_method
 
-    def set_paraphrase_method(self, method : Union[str, int, Callable[[List[str],  Dict[str,str]], str]]):
+    def set_paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
         """
             Args:
                 method: The method to use in selecting the prompt.
@@ -108,17 +109,17 @@ class VerbalGymWrapper(gym.Wrapper):
                   `prompts`.
                 - callable: it overrides format method.
         """
-        assert method=='random' or method=='llm' or type(method)==int or callable(method)
+        assert method == 'random' or method == 'llm' or type(method) == int or callable(method)
         self._paraphrase_method = method
 
-    def format(self, prompts : List[str], **kwargs) -> str:
+    def format(self, prompts: List[str], **kwargs) -> str:
         """ A helper method for selecting from a set of paraphrased prompts."""
         if callable(self.paraphrase_method):
             return self.paraphrase_method(prompts, **kwargs)  # This essentially overrides `format` method.
         else:
             return format(prompts, self.paraphrase_method, **kwargs)
 
-    def reformat(self, original: str, prompts : List[str], template=None) -> str:
+    def reformat(self, original: str, prompts: List[str], template=None) -> str:
         """ A helper method for reformatting a string using a template.
 
             Args:
@@ -161,7 +162,7 @@ class VerbalGymWrapper(gym.Wrapper):
     def reset(self) -> Dict[str, str]:
         """ Reset the environment and return the initial observation."""
         observation = self._reset()
-        if type(observation)==str:  # backward compatibility
+        if type(observation) == str:  # backward compatibility
             observation = dict(instruction=observation, observation=None, feedback=None)
         self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation."
@@ -174,10 +175,13 @@ class VerbalGymWrapper(gym.Wrapper):
 
     def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, Dict[str, Any]]:
         """ Step the environment and return the observation, reward, terminal, and info."""
-        self._feedback_type = np.random.choice(self._feedback_types) if self.feedback_type=='m' else self.feedback_type
+        self._feedback_type = np.random.choice(self._feedback_types) \
+            if self.feedback_type == 'm' else self.feedback_type
         observation, reward, terminal, info = self._step(action)
-        if type(observation)==str:  # backward compatibility
-            observation = dict(instruction=None, observation=observation, feedback=f"You received a reward of {reward}.")
+        if type(observation) == str:  # backward compatibility
+            observation = dict(instruction=None,
+                               observation=observation,
+                               feedback=f"You received a reward of {reward}.")
         self.obs_check(observation)
         return observation, reward, terminal, info
 
