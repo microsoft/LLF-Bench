@@ -9,7 +9,7 @@ import json
 from textwrap import dedent, indent
 from metaworld.policies.policy import move
 from metaworld.policies.action import Action
-from metaworld.policies import SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy # TODO
+from metaworld.policies import SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy, SawyerPlateSlideBackSideV2Policy, SawyerReachV2Policy
 
 DIGIT=3
 class MetaworldWrapper(VerbalGymWrapper):
@@ -17,15 +17,15 @@ class MetaworldWrapper(VerbalGymWrapper):
     """ This is wrapper for gym_bandits. """
 
     INSTRUCTION_TYPES = ('b') #('b', 'p', 'c')
-    FEEDBACK_TYPES = ('r', 'fp', 'm') #, 'n', 'r', 'hp', 'hn', 'fp', 'fn')
+    FEEDBACK_TYPES = ('n', 'r', 'hp', 'hn', 'fp', 'm')
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
         # load the scripted policy
         module = importlib.import_module(f"metaworld.policies.sawyer_{self.env.env_name.replace('-','_')}_policy")
         self._policy = getattr(module, f"Sawyer{self.env.env_name.title().replace('-','')}Policy")()
-        self._time_out = 20 # for convergnece of P controller
-        self._threshold = 1e-4 # for convergnece of P controller
+        self._time_out = 20 # timeout of the position tracking (for convergnece of P controller)
+        self._threshold = 1e-4 # the threshold for declaring goal reaching (for convergnece of P controller)
         self._current_observation = None
 
     @property
@@ -45,6 +45,43 @@ class MetaworldWrapper(VerbalGymWrapper):
     def _current_pos(self):
         """ Curret position of the hand. """
         return self.mw_policy._parse_obs(self.current_observation)['hand_pos']
+
+    @property
+    def expert_action(self):
+        """ Compute the desired xyz position and grab effort from the MW scripted policy.
+
+            We want to compute the desired xyz position and grab effort instead of
+            the low level action, so we cannot call directly
+            self.mw_policy.get_aciton
+        """
+        # Get the desired xyz position from the MW scripted policy
+        if type(self.mw_policy) in [type(SawyerDrawerOpenV1Policy), type(SawyerDrawerOpenV2Policy)]:
+            o_d = self.mw_policy._parse_obs(self.current_observation)
+            # NOTE this policy looks different from the others because it must
+            # modify its p constant part-way through the task
+            pos_curr = o_d["hand_pos"]
+            pos_drwr = o_d["drwr_pos"]
+            # align end effector's Z axis with drawer handle's Z axis
+            if np.linalg.norm(pos_curr[:2] - pos_drwr[:2]) > 0.06:
+                desired_xyz = pos_drwr + np.array([0.0, 0.0, 0.3])
+            # drop down to touch drawer handle
+            elif abs(pos_curr[2] - pos_drwr[2]) > 0.04:
+                desired_xyz = pos_drwr
+            # push toward a point just behind the drawer handle
+            # also increase p value to apply more force
+            else:
+                desired_xyz = pos_drwr + np.array([0.0, -0.06, 0.0])
+        elif type(self.mw_policy) == SawyerReachV2Policy:
+            desired_xyz = self.mw_policy._parse_obs(self.current_observation)['goal_pos']
+        else:
+            if hasattr(self.mw_policy,'_desired_xyz'):
+                compute_goal = self.mw_policy._desired_xyz
+            elif hasattr(self.mw_policy,'_desired_pos'):
+                compute_goal = self.mw_policy._desired_pos
+            desired_xyz = compute_goal(self.mw_policy._parse_obs(self.current_observation))
+        # Get the desired grab effort from the MW scripted policy
+        desired_grab = self.mw_policy.get_action(self.current_observation)[-1]  # TODO should be getting the goal
+        return np.concatenate([desired_xyz, np.array([desired_grab])])
 
     def p_control(self, action):
         """ Compute the desired control based on a position target (action[:3])
@@ -88,12 +125,14 @@ class MetaworldWrapper(VerbalGymWrapper):
         if feedback_type=='r':
             feedback = self.format(r_feedback, reward=reward)
         elif feedback_type=='hp':
+            # moved closer to the object
             raise NotImplementedError
         elif feedback_type=='hn':
+            # moved further away from the object
             raise NotImplementedError
         elif feedback_type=='fp':
-            expert_action = self.mw_policy.get_action(observation)
-            feedback = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
+            # direction to move to
+            feedback = self.format(fp_feedback, expert_action=self.textualize_expert_action(self.expert_action))
         elif feedback_type=='fn':
             raise NotImplementedError
         elif feedback_type=='n':
