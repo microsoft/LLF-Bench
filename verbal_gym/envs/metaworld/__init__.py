@@ -10,7 +10,7 @@ import time
 from gym.wrappers import TimeLimit
 
 BENCHMARK = metaworld.MT1
-ENVIRONMENTS = tuple(metaworld.MT1.ENV_NAMES)
+ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
 
 def make_env(env_name,
              instruction_type='b',
