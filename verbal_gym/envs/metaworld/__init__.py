@@ -7,8 +7,8 @@ import importlib
 import metaworld
 import random
 import time
+from gym.wrappers import TimeLimit
 
-st =time.time()
 BENCHMARK = metaworld.ML1
 ENVIRONMENTS = tuple(metaworld.ML1.ENV_NAMES)
 
@@ -26,18 +26,21 @@ def make_env(env_name,
             # XXX this is for the original gym api
             self.action_space = gym.spaces.Box(low=env.action_space.low, high=env.action_space.high)
             self.observation_space = gym.spaces.Box(low=env.observation_space.low, high=env.observation_space.high)
+            self.env.max_path_length = float('inf')
+            # We remove the internal time limit. We will redefine the time limit in the wrapper.
         @property
         def env_name(self):
             return env_name
         def step(self, action):  # XXX this is for the original gym api
-            observation, reward, truncate, done, info = self.env.step(action)
+            # TODO After upgrading to new api, we need move the time limit to the wrapper (now it's using TimeLimit wrapper)
+            observation, reward, done, truncate, info = self.env.step(action)
             return observation, reward, done or truncate, info
         def reset(self):
             task = random.choice(benchmark.train_tasks)
             self.env.set_task(task)
             return self.env.reset()[0]
     env = Wrapper(env)
-    return MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
+    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=40)
 
 
 configs = generate_combinations_dict(

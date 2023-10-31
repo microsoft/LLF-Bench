@@ -1,15 +1,24 @@
+import verbal_gym
+import gym
 import metaworld
-import random
+
+import numpy as np
+
+print(metaworld.ML1.ENV_NAMES)
 
 
+env = gym.make('verbal-hand-insert-b-fp-v2')
+obs = env.reset()
+print(obs)
+action = np.array([0,0,0,0]) # env.action_space.sample()
 
-benchmark = metaworld.MT10() # Construct the benchmark, sampling tasks
 
-training_envs = []
-for name, env_cls in benchmark.train_classes.items():
-  env = env_cls()
-  task = random.choice([task for task in benchmark.train_tasks
-                        if task.env_name == name])
-  env.set_task(task)
-  training_envs.append(env)
-  breakpoint()
+for _ in range(1000):
+    action = env.mw_policy.get_action(env.current_observation)
+    obs, reward, done, info = env.step(action)
+    for k, v in obs.items():
+        print(k, v)
+        print()
+    breakpoint()
+    if done:
+        break
