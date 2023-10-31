@@ -1,8 +1,46 @@
 import gym
 import copy
 import numpy as np
+import random
+import traceback
 
-# This files contain some helper wrappers for the envs.
+class TextWrapper(gym.Wrapper):
+    # This is a wrapper that can be applied on top of VerbalGymWrapper to turn into a text-based env.
+    RMIN = 0.0  # TODO maybe get this from the env
+
+    def _parse_action(self, action):
+        # parse action from string to internal action space
+        # TODO
+        if self.env.action_space == gym.spaces.Discrete:
+            action = int(action)
+        elif self.env.action_space == gym.spaces.Box:
+            exec("action = np.array({})".format(action))
+        elif self.env.action_space == gym.spaces.Text:
+            pass
+        else:
+            raise NotImplementedError
+        return action
+
+    def _parse_observation(self, observation):
+        # Maybe parse the observation dict to string?
+        # TODO
+        return observation
+
+    def step(self, action):
+        assert type(action) == str
+        try:
+            action = self._parse_action(action)
+            observation, reward, done, info =  self.env.step(action)
+        except Exception as e:
+            if e == NotImplementedError:
+                raise NotImplementedError
+            feedback = f"Cannot parse action {action}.\n{traceback.format_exc()}"
+            observation = dict(instruction=None, observation=None, feedback=feedback)
+            reward = self.RMIN
+            done = False
+            info = {}
+        return self._parse_observation(observation), reward, done, info
+
 
 class TerminalFreeWrapper(gym.Wrapper):
     #  Set terminal to False always
