@@ -85,7 +85,6 @@ class VerbalGymWrapper(gym.Wrapper):
         super().__init__(env)
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type          # This is the external api.
-        self._feedback_type = feedback_type         # This is the feedback type that is used in the current step.
         assert self.instruction_type in self.INSTRUCTION_TYPES
         assert self.feedback_type in self.FEEDBACK_TYPES
         self._feedback_types = list(self.FEEDBACK_TYPES)
@@ -95,6 +94,13 @@ class VerbalGymWrapper(gym.Wrapper):
     @property
     def paraphrase_method(self) -> Union[None, int]:
         return self._paraphrase_method
+
+    @property
+    def _feedback_type(self) -> str:
+        """ This is the feedback type that is used in the current step. In
+        subclassing the wrapper, use this to determine the feedback type in
+        _step. """
+        return np.random.choice(self._feedback_types) if self.feedback_type == 'm' else self.feedback_type
 
     def set_paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
         """
@@ -175,8 +181,6 @@ class VerbalGymWrapper(gym.Wrapper):
 
     def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, Dict[str, Any]]:
         """ Step the environment and return the observation, reward, terminal, and info."""
-        self._feedback_type = np.random.choice(self._feedback_types) \
-            if self.feedback_type == 'm' else self.feedback_type
         observation, reward, terminal, info = self._step(action)
         if type(observation) == str:  # backward compatibility
             observation = dict(instruction=None,
