@@ -4,16 +4,16 @@ import metaworld
 
 import numpy as np
 
-print(metaworld.ML1.ENV_NAMES)
+print(metaworld.MT1.ENV_NAMES)
 
 
-# env = gym.make('verbal-hand-insert-b-fp-v2')
-env = gym.make('verbal-reach-b-fp-v2')
+env = gym.make('verbal-hand-insert-b-hn-v2')
+# env = gym.make('verbal-reach-b-hn-v2')
 
 # This tests the wrapper.
 obs = env.reset()
 for _ in range(1000):
-    action = env.mw_policy.get_action(env.current_observation)
+    action = env.expert_action
     obs, reward, done, info = env.step(action)
     for k, v in obs.items():
         print(k, v)

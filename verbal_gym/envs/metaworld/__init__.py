@@ -9,8 +9,8 @@ import random
 import time
 from gym.wrappers import TimeLimit
 
-BENCHMARK = metaworld.ML1
-ENVIRONMENTS = tuple(metaworld.ML1.ENV_NAMES)
+BENCHMARK = metaworld.MT1
+ENVIRONMENTS = tuple(metaworld.MT1.ENV_NAMES)
 
 def make_env(env_name,
              instruction_type='b',
@@ -41,7 +41,7 @@ def make_env(env_name,
             self.env.set_task(task)
             return self.env.reset()[0]
     env = Wrapper(env)
-    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=500)
+    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=20)
 
 
 configs = generate_combinations_dict(

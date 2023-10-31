@@ -47,7 +47,7 @@ class MetaworldWrapper(VerbalGymWrapper):
         return self.mw_policy._parse_obs(self.current_observation)['hand_pos']
 
     @property
-    def _expert_action(self):
+    def expert_action(self):
         """ Compute the desired xyz position and grab effort from the MW scripted policy.
 
             We want to compute the desired xyz position and grab effort instead of
@@ -123,7 +123,7 @@ class MetaworldWrapper(VerbalGymWrapper):
 
         feedback_type = self.feedback_type
         # Some pre-computation of the feedback
-        expert_action = self._expert_action
+        expert_action = self.expert_action
         moving_away = np.linalg.norm(expert_action[:3]-previous_pos) < np.linalg.norm(expert_action[:3]-self._current_pos)
         if expert_action[3] > 0.5 and action[3] < 0.5:  # the gripper should be closed instead.
             gripper_feedback = self.format(close_gripper_feedback)
@@ -140,7 +140,7 @@ class MetaworldWrapper(VerbalGymWrapper):
                 if feedback is not None:
                     feedback += 'But, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
                 else:
-                    feedback += gripper_feedback
+                    feedback = gripper_feedback
         elif feedback_type=='hn':  # moved away from the expert goal
             # position feedback
             feedback = self.format(hn_feedback) if moving_away else None
@@ -149,7 +149,7 @@ class MetaworldWrapper(VerbalGymWrapper):
                 if feedback is not None:
                     feedback += 'Also, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
                 else:
-                    feedback += gripper_feedback
+                    feedback = gripper_feedback
         elif feedback_type=='fp':  # suggest the expert goal
             feedback = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
         elif feedback_type=='fn':
