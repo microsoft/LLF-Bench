@@ -162,6 +162,17 @@ class Scene:
 
         return self.bfs_path
 
+    def get_optimal_path(self, room):
+
+        # This is a path from this goal to this room
+        # Path consists of [(action-1, room-1), (action-2, room-2), ...., (action-k, room-k)] where room-k=room
+        path = self.bfs_path[room]
+
+        # Compute path from current room to the goal
+        optimal_path = list(reversed([(self.opposite_direction(direction), room_) for direction, room_ in path]))
+
+        return optimal_path
+
     def get_gold_action(self, room):
 
         # This is a path from this goal to this room
