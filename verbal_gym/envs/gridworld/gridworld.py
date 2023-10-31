@@ -264,9 +264,6 @@ class Gridworld(gym.Env):
                                               feedback_type=sampled_feedback_type)
 
         elif feedback_type == "hn":     # Hindsight negative
-            raise NotImplementedError()
-
-        elif feedback_type == "hp":     # Hindsight positive
 
             if reward == 1.0:
                 feedback = f"You succeeded! Congratulations."
@@ -285,24 +282,17 @@ class Gridworld(gym.Env):
                     pdb.set_trace()
                 assert old_gold_action is not None, "can only be none if you reach the goal"
 
-                if new_room is None:
+                all_wrong_directions = list(Scene.DIRECTIONS)
+                all_wrong_directions.remove(old_gold_action)
+                avoid_action = random.choice(all_wrong_directions)
+
+                if avoid_action != Scene.DIRECTIONS[action]:
                     # Case 1: If the agent takes an action that resulted in no transition
-                    feedback = f"You tried to go in the direction {Scene.DIRECTIONS[action]} where there is no room. " \
-                               f"You should have taken the {old_gold_action} direction."
-
-                elif old_gold_action != Scene.DIRECTIONS[action]:
-                    # Case 2: If the agent takes the wrong transition
-                    feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
-                           f"You should have taken the {old_gold_action} direction."
-
+                    feedback = f"You did correct thing by not following the {avoid_action} direction in the old room."
                 else:
-                    # Case 3: If the agent takes the right transition
-                    feedback = f"Good job. You took the right direction and moved closer to the treasure."
+                    feedback = f"You made a mistake by following the {avoid_action} direction in the old room."
 
-        elif feedback_type == "fn":     # Future negative
-            pass
-
-        elif feedback_type == "fp":     # Future positive
+        elif feedback_type == "hp":     # Hindsight positive
 
             if reward == 1.0:
                 feedback = f"You succeeded! Congratulations."
@@ -315,8 +305,53 @@ class Gridworld(gym.Env):
                 # Provide feedback as follows:
                 #       Case 1: If the agent takes an action that resulted in no transition
                 #       Case 2: If the agent takes the wrong transition
-                #       Case 3: If the agent takes the right transition
 
+                if old_gold_action is None:
+                    pdb.set_trace()
+                assert old_gold_action is not None, "can only be none if you reach the goal"
+
+                if old_gold_action != Scene.DIRECTIONS[action]:
+                    # Case 1: If the agent takes an action that resulted in no transition
+                    feedback = f"You should have taken the {old_gold_action} direction in the old room."
+                else:
+                    feedback = f"Good job. You followed the right direction {old_gold_action} in the old room."
+
+        elif feedback_type == "fn":     # Future negative
+
+            if reward == 1.0:
+                feedback = f"You succeeded! Congratulations."
+
+            elif self.goal_prev_visited:
+                feedback = f"You have already reached the treasure. Good job."
+
+            else:
+                # Describe a samopled action the agent should not take
+
+                gold_action = self.current_scene.get_gold_action(self.current_room)
+                all_directions = list(Scene.DIRECTIONS)
+                all_directions.remove(gold_action)
+
+                avoid_action = random.choice(all_directions)
+
+                if gold_action is None or old_gold_action is None:
+                    pdb.set_trace()
+
+                assert old_gold_action is not None, "can only be none if you reach the goal"
+                assert gold_action is not None, "can only be none if you reach the goal"
+
+                feedback = f"You should avoid taking the action {avoid_action} in this new room " \
+                           f"{self.current_room.get_name()}."
+
+        elif feedback_type == "fp":     # Future positive
+
+            if reward == 1.0:
+                feedback = f"You succeeded! Congratulations."
+
+            elif self.goal_prev_visited:
+                feedback = f"You have already reached the treasure. Good job."
+
+            else:
+                # Describe the action the agent should take
                 gold_action = self.current_scene.get_gold_action(self.current_room)
 
                 if gold_action is None or old_gold_action is None:
@@ -325,21 +360,8 @@ class Gridworld(gym.Env):
                 assert old_gold_action is not None, "can only be none if you reach the goal"
                 assert gold_action is not None, "can only be none if you reach the goal"
 
-                if new_room is None:
-                    # Case 1: If the agent takes an action that resulted in no transition
-                    feedback = f"You tried to go in the direction {Scene.DIRECTIONS[action]} where there is no room. " \
-                               f"You should have moved towards the {gold_action} direction."
-
-                elif old_gold_action != Scene.DIRECTIONS[action]:
-                    # Case 2: If the agent takes the wrong transition
-                    feedback = f"You went through a door to a new room but this is not the direction of the treasure." \
-                               f"You should now move towards the {gold_action} direction."
-
-                else:
-                    # Case 3: If the agent takes the right transition
-                    feedback = f"Good job. You took the right direction and moved closer to the treasure. From this " \
-                               f"room you should move towards the {gold_action} direction."
-
+                feedback = f"You should go towards the {gold_action} direction from this " \
+                           f"new room {self.current_room.get_name()}."
         else:
             raise AssertionError(f"Unhandled feedback level {feedback_type}")
 
