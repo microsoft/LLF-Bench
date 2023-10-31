@@ -9,8 +9,8 @@ import random
 import time
 from gym.wrappers import TimeLimit
 
-BENCHMARK = metaworld.ML1
-ENVIRONMENTS = tuple(metaworld.ML1.ENV_NAMES)
+BENCHMARK = metaworld.MT1
+ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
 
 def make_env(env_name,
              instruction_type='b',
