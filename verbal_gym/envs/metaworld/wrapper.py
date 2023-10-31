@@ -52,7 +52,21 @@ class MetaworldWrapper(VerbalGymWrapper):
         assert len(action)==4
         p_gain = P_GAINS[type(self.mw_policy)]
         if type(self.mw_policy) in [type(SawyerDrawerOpenV1Policy), type(SawyerDrawerOpenV2Policy)]:
-            raise NotImplementedError # TODO This needs special cares
+            # This needs special cares. It's implemented differently.
+            o_d = self.mw_policy._parse_obs(self.current_observation)
+            pos_curr = o_d["hand_pos"]
+            pos_drwr = o_d["drwr_pos"]
+            # align end effector's Z axis with drawer handle's Z axis
+            if np.linalg.norm(pos_curr[:2] - pos_drwr[:2]) > 0.06:
+                p_gain = 4.0
+            # drop down to touch drawer handle
+            elif abs(pos_curr[2] - pos_drwr[2]) > 0.04:
+                p_gain = 4.0
+            # push toward a point just behind the drawer handle
+            # also increase p value to apply more force
+            else:
+                p_gain= 50.0
+
         control = Action({"delta_pos": np.arange(3), "grab_effort": 3})
         control["delta_pos"] = move(self._current_pos, to_xyz=action[:3], p=p_gain)
         control["grab_effort"] = action[3]
