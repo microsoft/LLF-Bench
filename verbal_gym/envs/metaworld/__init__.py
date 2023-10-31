@@ -21,9 +21,10 @@ def make_env(env_name,
     env = benchmark.train_classes[env_name]()
     class Wrapper(gym.Wrapper):
          # a small wrapper to make sure the task is set
+         # and to make the env compatible with the old gym api
         def __init__(self, env):
             super().__init__(env)
-            # XXX this is for the original gym api
+            # XXX this is for the old gym api
             self.action_space = gym.spaces.Box(low=env.action_space.low, high=env.action_space.high)
             self.observation_space = gym.spaces.Box(low=env.observation_space.low, high=env.observation_space.high)
             self.env.max_path_length = float('inf')
@@ -31,16 +32,16 @@ def make_env(env_name,
         @property
         def env_name(self):
             return env_name
-        def step(self, action):  # XXX this is for the original gym api
+        def step(self, action):  # XXX this is for the old gym api
             # TODO After upgrading to new api, we need move the time limit to the wrapper (now it's using TimeLimit wrapper)
-            observation, reward, done, truncate, info = self.env.step(action)
-            return observation, reward, done or truncate, info
+            observation, reward, done, truncated, info = self.env.step(action)
+            return observation, reward, done or truncated, info
         def reset(self):
             task = random.choice(benchmark.train_tasks)
             self.env.set_task(task)
             return self.env.reset()[0]
     env = Wrapper(env)
-    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=40)
+    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=500)
 
 
 configs = generate_combinations_dict(

@@ -83,7 +83,6 @@ class MetaworldWrapper(VerbalGymWrapper):
             desired_pos = action[:3]
             if np.abs(desired_pos - self._current_pos).max() < self._threshold:
                 break
-            # print(np.linalg.norm(desired_pos - self._current_pos), reward)
 
         feedback_type = self.feedback_type
         if feedback_type=='r':
