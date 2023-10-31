@@ -47,7 +47,7 @@ class MetaworldWrapper(VerbalGymWrapper):
         return self.mw_policy._parse_obs(self.current_observation)['hand_pos']
 
     @property
-    def expert_action(self):
+    def _expert_action(self):
         """ Compute the desired xyz position and grab effort from the MW scripted policy.
 
             We want to compute the desired xyz position and grab effort instead of
@@ -112,7 +112,7 @@ class MetaworldWrapper(VerbalGymWrapper):
     def _step(self, action):
         # Run P controller until convergence or timeout
         # action is viewed as the desired position + grab_effort
-        previous_observation = self.current_observation
+        previous_pos = self._current_pos  # the position of the hand before moving
         for _ in range(self._time_out):
             control = self.p_control(action)
             observation, reward, terminal, info = self.env.step(control)
@@ -122,17 +122,36 @@ class MetaworldWrapper(VerbalGymWrapper):
                 break
 
         feedback_type = self.feedback_type
+        # Some pre-computation of the feedback
+        expert_action = self._expert_action
+        moving_away = np.linalg.norm(expert_action[:3]-previous_pos) < np.linalg.norm(expert_action[:3]-self._current_pos)
+        if expert_action[3] > 0.5 and action[3] < 0.5:  # the gripper should be closed instead.
+            gripper_feedback = self.format(close_gripper_feedback)
+        elif expert_action[3] < 0.5 and action[3] > 0.5:  #the gripper should be open instead.
+            gripper_feedback = self.format(open_gripper_feedback)
+        else:
+            gripper_feedback = None
+        # Compute feedback
         if feedback_type=='r':
             feedback = self.format(r_feedback, reward=reward)
-        elif feedback_type=='hp':
-            # moved closer to the object
-            raise NotImplementedError
-        elif feedback_type=='hn':
-            # moved further away from the object
-            raise NotImplementedError
-        elif feedback_type=='fp':
-            # direction to move to
-            feedback = self.format(fp_feedback, expert_action=self.textualize_expert_action(self.expert_action))
+        elif feedback_type=='hp':  # moved closer to the expert goal
+            feedback = self.format(hp_feedback) if not moving_away else None
+            if gripper_feedback is not None:
+                if feedback is not None:
+                    feedback += 'But, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
+                else:
+                    feedback += gripper_feedback
+        elif feedback_type=='hn':  # moved away from the expert goal
+            # position feedback
+            feedback = self.format(hn_feedback) if moving_away else None
+            # gripper feedback
+            if gripper_feedback is not None:
+                if feedback is not None:
+                    feedback += 'Also, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
+                else:
+                    feedback += gripper_feedback
+        elif feedback_type=='fp':  # suggest the expert goal
+            feedback = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
         elif feedback_type=='fn':
             raise NotImplementedError
         elif feedback_type=='n':
