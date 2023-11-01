@@ -8,7 +8,6 @@ from textwrap import dedent, indent
 
 from gym.utils import seeding
 
-
 class LossLandscapeBase(gym.Env):
     def __init__(self, callable_func, x_low, x_high, min_y, optimal_sol,
                  feedback=0, seed=None, precision_digit=2, horizon=10):
