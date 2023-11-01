@@ -32,19 +32,22 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
         del info['feedback']
         del info['didactic_feedback']
 
-        feedback = "No feedback available."
+        print(didactic_feedback)
+
         if self._feedback_type == 'r':
             feedback = self.reformat(didactic_feedback[self._feedback_type], r_feedback_pos, template=r_feedback_pos_template)
             feedback = self.reformat(feedback, r_feedback_neg, template=r_feedback_neg_template)
-        elif self._feedback_type in didactic_feedback:
-            temp_dim1 = eval("{}_feedback_dim1".format(self._feedback_type))
+        elif self._feedback_type in didactic_feedback and didactic_feedback[self._feedback_type] != "":
+            temp_dim1 = eval("{}_feedback_dim1_template".format(self._feedback_type))
             feedback = self.reformat(didactic_feedback[self._feedback_type],
                                      eval("{}_feedback_dim1".format(self._feedback_type)),
                                      template=temp_dim1)
-            temp_dim2 = eval("{}_feedback_dim2".format(self._feedback_type))
+            temp_dim2 = eval("{}_feedback_dim2_template".format(self._feedback_type))
             feedback = self.reformat(feedback,
                                      eval("{}_feedback_dim2".format(self._feedback_type)),
                                      template=temp_dim2)
+        else:
+            feedback = "No feedback available."
 
         observation = dict(instruction=None, observation=observation, feedback=feedback)
         return observation, reward, terminal, info
