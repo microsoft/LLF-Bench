@@ -28,6 +28,18 @@ An example env name is: gridworld-b-fn-v0
 
 """
 
+from dataclasses import dataclass, asdict
+
+@dataclass
+class Feedback:
+    r: Union[str,None] = None
+    hp: Union[str,None] = None
+    hn: Union[str,None] = None
+    fp: Union[str,None] = None
+    fn: Union[str,None] = None
+
+    def asdict(self):
+        return asdict(self)
 
 class VerbalGymWrapper(gym.Wrapper):
     """
@@ -77,6 +89,7 @@ class VerbalGymWrapper(gym.Wrapper):
                 instruction_type: The type of instruction. b: basic, p: partial,
                 c: complete. Should be one of the INSTRUCTION_TYPES.
 
+                # TODO update
                 feedback_type: The type of feedback. m: mixed, n: none, r:
                 reward, hp: hindsight positive, hn: hindsight negative, fp:
                 future positive, fn: future negative. Should be one of the
@@ -84,11 +97,9 @@ class VerbalGymWrapper(gym.Wrapper):
         """
         super().__init__(env)
         self.instruction_type = instruction_type
-        self.feedback_type = feedback_type          # This is the external api.
+        self.feedback_type = feedback_type  # This is the external api.
         assert self.instruction_type in self.INSTRUCTION_TYPES
         assert self.feedback_type in self.FEEDBACK_TYPES
-        self._feedback_types = list(self.FEEDBACK_TYPES)
-        self._feedback_types.remove('m')
         self._paraphrase_method = 'random'
 
     @property
@@ -96,11 +107,26 @@ class VerbalGymWrapper(gym.Wrapper):
         return self._paraphrase_method
 
     @property
-    def _feedback_type(self) -> str:
+    def _feedback_type(self) -> set:
         """ This is the feedback type that is used in the current step. In
         subclassing the wrapper, use this to determine the feedback type in
         _step. """
-        return np.random.choice(self._feedback_types) if self.feedback_type == 'm' else self.feedback_type
+        if self.feedback_type == 'n': # using none
+            return set()
+        feedback_type = self.feedback_type
+        if self.feedback_type == 'm': # using mixture  # TODO a better name
+            feedback_types = set(self.FEEDBACK_TYPES)
+            feedback_types.remove('m')
+            feedback_type = np.random.choice(feedback_types)  # str
+        assert isinstance(self.feedback_type, str) or isinstance(self.feedback_type, set) \
+            or isinstance(self.feedback_type, list) or isinstance(self.feedback_type, tuple), \
+            'feedback_type must be a string, set, list, or tuple'
+        if type(feedback_type) == str:
+            feedback_type = [feedback_type]
+        feedback_type = set(feedback_type)
+        for f in feedback_type:
+            assert f in self.FEEDBACK_TYPES, f'Feedback type {f} is not supported.'
+        return feedback_type
 
     def set_paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
         """
@@ -162,33 +188,61 @@ class VerbalGymWrapper(gym.Wrapper):
         assert isinstance(observation, dict), "The observation must be a dict."
         assert 'observation' in observation and 'feedback' in observation and 'instruction' in observation, \
                "The observation must be a dict with keys: observation, feedback, instruction."
+        assert isinstance(observation['feedback'], Feedback) or observation['feedback'] is None, "The feedback must be a Feedback object."
 
     def reset(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Reset the environment and return the initial observation."""
         observation, info = self._reset(seed=seed, options=options)
-        if type(observation) == str:  # backward compatibility
-            observation = dict(instruction=observation, observation=None, feedback=None)
         self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation."
         assert observation['instruction'] is not None, "The instruction must be provided in the initial observation."
         return observation, info
 
-    def _rese(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
-        """ Implement this in the subclass. """
+    def _reset(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
+        """ Implement this in the subclass.
+
+            Returns:
+                observation: The observation dict. In the dict, the keys are
+                'observation', 'feedback', and 'instruction'. 'feedback' should
+                be a Feedback object or None.
+
+                info: Additional info.
+        """
         raise NotImplementedError
 
     def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, bool,  Dict[str, Any]]:
         """ Step the environment and return the observation, reward, terminal, and info."""
         observation, reward, terminal, truncated, info = self._step(action)
-        if type(observation) == str:  # backward compatibility
-            observation = dict(instruction=None,
-                               observation=observation,
-                               feedback=f"You received a reward of {reward}.")
         self.obs_check(observation)
+        if observation['feedback'] is not None:
+            observation['feedback'] = self._verbalize_feedback(observation['feedback'])
         return observation, reward, terminal, truncated, info
 
     def _step(self, action: Any) -> Tuple[Union[str, Dict[str, Any]], float, bool, bool, Dict[str, Any]]:
         """ Implement this in the subclass.
-            Use self._feedback_type to determine the feedback.
+            Use self._feedback_type (which is a set) to determine the feedback.
+
+            Returns:
+                observation: The observation dict. In the dict, the keys are
+                'observation', 'feedback', and 'instruction'. 'feedback' should
+                be a Feedback object or None.
+
+                reward: The reward.
+
+                terminal: Whether the episode is done.
+
+                truncated: Whether the episode is truncated.
+
+                info: Additional info.
+
         """
         raise NotImplementedError
+
+    def _verbalize_feedback(self, feedback_dict: Feedback) -> str:
+        """ Implement this in the subclass to get the desired feedback string.
+        """
+        feedback = []
+        for k, v in feedback_dict.asdict().items():
+            if v is not None:
+                feedback.append(f'{str(v)}')
+        return ' '.join(feedback)

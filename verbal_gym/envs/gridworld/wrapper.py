@@ -24,7 +24,7 @@ class GridworldWrapper(VerbalGymWrapper):
         self.env.feedback_type = feedback_type
         super().__init__(env, instruction_type, feedback_type)
 
-    def reset(self, *, seed : int = None, options : Dict[str, Any] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
+    def _reset(self, *, seed : int = None, options : Dict[str, Any] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Implement this in the subclass. """
 
         # Reset the instruction and feedback type of the base environment based on the settings in the wrapper
@@ -32,7 +32,7 @@ class GridworldWrapper(VerbalGymWrapper):
         self.env.feedback_type = self.feedback_type
         return self.env.reset(seed=seed, options=options)
 
-    def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, bool,  Dict[str, Any]]:
+    def _step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, bool,  Dict[str, Any]]:
         """ Implement this in the subclass.
             Use self._feedback_type to determine the feedback.
         """

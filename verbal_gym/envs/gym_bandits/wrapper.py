@@ -1,6 +1,6 @@
 import numpy as np
 from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, RandomActionOrderWrapper, EnvCompatibility
-from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
+from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
 from verbal_gym.envs.gym_bandits.prompts import *
 
 
@@ -32,21 +32,22 @@ class BanditGymWrapper(VerbalGymWrapper):
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
-        feedback = self.format(r_feedback, reward=reward)  # base reward feedback
+        feedback = Feedback()
         feedback_type = self._feedback_type
-        if feedback_type == 'hp':  # hindsight positive: explaination on why something is correct
+
+        if 'r' in feedback_type:  # reward feedback
+            feedback.r = self.format(r_feedback, reward=reward)  # base reward feedback
+        if 'hp' in feedback_type:  # hindsight positive: explaination on why something is correct
             if action == self._best_arm:
-                feedback += " "+self.format(hp_feedback)
-        elif feedback_type == 'hn':  # hindsight negative: explaination on why something is incorrect
+                feedback.hp += self.format(hp_feedback)
+        if 'hn' in feedback_type:  # hindsight negative: explaination on why something is incorrect
             if action != self._best_arm:
-                feedback += " "+self.format(hn_feedback)
-        elif feedback_type == 'fp':  # future positive: suggestion of things to do
-            feedback += " "+self.format(hp_feedback, best_arm=self._best_arm, reward=self._expected_reward(self._best_arm))
-        elif feedback_type == 'fn':  # future negative: suggestion of things to avoid
+                feedback.hn = self.format(hn_feedback)
+        if 'fp' in feedback_type:  # future positive: suggestion of things to do
+            feedback.fp = self.format(hp_feedback, best_arm=self._best_arm, reward=self._expected_reward(self._best_arm))
+        if 'fn' in feedback_type:  # future negative: suggestion of things to avoid
             bad_action = np.random.choice(np.delete(np.arange(self.env.action_space.n), self._best_arm))
-            feedback += " "+self.format(fn_feedback, bad_action=bad_action, reward=self._expected_reward(bad_action))
-        elif feedback_type == 'n':
-            feedback = None
+            feedback.fn = self.format(fn_feedback, bad_action=bad_action, reward=self._expected_reward(bad_action))
         observation = dict(instruction=None, observation=None, feedback=feedback)
         return observation, reward, terminated, truncated, info
 

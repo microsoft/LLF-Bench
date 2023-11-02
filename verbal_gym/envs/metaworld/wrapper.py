@@ -1,6 +1,6 @@
 from typing import Dict, Union
 import numpy as np
-from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
+from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
 from verbal_gym.envs.metaworld.prompts import *
 from verbal_gym.envs.metaworld.gains import P_GAINS
 import metaworld
@@ -131,32 +131,29 @@ class MetaworldWrapper(VerbalGymWrapper):
         else:
             gripper_feedback = None
         # Compute feedback
-        if feedback_type=='r':
-            feedback = self.format(r_feedback, reward=reward)
-        elif feedback_type=='hp':  # moved closer to the expert goal
-            feedback = self.format(hp_feedback) if not moving_away else None
+        feedback = Feedback()
+        if 'r' in  feedback_type:
+            feedback.r = self.format(r_feedback, reward=reward)
+        if 'hp' in feedback_type:  # moved closer to the expert goal
+            _feedback = self.format(hp_feedback) if not moving_away else None
             if gripper_feedback is not None:
-                if feedback is not None:
-                    feedback += 'But, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
+                if _feedback is not None:
+                    _feedback += 'But, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
                 else:
-                    feedback = gripper_feedback
-        elif feedback_type=='hn':  # moved away from the expert goal
+                    _feedback = gripper_feedback
+            feedback.hp = _feedback
+        if 'hn' in feedback_type:  # moved away from the expert goal
             # position feedback
-            feedback = self.format(hn_feedback) if moving_away else None
+            _feedback = self.format(hn_feedback) if moving_away else None
             # gripper feedback
             if gripper_feedback is not None:
-                if feedback is not None:
-                    feedback += 'Also, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
+                if _feedback is not None:
+                    _feedback += 'Also, ' + gripper_feedback[0].lower() + gripper_feedback[1:]
                 else:
-                    feedback = gripper_feedback
-        elif feedback_type=='fp':  # suggest the expert goal
-            feedback = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
-        elif feedback_type=='fn':
-            raise NotImplementedError
-        elif feedback_type=='n':
-            feedback=None
-        else:
-            raise NotImplementedError
+                    _feedback = gripper_feedback
+            feedback.hn = _feedback
+        if 'fp' in feedback_type:  # suggest the expert goal
+            feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
         observation = self.textualize_observation(observation)
         return dict(instruction=None, observation=observation, feedback=feedback), reward, terminated, truncated, info
 

@@ -6,7 +6,7 @@ import random
 from collections import deque
 from verbal_gym.envs.gridworld.room import Room
 from verbal_gym.envs.gridworld.scene import Scene
-
+from verbal_gym.envs.verbal_gym_env import Feedback
 
 class Gridworld(gym.Env):
 
@@ -244,11 +244,11 @@ class Gridworld(gym.Env):
         if feedback_type is None:
             feedback_type = self.feedback_type
 
-        if feedback_type == "n":        # None
-            feedback = "No feedback is available."
+        feedback = Feedback()
 
-        elif feedback_type == "r":      # Reward described in text
-            feedback = f"You got a reward of {reward}."
+
+        if "r" in feedback_type:      # Reward described in text
+            feedback.r = f"You got a reward of {reward}."
             # if reward == 1.0:
             #     feedback = f"You got a reward of 1.0"
             # elif self.goal_prev_visited:
@@ -256,20 +256,20 @@ class Gridworld(gym.Env):
             # else:
             #     feedback = f"You didn't succeed. Trying visiting more rooms."
 
-        elif feedback_type == "m":      # Mixed feedback type
+        # elif feedback_type == "m":      # Mixed feedback type
 
-            sampled_feedback_type = random.choice(["n", "r", "hp", "hn", "fn", "fp"])
-            feedback = self.generate_feedback(old_gold_action=old_gold_action,
-                                              new_room=new_room,
-                                              feedback_type=sampled_feedback_type)
+        #     sampled_feedback_type = random.choice(["n", "r", "hp", "hn", "fn", "fp"])
+        #     feedback = self.generate_feedback(old_gold_action=old_gold_action,
+        #                                       new_room=new_room,
+        #                                       feedback_type=sampled_feedback_type)
 
-        elif feedback_type == "hn":     # Hindsight negative
+        if "hn" in feedback_type:     # Hindsight negative
 
             if reward == 1.0:
-                feedback = f"You succeeded! Congratulations."
+                feedback.hn = f"You succeeded! Congratulations."
 
             elif self.goal_prev_visited:
-                feedback = f"You have already reached the treasure. Good job."
+                feedback.hn = f"You have already reached the treasure. Good job."
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
@@ -288,17 +288,17 @@ class Gridworld(gym.Env):
 
                 if avoid_action != Scene.DIRECTIONS[action]:
                     # Case 1: If the agent takes an action that resulted in no transition
-                    feedback = f"You did correct thing by not following the {avoid_action} direction in the old room."
+                    feedback.hn = f"You did correct thing by not following the {avoid_action} direction in the old room."
                 else:
-                    feedback = f"You made a mistake by following the {avoid_action} direction in the old room."
+                    feedback.hn = f"You made a mistake by following the {avoid_action} direction in the old room."
 
-        elif feedback_type == "hp":     # Hindsight positive
+        if "hp" in feedback_type:     # Hindsight positive
 
             if reward == 1.0:
-                feedback = f"You succeeded! Congratulations."
+                feedback.hp = f"You succeeded! Congratulations."
 
             elif self.goal_prev_visited:
-                feedback = f"You have already reached the treasure. Good job."
+                feedback.hp = f"You have already reached the treasure. Good job."
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
@@ -312,17 +312,17 @@ class Gridworld(gym.Env):
 
                 if old_gold_action != Scene.DIRECTIONS[action]:
                     # Case 1: If the agent takes an action that resulted in no transition
-                    feedback = f"You should have taken the {old_gold_action} direction in the old room."
+                    feedback.hp = f"You should have taken the {old_gold_action} direction in the old room."
                 else:
-                    feedback = f"Good job. You followed the right direction {old_gold_action} in the old room."
+                    feedback.hp = f"Good job. You followed the right direction {old_gold_action} in the old room."
 
-        elif feedback_type == "fn":     # Future negative
+        if "fn" in feedback_type:      # Future negative
 
             if reward == 1.0:
-                feedback = f"You succeeded! Congratulations."
+                feedback.fn = f"You succeeded! Congratulations."
 
             elif self.goal_prev_visited:
-                feedback = f"You have already reached the treasure. Good job."
+                feedback.fn = f"You have already reached the treasure. Good job."
 
             else:
                 # Describe a samopled action the agent should not take
@@ -339,16 +339,16 @@ class Gridworld(gym.Env):
                 assert old_gold_action is not None, "can only be none if you reach the goal"
                 assert gold_action is not None, "can only be none if you reach the goal"
 
-                feedback = f"You should avoid taking the action {avoid_action} in this new room " \
+                feedback.fn = f"You should avoid taking the action {avoid_action} in this new room " \
                            f"{self.current_room.get_name()}."
 
-        elif feedback_type == "fp":     # Future positive
+        if "fp" in feedback_type:      # Future positive
 
             if reward == 1.0:
-                feedback = f"You succeeded! Congratulations."
+                feedback.fp = f"You succeeded! Congratulations."
 
             elif self.goal_prev_visited:
-                feedback = f"You have already reached the treasure. Good job."
+                feedback.fp = f"You have already reached the treasure. Good job."
 
             else:
                 # Describe the action the agent should take
@@ -360,7 +360,7 @@ class Gridworld(gym.Env):
                 assert old_gold_action is not None, "can only be none if you reach the goal"
                 assert gold_action is not None, "can only be none if you reach the goal"
 
-                feedback = f"You should go towards the {gold_action} direction from this " \
+                feedback.fp = f"You should go towards the {gold_action} direction from this " \
                            f"new room {self.current_room.get_name()}."
         else:
             raise AssertionError(f"Unhandled feedback level {feedback_type}")
