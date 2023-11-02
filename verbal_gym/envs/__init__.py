@@ -3,3 +3,4 @@ from verbal_gym.envs import summarization
 from verbal_gym.envs import poem_env
 from verbal_gym.envs import gridworld
 from verbal_gym.envs import metaworld
+from verbal_gym.envs import loss_landscape
