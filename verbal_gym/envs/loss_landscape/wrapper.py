@@ -1,4 +1,4 @@
-from verbal_gym.envs.env_wrappers import TerminalFreeWrapper
+from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
 # from verbal_gym.envs.loss_landscape.loss_descent import
 from verbal_gym.envs.loss_landscape.prompts import *
@@ -17,17 +17,17 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
     FEEDBACK_TYPES = ('m', 'r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
-        super().__init__(TerminalFreeWrapper(env), instruction_type, feedback_type)
+        super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
 
-    def _reset(self):  # TODO types of instructions
+    def _reset(self, *, seed=None, options=None):  # TODO types of instructions
         instruction = self._loss_env.docstring
-        obs = self.env.reset()
+        obs = self.env.reset(seed=seed, options=options)
 
         instruction = self.reformat(instruction, loss_b_instruction)
         return dict(instruction=instruction, observation=obs, feedback=None)
 
     def _step(self, action):
-        observation, reward, terminal, info = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action)
         didactic_feedback = info['didactic_feedback']
         del info['feedback']
         del info['didactic_feedback']
@@ -47,8 +47,8 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
                                      template=temp_dim2)
 
         observation = dict(instruction=None, observation=observation, feedback=feedback)
-        return observation, reward, terminal, info
+        return observation, reward, terminated, truncated, info
 
     @property
     def _loss_env(self):
-        return self.env.env
+        return self.env.env.env

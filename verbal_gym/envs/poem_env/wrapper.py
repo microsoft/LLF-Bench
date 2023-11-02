@@ -1,4 +1,4 @@
-from verbal_gym.envs.env_wrappers import TerminalFreeWrapper
+from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
 from verbal_gym.envs.poem_env.formal_poems import Haiku, Tanka, LineSyllableConstrainedPoem, SyllableConstrainedPoem
 from verbal_gym.envs.poem_env.prompts import *
@@ -9,11 +9,11 @@ class PoemGymWrapper(VerbalGymWrapper):
     FEEDBACK_TYPES = ('m', 'r', 'hn', 'fp')
 
     def __init__(self, env, instruction_type, feedback_type):
-        super().__init__(TerminalFreeWrapper(env), instruction_type, feedback_type)
+        super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
         self._feedback_type_table = {'r':0, 'hn':0.5, 'fp':1}
 
-    def _reset(self):  # TODO types of instructions
-        instruction = self.env.reset()
+    def _reset(self, *, seed=None, options=None):  # TODO types of instructions
+        instruction, info = self.env.reset(seed=seed, options=options)
         if type(self._poem_env) == Haiku:
             instruction = self.reformat(instruction, haiku_b_instruction)
         elif type(self._poem_env) == Tanka:
@@ -22,11 +22,11 @@ class PoemGymWrapper(VerbalGymWrapper):
             instruction = self.reformat(instruction, line_syllable_constrained_poem_b_instruction)
         elif type(self._poem_env) == SyllableConstrainedPoem:
             instruction = self.reformat(instruction, syllable_constrained_poem_b_instruction)
-        return dict(instruction=instruction, observation=None, feedback=None)
+        return dict(instruction=instruction, observation=None, feedback=None), info
 
     def _step(self, action):
         self._poem_env.feedback = self._feedback_type_table[self._feedback_type]
-        observation, reward, terminal, info = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action)
         feedback = info['feedback']
         del info['feedback']
         # Use reformat to replace some patterns
@@ -40,8 +40,8 @@ class PoemGymWrapper(VerbalGymWrapper):
             feedback = self.reformat(feedback, line_fp_feedback_1)  # produce_line_feedback
             feedback = self.reformat(feedback, line_fp_feedback_2)  # produce_line_feedback
         observation = dict(instruction=None, observation=None, feedback=feedback)
-        return observation, reward, terminal, info
+        return observation, reward, terminated, truncated, info
 
     @property
     def _poem_env(self):
-        return self.env.env
+        return self.env.env.env

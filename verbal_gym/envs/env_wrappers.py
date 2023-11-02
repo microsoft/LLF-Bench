@@ -1,8 +1,54 @@
-import gym
+import gymnasium as gym
 import copy
 import numpy as np
 import random
 import traceback
+
+import gym as old_gym
+from typing import Any, Optional
+from gymnasium.wrappers.compatibility import LegacyEnv
+
+
+def space_compatability(old_space: old_gym.Space) -> gym.Space:
+    """Converts a gym space to a gymnasium space.
+
+    Args:
+        old_space (old_gym.Space): the space to convert
+
+    Returns:
+        gym.Space: the converted space
+    """
+    if isinstance(old_space, old_gym.spaces.Discrete):
+        return gym.spaces.Discrete(old_space.n)
+    elif isinstance(old_space, old_gym.spaces.Box):
+        return gym.spaces.Box(low=old_space.low, high=old_space.high, dtype=old_space.dtype)
+    elif isinstance(old_space, old_gym.spaces.MultiBinary):
+        return gym.spaces.MultiBinary(n=old_space.n)
+    elif isinstance(old_space, old_gym.spaces.MultiDiscrete):
+        return gym.spaces.MultiDiscrete(nvec=old_space.nvec)
+    elif isinstance(old_space, old_gym.spaces.Tuple):
+        return gym.spaces.Tuple(tuple(space_compatability(s) for s in old_space.spaces))
+    elif isinstance(old_space, old_gym.spaces.Dict):
+        return gym.spaces.Dict({k: space_compatability(v) for k, v in old_space.spaces.items()})
+    elif isinstance(old_space, old_gym.spaces.Text):
+        return gym.spaces.Text(max_length=old_space.max_length, min_length=old_space.min_length, charset=old_space.charset)
+    else:
+        raise NotImplementedError(f"Unsupported space type {old_space}")
+
+
+class EnvCompatibility(gym.wrappers.EnvCompatibility):
+    """ This fixes the bugs that the original EnvCompatibility
+        1. does not convert the observation and action space.
+        2. does not pass the __getattr__ to the wrapped env.
+    """
+    def __init__(self, old_env: LegacyEnv, render_mode: Optional[str] = None):
+        super().__init__(old_env, render_mode)
+        self.observation_space = space_compatability(self.observation_space)
+        self.action_space = space_compatability(self.action_space)
+
+    def __getattr__(self, name: str) -> Any:  # The wrapped env should behave like the original env.
+        return getattr(self.env, name)
+
 
 class TextWrapper(gym.Wrapper):
     # This is a wrapper that can be applied on top of VerbalGymWrapper to turn into a text-based env.
@@ -30,23 +76,24 @@ class TextWrapper(gym.Wrapper):
         assert type(action) == str
         try:
             action = self._parse_action(action)
-            observation, reward, done, info =  self.env.step(action)
-        except Exception as e:
+            observation, reward, done, tuncated, info =  self.env.step(action)
+        except Exception as e:  # Treat the exception as feedback
             if e == NotImplementedError:
                 raise NotImplementedError
             feedback = f"Cannot parse action {action}.\n{traceback.format_exc()}"
             observation = dict(instruction=None, observation=None, feedback=feedback)
             reward = self.RMIN
             done = False
+            tuncated = False
             info = {}
-        return self._parse_observation(observation), reward, done, info
+        return self._parse_observation(observation), reward, done, tuncated, info
 
 
 class TerminalFreeWrapper(gym.Wrapper):
-    #  Set terminal to False always
+    #  Set terminated and timeout to False always
     def step(self, action):
-        observation, reward, terminal, info = self.env.step(action)
-        return observation, reward, False, info
+        observation, reward, terminated, truncated, info = self.env.step(action)
+        return observation, reward, False, False, info
 
 class RandomActionOrderWrapper(gym.Wrapper):
 
@@ -55,15 +102,14 @@ class RandomActionOrderWrapper(gym.Wrapper):
         super().__init__(env)
         self.__action_table = None
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
         self.__action_table = [i for i in range(self.env.action_space.n)]
         np.random.shuffle(self.__action_table)
-        return self.env.reset()
+        return self.env.reset(seed=seed, options=options)
 
     def step(self, action):
         action = self.internal_action(action)
-        observation, reward, terminal, info = self.env.step(action)
-        return observation, reward, terminal, info
+        return self.env.step(action)
 
     def internal_action(self, action):
         # map action from the external action space to the internal action space
@@ -96,6 +142,6 @@ class FullInformationWrapper(gym.Wrapper):
         return full_information
 
     def step(self, action):
-        observation, reward, terminal, info = self.env.step(action)
+        observation, reward, terminated, truncated, info = self.env.step(action)
         info['oracle_info'] = self.oracle_info()
-        return observation, reward, terminal, info
+        return observation, reward, terminated, truncated, info

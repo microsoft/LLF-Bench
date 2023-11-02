@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 from typing import Dict, Any, Tuple, Union, List, Callable
 from verbal_gym.envs.utils import format
@@ -109,13 +109,11 @@ class VerbalGymWrapper(gym.Wrapper):
 
                 It can be either 'random', 'llm', a callable, or an integer.
                 - 'random': a template would be randomly selected from `prompts`.
-                - 'llm': DEFAULT_LLM would be used to paraphrased the first (i.e.
-                  default) template in `prompts`.
                 - integer: it is used as the index to select from the template in
                   `prompts`.
                 - callable: it overrides format method.
         """
-        assert method == 'random' or method == 'llm' or type(method) == int or callable(method)
+        assert method == 'random' or type(method) == int or callable(method)
         self._paraphrase_method = method
 
     def format(self, prompts: List[str], **kwargs) -> str:
@@ -165,31 +163,31 @@ class VerbalGymWrapper(gym.Wrapper):
         assert 'observation' in observation and 'feedback' in observation and 'instruction' in observation, \
                "The observation must be a dict with keys: observation, feedback, instruction."
 
-    def reset(self) -> Dict[str, str]:
+    def reset(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Reset the environment and return the initial observation."""
-        observation = self._reset()
+        observation, info = self._reset(seed=seed, options=options)
         if type(observation) == str:  # backward compatibility
             observation = dict(instruction=observation, observation=None, feedback=None)
         self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation."
         assert observation['instruction'] is not None, "The instruction must be provided in the initial observation."
-        return observation
+        return observation, info
 
-    def _reset(self) -> Union[str, Dict[str, str]]:
+    def _rese(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Implement this in the subclass. """
         raise NotImplementedError
 
-    def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, Dict[str, Any]]:
+    def step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, bool,  Dict[str, Any]]:
         """ Step the environment and return the observation, reward, terminal, and info."""
-        observation, reward, terminal, info = self._step(action)
+        observation, reward, terminal, truncated, info = self._step(action)
         if type(observation) == str:  # backward compatibility
             observation = dict(instruction=None,
                                observation=observation,
                                feedback=f"You received a reward of {reward}.")
         self.obs_check(observation)
-        return observation, reward, terminal, info
+        return observation, reward, terminal, truncated, info
 
-    def _step(self, action: Any) -> Tuple[Union[str, Dict[str, Any]], float, bool, Dict[str, Any]]:
+    def _step(self, action: Any) -> Tuple[Union[str, Dict[str, Any]], float, bool, bool, Dict[str, Any]]:
         """ Implement this in the subclass.
             Use self._feedback_type to determine the feedback.
         """

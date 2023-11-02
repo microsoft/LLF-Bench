@@ -9,9 +9,8 @@ import json
 from textwrap import dedent, indent
 from metaworld.policies.policy import move
 from metaworld.policies.action import Action
-from metaworld.policies import SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy, SawyerPlateSlideBackSideV2Policy, SawyerReachV2Policy
+from metaworld.policies import SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy, SawyerReachV2Policy
 
-DIGIT=3
 class MetaworldWrapper(VerbalGymWrapper):
 
     """ This is wrapper for gym_bandits. """
@@ -24,8 +23,8 @@ class MetaworldWrapper(VerbalGymWrapper):
         # load the scripted policy
         module = importlib.import_module(f"metaworld.policies.sawyer_{self.env.env_name.replace('-','_')}_policy")
         self._policy = getattr(module, f"Sawyer{self.env.env_name.title().replace('-','')}Policy")()
-        self._time_out = 20 # timeout of the position tracking (for convergnece of P controller)
-        self._threshold = 1e-4 # the threshold for declaring goal reaching (for convergnece of P controller)
+        self.p_control_time_out = 20 # timeout of the position tracking (for convergnece of P controller)
+        self.p_control_threshold = 1e-4 # the threshold for declaring goal reaching (for convergnece of P controller)
         self._current_observation = None
 
     @property
@@ -113,12 +112,12 @@ class MetaworldWrapper(VerbalGymWrapper):
         # Run P controller until convergence or timeout
         # action is viewed as the desired position + grab_effort
         previous_pos = self._current_pos  # the position of the hand before moving
-        for _ in range(self._time_out):
+        for _ in range(self.p_control_time_out):
             control = self.p_control(action)
-            observation, reward, terminal, info = self.env.step(control)
+            observation, reward, terminated, truncated, info = self.env.step(control)
             self._current_observation = observation
             desired_pos = action[:3]
-            if np.abs(desired_pos - self._current_pos).max() < self._threshold:
+            if np.abs(desired_pos - self._current_pos).max() < self.p_control_threshold:
                 break
 
         feedback_type = self.feedback_type
@@ -159,14 +158,14 @@ class MetaworldWrapper(VerbalGymWrapper):
         else:
             raise NotImplementedError
         observation = self.textualize_observation(observation)
-        return dict(instruction=None, observation=observation, feedback=feedback), reward, terminal, info
+        return dict(instruction=None, observation=observation, feedback=feedback), reward, terminated, truncated, info
 
-    def _reset(self):
-        self._current_observation = self.env.reset()
+    def _reset(self, *, seed=None, options=None):
+        self._current_observation, info = self.env.reset(seed=seed, options=options)
         observation = self.textualize_observation(self._current_observation)
         task = self.env.env_name.split('-')[0]
         instruction = self.format(mw_instruction, task=task)
-        return dict(instruction=instruction, observation=observation, feedback=None)
+        return dict(instruction=instruction, observation=observation, feedback=None), info
 
 
     def textualize_expert_action(self, action):

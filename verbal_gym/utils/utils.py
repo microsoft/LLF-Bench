@@ -10,7 +10,7 @@ def rollout(agent, env, *, horizon, oracle=False, get_logger=None):
     get_logger = get_logger or ListLogger
     logger = get_logger()
 
-    observation = env.reset()  # this is a dict with keys: observation, feedback, instruction
+    observation, info = env.reset()  # this is a dict with keys: observation, feedback, instruction
     info = {}
     sum_of_rewards = 0.0
     for i in range(horizon):
@@ -19,12 +19,12 @@ def rollout(agent, env, *, horizon, oracle=False, get_logger=None):
             observation['oracle_info'] = info.get('oracle_info')
 
         action = agent.act(observation)
-        new_observation, reward, done, info = env.step(action)
-        logger.log(observation=observation, action=action, reward=reward, done=done, info=info)
+        new_observation, reward, terminated, truncated, info = env.step(action)
+        logger.log(observation=observation, action=action, reward=reward, terminated=terminated, truncated=truncated, info=info)
 
         sum_of_rewards += reward
         observation = new_observation
-        if done:
+        if terminated or truncated:
             break
 
     return sum_of_rewards, logger.content

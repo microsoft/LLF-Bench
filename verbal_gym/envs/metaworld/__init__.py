@@ -1,5 +1,5 @@
-import gym
-from gym.envs.registration import register
+import gymnasium as gym
+from gymnasium.envs.registration import register
 from verbal_gym.utils.benchmark_utils import generate_combinations_dict
 from verbal_gym.envs.metaworld.wrapper import MetaworldWrapper
 from collections import defaultdict
@@ -7,7 +7,7 @@ import importlib
 import metaworld
 import random
 import time
-from gym.wrappers import TimeLimit
+from gymnasium.wrappers import TimeLimit
 
 BENCHMARK = metaworld.MT1
 ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
@@ -15,6 +15,7 @@ ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
 def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
+             episode_length=20,
              ):
     """ Make the original env and wrap it with the VerbalGymWrapper. """
     benchmark = BENCHMARK(env_name)
@@ -24,24 +25,17 @@ def make_env(env_name,
          # and to make the env compatible with the old gym api
         def __init__(self, env):
             super().__init__(env)
-            # XXX this is for the old gym api
-            self.action_space = gym.spaces.Box(low=env.action_space.low, high=env.action_space.high)
-            self.observation_space = gym.spaces.Box(low=env.observation_space.low, high=env.observation_space.high)
             self.env.max_path_length = float('inf')
             # We remove the internal time limit. We will redefine the time limit in the wrapper.
         @property
         def env_name(self):
             return env_name
-        def step(self, action):  # XXX this is for the old gym api
-            # TODO After upgrading to new api, we need move the time limit to the wrapper (now it's using TimeLimit wrapper)
-            observation, reward, done, truncated, info = self.env.step(action)
-            return observation, reward, done or truncated, info
-        def reset(self):
+        def reset(self, *, seed=None, options=None):
             task = random.choice(benchmark.train_tasks)
             self.env.set_task(task)
-            return self.env.reset()[0]
+            return self.env.reset(seed=seed, options=options)
     env = Wrapper(env)
-    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=20)
+    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=episode_length)
 
 
 configs = generate_combinations_dict(

@@ -1,4 +1,4 @@
-from verbal_gym.envs.env_wrappers import TerminalFreeWrapper
+from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
 
 class SummaryEnvWrapper(VerbalGymWrapper):
@@ -7,7 +7,7 @@ class SummaryEnvWrapper(VerbalGymWrapper):
     FEEDBACK_TYPES = ('m', 'r', 'hn', 'hp', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
-        super().__init__(TerminalFreeWrapper(env), instruction_type, feedback_type)
+        super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
 
     def _reset(self):  # TODO types of instructions
         instruction = self.env.reset()

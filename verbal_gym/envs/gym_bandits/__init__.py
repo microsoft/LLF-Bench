@@ -1,5 +1,6 @@
-import gym
-from gym.envs.registration import register
+import gym as old_gym
+import gymnasium as gym
+from gymnasium.envs.registration import register
 from verbal_gym.utils.benchmark_utils import generate_combinations_dict
 from verbal_gym.envs.gym_bandits.wrapper import BanditGymWrapper
 import gym_bandits  # this is needed so that gym_bandits is registered
@@ -22,7 +23,7 @@ def make_env(env_name,
              feedback_type='r',
              ):
     """ Make the original env and wrap it with the VerbalGymWrapper. """
-    env = gym.make(env_name)  # env_name is the original env name of gym_bandits
+    env = old_gym.make(env_name)  # env_name is the original env name of gym_bandits
     # we don't pass arguments here, because _reset in BanditGymWrapper calls __init__ of the env without arguments.
     return BanditGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 

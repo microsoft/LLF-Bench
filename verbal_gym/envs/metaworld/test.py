@@ -1,5 +1,5 @@
 import verbal_gym
-import gym
+import gymnasium as gym
 import metaworld
 
 import numpy as np
@@ -14,7 +14,7 @@ env = gym.make('verbal-hand-insert-b-hn-v2')
 obs = env.reset()
 for i in range(1000):
     action = env.expert_action
-    obs, reward, done, info = env.step(action)
+    obs, reward, done, timeout, info = env.step(action)
     for k, v in obs.items():
         print(k, v)
         print()

@@ -1,4 +1,4 @@
-from gym.envs.registration import register
+from gymnasium.envs.registration import register
 from verbal_gym.envs.summarization.pick_best_summary import PickBestSummary
 from verbal_gym.envs.summarization.wrapper import SummaryEnvWrapper
 

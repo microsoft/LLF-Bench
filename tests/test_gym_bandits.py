@@ -1,9 +1,11 @@
-import gym, verbal_gym
+import verbal_gym
+import gymnasium as gym
 
-env = gym.make('verbal-BanditTenArmedRandomRandom-v0')
+env = gym.make('verbal-BanditTenArmedRandomRandom-b-fp-v0')
 
-print('Problem: {}'.format(env.docstring))
+obs = env.reset()
 for _ in range(5):
-    env.reset()
-    obs, reward, done, info = env.step(env.action_space.sample())
-    print('Feedback: {}'.format(info['feedback']))
+    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+    for k,v in obs.items():
+        print(k, v)
+        print()

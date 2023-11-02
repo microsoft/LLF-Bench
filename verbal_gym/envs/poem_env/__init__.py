@@ -1,6 +1,5 @@
 import numpy as np
-import gym
-from gym.envs.registration import register
+from gymnasium.envs.registration import register
 from verbal_gym.utils.benchmark_utils import generate_combinations_dict
 from verbal_gym.envs.poem_env.wrapper import PoemGymWrapper
 

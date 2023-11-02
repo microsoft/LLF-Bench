@@ -1,4 +1,4 @@
-from gym.envs.registration import register
+from gymnasium.envs.registration import register
 from verbal_gym.envs.gridworld.gridworld import Gridworld
 from verbal_gym.envs.gridworld.wrapper import GridworldWrapper
 from verbal_gym.utils.benchmark_utils import generate_combinations_dict
