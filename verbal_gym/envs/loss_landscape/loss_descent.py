@@ -129,9 +129,9 @@ class LossLandscapeBase(gym.Env):
 
         if np.abs(loss - self.min_y) < 1e-2:
             # r_pos
-            didactic_feedback_dict['r_pos'] = 'You have reached the minimum!'
+            didactic_feedback_dict['r'] = 'You have reached the minimum!'
             return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {
-                'feedback': 'You have reached the minimum!'}
+                'feedback': 'You have reached the minimum!', 'didactic_feedback_dict': didactic_feedback_dict}
 
         # r_neg
         obs = "Function outputs y = {}\nYou have {} attempts left!\n".format(loss, self.left_attempts)
@@ -140,7 +140,7 @@ class LossLandscapeBase(gym.Env):
         obs += "Output:"
 
         # TODO: what's the diff between r and observation?
-        didactic_feedback_dict['r_neg'] = "You have not reached the minimum!"
+        didactic_feedback_dict['r'] = "You have not reached the minimum!"
         feedback = ""  # y is not minimized yet. Keep going!
 
         # not changing original feedback

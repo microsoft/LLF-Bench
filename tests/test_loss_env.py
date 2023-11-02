@@ -10,7 +10,7 @@ x = [-4.0, 5.0]
 """
 
 assignment = loss_env.reset()
-observation, reward, done, info = loss_env.step(action)
+observation, reward, done, truncated, info = loss_env.step(action)
 
 print('Assignment: ', assignment, '\n', \
       'Observation: ', observation, '\n', \
@@ -25,7 +25,7 @@ x = [-4.0, 5.0]
 """
 
 assignment = loss_env.reset()
-observation, reward, done, info = loss_env.step(action)
+observation, reward, done, truncated, info = loss_env.step(action)
 
 print('Assignment: ', assignment, '\n', \
       'Observation: ', observation, '\n', \
