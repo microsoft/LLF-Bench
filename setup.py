@@ -19,9 +19,13 @@ setup(
         "cmudict",
         "guidance",
         "syllables",
+        # summarization
+        "datasets",
+        # loss_landscape
+        "jax",
+        "jaxlib"
     ],
     extras_require={
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
     }
-
 )

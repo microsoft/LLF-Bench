@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import sys
 import json
 
@@ -6,13 +6,11 @@ import random
 from collections import Counter
 
 import numpy as np
-
-from justwatch import JustWatch
 import requests
 
 from dataclasses import dataclass, asdict
 
-from verbal_gym.agents.parser_util import SimpleGuidanceParser
+from verbal_gym.utils.parser_utils import SimpleGuidanceParser
 
 api_key = "4ace3dfa"
 
@@ -20,6 +18,7 @@ api_key = "4ace3dfa"
 Issue:
 The fp/fn are not super good here -- fp/fn and hp/hn are too similar right now.
 """
+
 
 @dataclass
 class DidacticFeedback:
@@ -29,6 +28,7 @@ class DidacticFeedback:
     hn: str = ""
     fp: str = ""
     fn: str = ""
+
     @property
     def __dict__(self):
         """
@@ -119,9 +119,12 @@ def verify_movie(title):
     data['production'] = production
 
     if data['release_year'] is not None:
+        if '–' in data['release_year']:
+            data['release_year'] = data['release_year'].split("–")[1]
         data['release_year'] = int(data['release_year'])
 
     return data
+
 
 class RecommendationQueryGenerator:
     # PLATFORM = ["Hulu", "HBO Max", "Disney plus", "Netflix", "Amazon Prime Video",
@@ -149,9 +152,9 @@ class RecommendationQueryGenerator:
         profile = {
             # "platforms": random.sample(cls.PLATFORM, random.randint(0, 3)), # len(cls.PLATFORM)
             "type_": random.choice(cls.TYPES),
-            "year_ranges": random.sample(list(cls.YEAR_RANGE.keys()), random.randint(0, 2)), # len(cls.YEAR_RANGE)
+            "year_ranges": random.sample(list(cls.YEAR_RANGE.keys()), random.randint(0, 2)),  # len(cls.YEAR_RANGE)
             # "options": random.sample(cls.OPTIONS, 1)[0],  # cls.OPTIONS, random.randint(0, 2)  # len(cls.OPTIONS)
-            "genre": random.sample(cls.GENRES, random.randint(0, 2)), # len(cls.GENRES)  # Include None as an option
+            "genre": random.sample(cls.GENRES, random.randint(0, 2)),  # len(cls.GENRES)  # Include None as an option
             "age_restriction": np.random.choice([None] + cls.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
             "sampled_start_exp_idx": random.randint(0, 9),
             "sampled_end_exp_idx": random.randint(0, 4)
@@ -238,12 +241,13 @@ class RecommendationQueryGenerator:
         # else:
         #     base_query += ""  # end_phrase #"?"
 
-        if sampled_start_exp_idx in [0,1,2,3,4,5]:
+        if sampled_start_exp_idx in [0, 1, 2, 3, 4, 5]:
             base_query += f'?{end_phrase}'
         else:
             base_query += f'.{end_phrase}'
 
         return base_query
+
 
 class RecContentExtractor(object):
     # use LLM to extract the poem
@@ -279,7 +283,14 @@ You must output a valid JSON:
         response, info = self.llm.generate(messages)
         return response
 
+
 class MovieRec(gym.Env):
+    YEAR_RANGE = {
+        "recent": "past few years",
+        "2000s": "2000s",
+        "90s": "90s",
+        "80s": "80s",
+    }
     def __init__(self, feedback=0):
         super().__init__()
 
@@ -402,35 +413,38 @@ class MovieRec(gym.Env):
             else:
                 success_items.append((title, movie_year))
 
+        correct_years = self._list_to_string([self.YEAR_RANGE[year] for year in profile_years])
+
         if len(error_items) == 0:
-            didactic_feedback = DidacticFeedback(r_pos=f"The recommended movies are all from  the{self._list_to_string(profile_years)}, great!")
+            didactic_feedback = DidacticFeedback(
+                r_pos=f"The recommended movies are all from the {correct_years}, great!")
             return True, None, didactic_feedback, {'unsatisfied': []}
 
-        feedback = f"The recomended {self.profile['type_']}s are not from the {self._list_to_string(profile_years)}."
+        feedback = f"The recomended {self.profile['type_']}s are not from the {correct_years}."
         didactic_feedback = DidacticFeedback(r_neg=feedback)
 
         if first_order:
             for item in error_items:
                 feedback += f" {item[0]} is from {item[1]}."
-            feedback += f" I want {self.profile['type_']}s from the {self._list_to_string(profile_years)}."
+            feedback += f" I want {self.profile['type_']}s from the {correct_years}."
 
         hp = "These {self.profile['type_']}s are indeed from the {self._list_to_string(profile_years)}:"
         for item in success_items:
             hp += f" {item[0]} is from {item[1]},"
         didactic_feedback.hp = hp
 
-        hn = f" These {self.profile['type_']}s are not from the {self._list_to_string(profile_years)}:"
+        hn = f" These {self.profile['type_']}s are not from the {correct_years}:"
         for item in error_items:
             hn += f" {item[0]} is from {item[1]},"
         didactic_feedback.hn = hn
 
-        fp = f" Recommend {self.profile['type_']}s that are from {self._list_to_string(profile_years)}, like"
+        fp = f" Recommend {self.profile['type_']}s that are from {correct_years}, like"
         for item in success_items:
             fp += f" {item[0]},"
         fp += '.'
         didactic_feedback.fp = fp
 
-        fn = f" Do not recommend {self.profile['type_']}s that are not from {self._list_to_string(profile_years)}, not like"
+        fn = f" Do not recommend {self.profile['type_']}s that are not from {correct_years}, not like"
         for item in error_items:
             fn += f" {item[0]},"
         fn += '.'
@@ -449,7 +463,8 @@ class MovieRec(gym.Env):
                 success_items.append((title, movie_genres))
 
         if len(error_items) == 0:
-            didactic_feedback = DidacticFeedback(r_pos=f"The recommended {self.profile['type_']}s are all {self._list_to_string(profile_genres)}, nice!")
+            didactic_feedback = DidacticFeedback(
+                r_pos=f"The recommended {self.profile['type_']}s are all {self._list_to_string(profile_genres)}, nice!")
             return True, None, didactic_feedback, {'unsatisfied': []}
 
         feedback = f"The recommendations are not {self._list_to_string(profile_genres)} {self.profile['type_']}s."
@@ -493,7 +508,7 @@ class MovieRec(gym.Env):
 
     def map_type(self, type_):
         if type_.lower() == 'movie':
-            return 'movies'
+            return 'movie'
         elif type_.lower() == 'show':
             return 'TV show'
         else:
@@ -508,7 +523,8 @@ class MovieRec(gym.Env):
                 error_items.append(title)
 
         if len(error_items) == 0:
-            didactic_feedback = DidacticFeedback(r_pos=f"The recommended {self.profile['type_']}s are all {profile_type}s, nice!")
+            didactic_feedback = DidacticFeedback(
+                r_pos=f"The recommended {self.profile['type_']}s are all {profile_type}s, nice!")
             return True, None, didactic_feedback, {'unsatisfied': []}
         else:
             feedback = self._list_to_string(error_items, last_separator=' and ')
@@ -517,7 +533,8 @@ class MovieRec(gym.Env):
             if first_order:
                 feedback += f" Please suggest {profile_type}s instead."
 
-            didactic_feedback = DidacticFeedback(r_neg=f"The recommended {self.profile['type_']}s are not all {profile_type}s.")
+            didactic_feedback = DidacticFeedback(
+                r_neg=f"The recommended {self.profile['type_']}s are not all {profile_type}s.")
 
             hp = f" These {self.profile['type_']}s are indeed all {profile_type}s:"
             for item in success_items:
@@ -554,24 +571,56 @@ class MovieRec(gym.Env):
         if profile_age_restriction is None:
             return True, None, {'unsatisfied': []}
 
-        items = []
+        error_items, success_items = [], []
         for title, factual_info in factual_movie_data.items():
             if profile_age_restriction in {'child-friendly', 'family-friendly'}:
                 if factual_info['child_friendly'] is False:
-                    items.append(title)
+                    error_items.append(title)
+                else:
+                    success_items.append(title)
             elif profile_age_restriction == 'R-rated':
                 if factual_info['adult_only'] is False:
-                    items.append(title)
+                    error_items.append(title)
+                else:
+                    success_items.append(title)
 
-        if len(items) == 0:
-            return True, None, {'unsatisfied': []}
+        if len(error_items) == 0:
+            didactic_feedback = DidacticFeedback(
+                r_pos=f"The recommended {self.profile['type_']}s are all {profile_age_restriction}, nice!")
+            return True, None, didactic_feedback, {'unsatisfied': []}
         else:
-            feedback = self._list_to_string(items)
-            feedback += self.plural_wrap(f"{profile_age_restriction} {profile_type}", len(items))
+            feedback = self._list_to_string(error_items)
+            feedback += self.plural_wrap(f"{profile_age_restriction} {profile_type}", len(error_items))
 
             if first_order:
                 feedback += f" Please suggest {profile_age_restriction} {profile_type}s instead."
-            return False, feedback, {'unsatisfied': items}
+
+            didactic_feedback = DidacticFeedback(
+                r_neg=f"The recommended {self.profile['type_']}s are not all {profile_age_restriction}.")
+
+            hp = f" These {self.profile['type_']}s are indeed all {profile_age_restriction}:"
+            for item in success_items:
+                hp += f" {item[0]},"
+            didactic_feedback.hp = hp
+
+            hn = f" These {self.profile['type_']}s are not all {profile_age_restriction}:"
+            for item in error_items:
+                hn += f" {item[0]},"
+            didactic_feedback.hn = hn
+
+            fp = f" Recommend {self.profile['type_']}s that are all {profile_age_restriction}, like"
+            for item in success_items:
+                fp += f" {item[0]},"
+            fp += '.'
+            didactic_feedback.fp = fp
+
+            fn = f" Do not recommend {self.profile['type_']}s that are not all {profile_age_restriction}, not like"
+            for item in error_items:
+                fn += f" {item[0]},"
+            fn += '.'
+            didactic_feedback.fn = fn
+
+            return False, feedback, didactic_feedback, {'unsatisfied': error_items}
 
     def check_hallucination(self, factual_movie_data, first_order=False):
         error_items, success_items = [], []
@@ -588,7 +637,8 @@ class MovieRec(gym.Env):
             if first_order:
                 feedback += f" Are they even real? Please suggest {self.profile['type_']}s that actually exist."
 
-            didactic_feedback = DidacticFeedback(r_neg=f"I can't find some of the recommended {self.profile['type_']}s on the internet.")
+            didactic_feedback = DidacticFeedback(
+                r_neg=f"I can't find some of the recommended {self.profile['type_']}s on the internet.")
             hp = f"I can find these {self.profile['type_']}s on the internet:"
             for item in success_items:
                 hp += f" {item[0]},"
@@ -630,7 +680,8 @@ class MovieRec(gym.Env):
         # if not, we list the reasons why
 
         # we first check hallucinated movies, and remove them from the list already (add to bad_recs)
-        success, feedback, didactic_feedback, info = self.check_hallucination(factual_movie_data, first_order=self.is_first_order_feedback)
+        success, feedback, didactic_feedback, info = self.check_hallucination(factual_movie_data,
+                                                                              first_order=self.is_first_order_feedback)
         feedbacks.append(feedback)
         didactic_feedbacks.append(didactic_feedback)
         bad_recs.extend(info['unsatisfied'])
@@ -640,36 +691,42 @@ class MovieRec(gym.Env):
 
         # we do checks line by line
         # if it's a movie or tv show
-        success, feedback, didactic_feedback, info = self.check_type(factual_movie_data, self.profile['type_'], first_order=self.is_first_order_feedback)
+        success, feedback, didactic_feedback, info = self.check_type(factual_movie_data, self.profile['type_'],
+                                                                     first_order=self.is_first_order_feedback)
         feedbacks.append(feedback)
         didactic_feedbacks.append(didactic_feedback)
         bad_recs.extend(info['unsatisfied'])
 
         # if it's in the genre
         if len(self.profile['genre']) > 0:
-            success, feedback, didactic_feedback, info = self.check_genre(factual_movie_data, self.profile['genre'], first_order=self.is_first_order_feedback)
+            success, feedback, didactic_feedback, info = self.check_genre(factual_movie_data, self.profile['genre'],
+                                                                          first_order=self.is_first_order_feedback)
             feedbacks.append(feedback)
             didactic_feedbacks.append(didactic_feedback)
             bad_recs.extend(info['unsatisfied'])
 
         # if it's in the year
         if len(self.profile['year_ranges']) > 0:
-            success, feedback, didactic_feedback, info = self.check_year(factual_movie_data, self.profile['year_ranges'], first_order=self.is_first_order_feedback)
+            success, feedback, didactic_feedback, info = self.check_year(factual_movie_data,
+                                                                         self.profile['year_ranges'],
+                                                                         first_order=self.is_first_order_feedback)
             feedbacks.append(feedback)
             didactic_feedbacks.append(didactic_feedback)
             bad_recs.extend(info['unsatisfied'])
 
         # if it's available on the platform
-        if len(self.profile['platforms']) > 0:
-            success, feedback, didactic_feedback, info = self.check_platform(factual_movie_data, self.profile['platforms'], first_order=self.is_first_order_feedback)
-            feedbacks.append(feedback)
-            didactic_feedbacks.append(didactic_feedback)
-            bad_recs.extend(info['unsatisfied'])
+        # if len(self.profile['platforms']) > 0:
+        #     success, feedback, didactic_feedback, info = self.check_platform(factual_movie_data, self.profile['platforms'], first_order=self.is_first_order_feedback)
+        #     feedbacks.append(feedback)
+        #     didactic_feedbacks.append(didactic_feedback)
+        #     bad_recs.extend(info['unsatisfied'])
 
         # if it's child-friendly
         if self.profile['age_restriction'] is not None:
-            success, feedback, didactic_feedback, info = self.check_child_friendly(factual_movie_data, self.profile['age_restriction'], self.profile['type_'],
-                                                                first_order=self.is_first_order_feedback)
+            success, feedback, didactic_feedback, info = self.check_child_friendly(factual_movie_data,
+                                                                                   self.profile['age_restriction'],
+                                                                                   self.profile['type_'],
+                                                                                   first_order=self.is_first_order_feedback)
             feedbacks.append(feedback)
             didactic_feedbacks.append(didactic_feedback)
             bad_recs.extend(info['unsatisfied'])
@@ -714,7 +771,8 @@ class MovieRec(gym.Env):
             # there's no difference between observation and feedback?
             return self.generate_request_query(), 0, False, {"raw_action": a,
                                                              "feedback": "You didn't recommend anything to me.",
-                                                             'didactic_feedback': [DidacticFeedback(r_neg="You didn't recommend anything to me.")],
+                                                             'didactic_feedback': [DidacticFeedback(
+                                                                 r_neg="You didn't recommend anything to me.")],
                                                              "item_errors": {}}
 
         # 0-th order: just say whichever ones didn't satisfy the profile
@@ -744,6 +802,8 @@ class MovieRec(gym.Env):
                                                                   "feedback": initial_feedback,
                                                                   'didactic_feedback': didactic_feedbacks,
                                                                   "item_errors": title_to_num_rules_violation}
+
+
 def test_generate_query():
     # Example usage:
     generator = RecommendationQueryGenerator()
@@ -755,6 +815,7 @@ def test_generate_query():
     rand_profile = RecommendationQueryGenerator.generate_random_profile()
     query = generator.generate_query(**rand_profile)
     print(query)
+
 
 def test_environment():
     env = MovieRec(feedback=0.5)
@@ -778,7 +839,9 @@ def test_environment():
 
     print(rew)
     print(info['feedback'])
+    print(info['didactic_feedback'])
+
 
 if __name__ == '__main__':
-    test_generate_query()
+    # test_generate_query()
     test_environment()
