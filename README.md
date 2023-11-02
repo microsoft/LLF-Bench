@@ -1,12 +1,39 @@
-# verbal-gym
+# Verbal-Gym: A benchmark for evaluating learning agents based on verbal feedback
 
-A collection of gym environments with verbal feedback.
+This repository provides a collection of benchmarks for evaluating agents that learn from verbal feedback.
 
-On top of the standard gym interface, each envronment has a
-`docstring` attribute that describes the environment's problem or prior information in texts. In addition, the `info` dict returned by `step` function has a key 'feedback' that describes the verbal feedback given to the agent.
+Each benchmark environment here is *goal-oriented* and follows the gym api.
+
+    observation_dict, info = env.reset()
+    observation_dict, reward, terminated, truncated, info = env.step(action)
+
+`observation_dict` contains three fields:
+
+- 'observation': a (partial) observation of the environment's state
+- 'instruction': a natural language description of the task, including the objective and information about the action space, etc.
+- 'feedback':  a natural language feedback to help the agent to better learn to solve the task.
+When a field is missing, its value is represented as None. For example, 'instruction' is only given by `reset` whereas 'feedback' is only given by `step`.
+
+`reward` is intended for evaluating an agent's performance. It should **not** be passed to the learning agent.
+
+`terminated` indicates whether a task has been solved (i.e., the goal has been reached) or not.
+`truncated` indicates whether the maximal episode length has been reached.
+`info` returns an additional info dict of the environment.
 
 
-### Installation
+## Principle
+
+We design each environment in verbal-gym such that, from 'observation' and 'instruction' in `observation_dict`, it is suffcient (for a human) to tell the agent has reached the goal when the task is indeed solved . Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems.
+
+However, we also design these environments such that 'observation' and 'instruction' are not suffcient for designing or *efficiently* learning the goal-reaching policies. Each evironment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, terminatation, so that the agent cannot figure out the optimal policy just based on 'instruction' without learning. In addition, since 'observation' and 'instruction' together only provides sparse informaiton about success, learning the optimal policy based on them can be exponentially hard.
+
+These features are designed to test an agent's *learning* ability, espeically, the ability to learn from verbal feedback. Verbal feedback is a generalization of reward in reinforcement learning. It can provide information about reward/success, but it can also convey more expressive feedback such as explanations and suggestions. The verbal feedback is implemented as the field 'feedback' in `observation_dict`, which is an accelerator to help learning the policy faster.
+
+
+
+
+
+## Installation
 
 Create conda env.
 
@@ -21,56 +48,14 @@ or
 
 Some valid options:
 
-    ray: for using parallel evaluation.
-    openai: for using openai ChatCompletion backend.
+    metaworld: for using metawolrd envs
 
-For example, to use openai+ray, install the repo by `pip install -e.[openai,ray]`.
+For example, to use metaworld, install the repo by `pip install -e.[metaworld]`.
 
-### Example scripts
+## Examples
 
-First, set the environment variables.
+TODO
 
-    export AZURE_OPENAI_KEY = <azure endpoint key>  # if using azure endpoint
-    export OPENAI_KEY_PATH = <a file containing openai key>  # if using openai endpoint directly
-
-An example command using the openai endpoint would be
-
-     python scripts/basic_agent.py  --n_workers 0  --env_name verbal-SyllableConstrainedPoem-v0  --verbose  --model gpt-3.5-turbo
-
-To use the azure endpoint, add `azure:` as prefix to the model name, e.g., `azure:gpt-35-turbo`. Set `n_workers` to be >1 to use ray to parallelize the evaluation.
-
-
-### Benchmark Agents
-
-`scripts/benchmark.py` provides an example code to benchmark multiple agents and or do ablations involving varying hps. It is based on a decorator function `batch_exp`, which can be used to wrap a function to run batch experiments. `batch_exp` can be used to batch run other functions too.
-
-An example command is
-
-    python scripts/benchmark.py --config configs/exp_configs/poem_envs.yaml  --n_workers 5 --log_dir <directory to log the results>
-
-
-
-`scripts/benchmark.py` takes a config yaml as input, which specifies the inputs (`agent_config` and `env_name`) to the `run_experiment` method in `scripts/benchmark.py`. `agent_config` config is a dict used by `create_agent`, and `env_name` is the name of the gym environment to create.
-
-The config yaml specifies a list of values that the batch experiment should span. `agent_config` can have arbitrary structures needed in `create_agent`, so long as we keep the values we want to vary as lists. The only difference between `agent_config` in the config yaml and the one input to  `create_agent` is: the `agent_config` in the config yaml should contains a `file` key to specify where a yaml file that specifies the default of the `agent_config` used by `create_agent`, whereas `agent_config` used by `create_agent` has a key `agent_name` instead of `file`. We can add new agents to `create_agent` by using `agent_config` as the way to pass parameters.
-
-
-## Plot Experimental Results
-
-Once the experiments are done, one can plot the reuslts by
-
-    python analyses/plot.py  <directory where the results of benchmark.py are logged.>
-
-We can specify the title of each subplot by passing `--plot_name`. E.g., `--plot_name  env_config:env_name+env_config:feedback` means each subplot would be defined by a combination of `config['env_config']['feedback']`, where `+` is the connector and `:` is the separator to read values from the saved config. Similarly, we can specify what goes into each subplot by specifying `--legend_name` using the same syntax.
-
-
-## Create LLM
-
-Please use `make_llm(model_name, system_prompt=<system promopt>)` in `verbal_gym.llm` to create LLMs, where `model_name` is `<backend>:<model>`, where `<backend>` can be 'gcr', 'azure', 'openai', and `<model>` is something like gpt-3, gpt-35-turbo, gpt-4.
-
-To use 'azure' backend, one needs to set the environment variable `AZURE_OPENAI_KEY`.
-To use 'openai' backend, one needs to set the environment variable `OPENAI_KEY_PATH`. (The path to a file containing the openai key).
-To use 'gcr' backend, one needs to set the environment variables `GCR_GPT_KEY` and `GCR_GPT_URL`.
 
 
 ## Contributing
