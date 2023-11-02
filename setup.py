@@ -20,7 +20,10 @@ setup(
         "guidance",
         "syllables",
         # summarization
-        "datasets"
+        "datasets",
+        # loss_landscape
+        "jax",
+        "jaxlib"
     ],
     extras_require={
         'gpt': ['openai'],
@@ -29,5 +32,4 @@ setup(
                 ],
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
     }
-
 )

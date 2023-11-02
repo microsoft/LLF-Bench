@@ -157,8 +157,8 @@ class LossLandscapeBase(gym.Env):
                 feedback += f"You chose {action}. However, try a different number for second number {x[1]} will minimize y more."
         elif self.feedback == 1:
             feedback += '\n\n'
-            x1_direction = 'Smaller' if dx1 > 0 else 'Larger'  # take the opposite of gradient
-            x2_direction = 'Smaller' if dx2 > 0 else 'Larger'
+            x1_direction = 'smaller' if dx1 > 0 else 'larger'  # take the opposite of gradient
+            x2_direction = 'smaller' if dx2 > 0 else 'larger'
             feedback += f"You chose {action}. Output a {x1_direction} number than the first number {x[0]} to minimize y.\n"
             feedback += f"You chose {action}. Output a {x2_direction} number than the second number {x[1]} to minimize y."
 
