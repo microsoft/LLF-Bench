@@ -36,7 +36,6 @@ class DidacticFeedback:
         """
         return asdict(self)
 
-
 def get_details_via_omdb(title, verbose=False):
     url = "http://www.omdbapi.com/"
     params = {
@@ -52,9 +51,8 @@ def get_details_via_omdb(title, verbose=False):
         if verbose:
             print(data["Error"])
             print(title)
-        return title, None, None, "PG", None, None, None, non_exist
+        return None, "PG", None, non_exist
 
-    title = data.get("Title", title)
     genres = data.get("Genre", None)
     if genres is not None:
         genres = genres.split(",")
@@ -67,17 +65,9 @@ def get_details_via_omdb(title, verbose=False):
     if show_type == "series":
         show_type = "show"
 
-    reviews = {}
-    if 'imdbRating' in data:
-        reviews['imdbRating'] = data['imdbRating']
-    if 'Ratings' in data:
-        for item in data['Ratings']:
-            if item['Source'] == 'Rotten Tomatoes':
-                reviews['Rotten Tomatoes'] = item['Value']
-
     non_exist = False
 
-    return title, reviews, genres, rating, production, year, show_type, non_exist
+    return genres, rating, production, year, show_type, non_exist
 
 
 def verify_movie(title):
@@ -85,20 +75,44 @@ def verify_movie(title):
     :param title:
     :return:
     """
+    justwatch = JustWatch(country='US')  # Adjust the country code if needed
+    results = justwatch.search_for_item(query=title)
+
+    # Get providers list
+    providers_list = justwatch.get_providers()
+    providers_dict = {provider['id']: provider['clear_name'] for provider in providers_list}
 
     data = {'platform_monetization': [], 'title': "",
-            "release_year": None, "type": None, "genre": [],
-            "non_exist": False, 'IMDB': None, 'Rotten Tomatoes': None}
+            "release_year": None, "type": None, "genres": [],
+            "non_exist": False}
 
-    title, reviews, genres, rating, production, year, show_type, non_exist = get_details_via_omdb(title)
-    data['title'] = title
+    if results['items']:
+        titles = [item['title'].lower() for item in results['items']]
+
+        if title.lower() in titles:
+            idx = titles.index(title.lower())
+            item = results['items'][idx]
+        else:
+            # mark as non-exist
+            item = {}
+            item['title'] = title
+            item['release_year'] = None
+            item['object_type'] = None
+            data['non_exist'] = True
+
+        data['title'] = item['title']
+        data['release_year'] = item.get('original_release_year', None)
+        data['type'] = item.get('object_type', None)
+
+        for offer in item.get('offers', []):
+            provider_id = offer['provider_id']
+            if provider_id in providers_dict:
+                data['platform_monetization'].append((providers_dict[provider_id], offer['monetization_type']))
+
+    data['platform_monetization'] = list(set(data['platform_monetization']))
+    genres, rating, production, year, show_type, non_exist = get_details_via_omdb(data['title'])
     data['genre'] = genres
     data['non_exist'] = non_exist  # if we found some info here, then it's still good
-
-    if 'imdbRating' in reviews:
-        data['IMDB'] = float(reviews['imdbRating'])
-    if 'Rotten Tomatoes' in reviews:
-        data['Rotten Tomatoes'] = int(reviews['Rotten Tomatoes'].strip('%'))
 
     # assert rating in ["PG-13", "R", "G", "PG", "NC-17"] or a TV rating!
     if not non_exist:
@@ -124,8 +138,8 @@ def verify_movie(title):
     return data
 
 class RecommendationQueryGenerator:
-    # PLATFORM = ["Hulu", "HBO Max", "Disney plus", "Netflix", "Amazon Prime Video",
-    #             "Crunchyroll", "Peacock", "YouTube", "Amazon Video", "Apple TV"]
+    PLATFORM = ["Hulu", "HBO Max", "Disney plus", "Netflix", "Amazon Prime Video",
+                "Crunchyroll", "Peacock", "YouTube", "Amazon Video", "Apple TV"]
     TYPES = ["movie", "TV show"]
     YEAR_RANGE = {
         "recent": "past few years",
@@ -135,7 +149,7 @@ class RecommendationQueryGenerator:
         # "classic": "classics"
     }
     # OPTIONS = ["stream", "rent", "buy", "watch"]
-    # OPTIONS = [["stream"], ["stream", "rent"], ["rent", "buy"], ["watch"]]
+    OPTIONS = [["stream"], ["stream", "rent"], ["rent", "buy"], ["watch"]]
     GENRES = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 'Documentary', 'Drama',
               'Fantasy', 'Film Noir', 'History', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi',
               'Sport', 'Superhero', 'Thriller', 'War', 'Western']
@@ -147,10 +161,11 @@ class RecommendationQueryGenerator:
     @classmethod
     def generate_random_profile(cls):
         profile = {
-            # "platforms": random.sample(cls.PLATFORM, random.randint(0, 3)), # len(cls.PLATFORM)
+            "platforms": random.sample(cls.PLATFORM, random.randint(0, 3)), # len(cls.PLATFORM)
             "type_": random.choice(cls.TYPES),
             "year_ranges": random.sample(list(cls.YEAR_RANGE.keys()), random.randint(0, 2)), # len(cls.YEAR_RANGE)
-            # "options": random.sample(cls.OPTIONS, 1)[0],  # cls.OPTIONS, random.randint(0, 2)  # len(cls.OPTIONS)
+            "options": random.sample(cls.OPTIONS, 1)[0],  # cls.OPTIONS, random.randint(0, 2)  # len(cls.OPTIONS)
+            # "genre": random.choice([None] + cls.GENRES),  # Include None as an option
             "genre": random.sample(cls.GENRES, random.randint(0, 2)), # len(cls.GENRES)  # Include None as an option
             "age_restriction": np.random.choice([None] + cls.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
             "sampled_start_exp_idx": random.randint(0, 9),
@@ -158,8 +173,8 @@ class RecommendationQueryGenerator:
         }
         # we do a posthoc fix, because some platforms don't allow certain options
         # these two platforms only have streaming options, can't purchase
-        # if len(set(profile['platforms']) - {'Netflix', 'Crunchyroll', "Amazon Prime Video", "Disney plus"}) == 0:
-        #     profile['options'] = ['stream']
+        if len(set(profile['platforms']) - {'Netflix', 'Crunchyroll', "Amazon Prime Video", "Disney plus"}) == 0:
+            profile['options'] = ['stream']
 
         # child-friendly and family-friendly should not be selected in the following genres:
         not_child_friendly_genres = ['Crime', 'War', 'Romance']
@@ -226,17 +241,17 @@ class RecommendationQueryGenerator:
             formatted_years = self._list_to_string([self.YEAR_RANGE[yr] for yr in year_ranges], oxford_comma=False)
             base_query += f" from the {formatted_years}"
 
-        # # Option (stream, rent, buy)
-        # if options:
-        #     formatted_options = self._list_to_string(options, oxford_comma=False)
-        #     base_query += f" to {formatted_options}"
-        #
-        # # Platform
-        # if platforms:
-        #     formatted_platforms = self._list_to_string(platforms, oxford_comma=False)
-        #     base_query += f" on {formatted_platforms}"
-        # else:
-        #     base_query += ""  # end_phrase #"?"
+        # Option (stream, rent, buy)
+        if options:
+            formatted_options = self._list_to_string(options, oxford_comma=False)
+            base_query += f" to {formatted_options}"
+
+        # Platform
+        if platforms:
+            formatted_platforms = self._list_to_string(platforms, oxford_comma=False)
+            base_query += f" on {formatted_platforms}"
+        else:
+            base_query += ""  # end_phrase #"?"
 
         if sampled_start_exp_idx in [0,1,2,3,4,5]:
             base_query += f'?{end_phrase}'
@@ -306,8 +321,10 @@ class MovieRec(gym.Env):
         rand_profile = RecommendationQueryGenerator.generate_random_profile()
         self.profile = rand_profile
         # Profile:
-        # {'type_': 'TV show',
+        # {'platforms': ['YouTube'],
+        #  'type_': 'TV show',
         #  'year_ranges': ['recent', '2000s', '80s'],
+        #  'options': ['rent', 'buy'],
         #  'genre': 'Documentary',
         #  'age_restriction': 'child-friendly'}
 
@@ -490,6 +507,68 @@ class MovieRec(gym.Env):
             return 'stream'
         else:
             return option
+
+    def check_platform(self, factual_movie_data, profile_platforms, first_order=False):
+        # this we will say in aggregate:
+        # "X, Y, Z movies, and B TV shows are available on Netflix or YouTube"
+
+        text_temp = f" are not available to {self._list_to_string(self.profile['options'])} on {self._list_to_string(profile_platforms)}."
+
+        error_movies, success_movies = [], []
+
+        # however, for platforms, if we can't find information
+        # then it's more serious than not identifying year and genre
+        # we will still say not satisfied
+        for title, factual_info in factual_movie_data.items():
+            list_of_plats = factual_info['platform_monetization']
+            constraint_satisfied = False
+            for tup in list_of_plats:
+                platform, option = tup
+                # these are API specific special handling
+                option = self.translate_watch_options(option)
+                platform = self.combine_platforms(platform)
+                # to make the problem easier
+                if platform in self.profile['platforms'] and option not in self.profile['options']:
+                    constraint_satisfied = True
+
+            if not constraint_satisfied:
+                error_movies.append(title)
+            else:
+                success_movies.append(title)
+
+        if len(error_movies) == 0:
+            didactic_feedback = DidacticFeedback(r_pos=f"The recommended {self.profile['type_']}s are all available on {self._list_to_string(profile_platforms)}, nice!")
+            return True, None, didactic_feedback, {'unsatisfied': []}
+        else:
+            feedback = self._list_to_string(error_movies) + text_temp
+            if first_order:
+                feedback += f" Please suggest {self.profile['type_']} available on {self._list_to_string(profile_platforms)} instead."
+
+            didactic_feedback = DidacticFeedback(r_neg=f"The recommended {self.profile['type_']}s are not all available on {self._list_to_string(profile_platforms)}.")
+
+            hp = f" These {self.profile['type_']}s are indeed all available on {self._list_to_string(profile_platforms)}:"
+            for item in success_movies:
+                hp += f" {item[0]} is on {self._list_to_string(item[1])},"
+            didactic_feedback.hp = hp
+
+            hn = f" These {self.profile['type_']}s are not available on {self._list_to_string(profile_platforms)}:"
+            for item in error_movies:
+                hn += f" {item[0]} is on {self._list_to_string(item[1])},"
+            didactic_feedback.hn = hn
+
+            fp = f" Recommend {self.profile['type_']}s that are available on {self._list_to_string(profile_platforms)}, like"
+            for item in success_movies:
+                fp += f" {item[0]},"
+            fp += '.'
+            didactic_feedback.fp = fp
+
+            fn = f" Do not recommend {self.profile['type_']}s that are not available on {self._list_to_string(profile_platforms)}, not like"
+            for item in error_movies:
+                fn += f" {item[0]},"
+            fn += '.'
+            didactic_feedback.fn = fn
+
+            return False, feedback, didactic_feedback, {'unsatisfied': error_movies}
 
     def map_type(self, type_):
         if type_.lower() == 'movie':
