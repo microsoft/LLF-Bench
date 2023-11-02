@@ -23,6 +23,8 @@ When a field is missing, its value is represented as None. For example, 'instruc
 
 ## Principle
 
+We design verbal-gym as a benchmark to test the "learning" ability of interactive agents.
+
 We design each environment in verbal-gym such that, from 'observation' and 'instruction' in `observation_dict`, it is suffcient (for a human) to tell the agent has reached the goal when the task is indeed solved . Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems.
 
 However, we also design these environments such that 'observation' and 'instruction' are not suffcient for designing or *efficiently* learning the goal-reaching policies. Each evironment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, terminatation, so that the agent cannot figure out the optimal policy just based on 'instruction' without learning. In addition, since 'observation' and 'instruction' together only provides sparse informaiton about success, learning the optimal policy based on them can be exponentially hard.
