@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import verbal_gym
 
 # env = gym.make('verbal-PickBestSummary-v0')
@@ -15,7 +15,8 @@ I'm left longing for the spring.
 """
 
 assignment = poem_env.reset()
-observation, reward, done, info = poem_env.step(poem)
+observation, reward, terminated, truncated, info = poem_env.step(poem)
+done = terminated or truncated
 
 print('Assignment: ', assignment, '\n', \
       'Observation: ', observation, '\n', \
@@ -25,7 +26,8 @@ print('Assignment: ', assignment, '\n', \
 
 poem_env = gym.make('verbal-SyllableConstrainedPoem-v0', feedback=1)
 assignment = poem_env.reset()
-observation, reward, done, info = poem_env.step(poem)
+observation, reward, terminated, truncated, info = poem_env.step(poem)
+done = terminated or truncated
 
 print('Assignment: ', assignment, '\n', \
       'Observation: ', observation, '\n', \

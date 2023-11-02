@@ -1,6 +1,6 @@
 import gymnasium as gym
 from gymnasium.envs.registration import register
-from verbal_gym.utils.benchmark_utils import generate_combinations_dict
+from verbal_gym.utils import generate_combinations_dict
 from verbal_gym.envs.metaworld.wrapper import MetaworldWrapper
 from collections import defaultdict
 import importlib

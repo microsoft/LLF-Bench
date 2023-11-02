@@ -165,7 +165,7 @@ def usage_test_1():
     You are a helpful assistant that wants to come up with instructions to a student to help them write a poem that is satisfactory to a teacher's assignment.
     The student's poem needs to satisfy the requirement of this assignment.
     {{~/system}}
-    
+
     {{#user~}}
 
     Now, you are given a new assignment, and you want to see if you can update the instructions to help the student write a poem that satisfies the new assignment.
@@ -202,7 +202,7 @@ def usage_test_2():
     {{#each examples}}
     {{role}}'s Assignment: {{this.assignment}}
 
-    Your Instruction: 
+    Your Instruction:
     {{this.instruction}}
     ---------------
     {{~/each}}
