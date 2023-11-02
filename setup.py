@@ -26,10 +26,6 @@ setup(
         "jaxlib"
     ],
     extras_require={
-        'gpt': ['openai'],
-        'ray': ['ray>=1.5',\
-                'numpy<1.24.0' # this is for compatibility with ray (due to pickle)
-                ],
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
     }
 )
