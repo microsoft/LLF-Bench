@@ -6,7 +6,7 @@ import cmudict
 import syllables
 import sys
 
-from verbal_gym.agents.parser_util import SimpleGuidanceParser
+from verbal_gym.utils.parser_utils import SimpleGuidanceParser
 
 class PoemUtil:
     # designed as a Mixin class

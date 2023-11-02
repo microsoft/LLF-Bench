@@ -1,6 +1,6 @@
 import numpy as np
 from gymnasium.envs.registration import register
-from verbal_gym.utils.benchmark_utils import generate_combinations_dict
+from verbal_gym.utils import generate_combinations_dict
 from verbal_gym.envs.loss_landscape.wrapper import LossLandscapeGymWrapper
 
 ENVIRONMENTS = (

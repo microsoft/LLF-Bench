@@ -1,7 +1,7 @@
 import gym as old_gym
 import gymnasium as gym
 from gymnasium.envs.registration import register
-from verbal_gym.utils.benchmark_utils import generate_combinations_dict
+from verbal_gym.utils import generate_combinations_dict
 from verbal_gym.envs.gym_bandits.wrapper import BanditGymWrapper
 import gym_bandits  # this is needed so that gym_bandits is registered
 

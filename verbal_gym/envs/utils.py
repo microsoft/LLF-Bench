@@ -1,7 +1,6 @@
 import numpy as np
 
 from typing import Dict, Any, Tuple, Union, List, Callable
-from verbal_gym.llm import make_llm
 
 def format(prompts : List[str], method : Union[str, int] = 'random', **kwargs : Dict[str,str]):
     """ A helper method for selecting from a set of paraphrased prompts.
