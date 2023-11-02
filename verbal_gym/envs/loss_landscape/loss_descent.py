@@ -191,15 +191,15 @@ class LossLandscapeBase(gym.Env):
 
         dx = self.grad_func(x)
         dx1, dx2 = dx[0], dx[1]
-        x1_direction = 'Smaller' if dx1 > 0 else 'Larger'  # take the opposite of gradient
-        x2_direction = 'Smaller' if dx2 > 0 else 'Larger'
-        didactic_feedback_dict['fp'] += f"You chose {action}. Output a {x1_direction} number than the first number in {x} to minimize y.\n"
-        didactic_feedback_dict['fp'] += f"You chose {action}. Output a {x2_direction} number than the second number in {x} to minimize y.\n"
+        x1_direction = 'smaller' if dx1 > 0 else 'larger'  # take the opposite of gradient
+        x2_direction = 'smaller' if dx2 > 0 else 'larger'
+        didactic_feedback_dict['fp'] += f"You chose {action}. Choose a {x1_direction} number than {x[0]} to minimize y.\n"
+        didactic_feedback_dict['fp'] += f"You chose {action}. Choose a {x2_direction} number than {x[1]} to minimize y.\n"
 
-        flipped_x1_direction = 'Smaller' if dx1 < 0 else 'Larger'  # take the opposite of gradient
-        flipped_x2_direction = 'Smaller' if dx2 < 0 else 'Larger'
-        didactic_feedback_dict['fn'] += f"You chose {action}. Do not output a {flipped_x1_direction} number than the first number in {x} to minimize y."
-        didactic_feedback_dict['fn'] += f"You chose {action}. Do not output a {flipped_x2_direction} number than the second number in {x} to minimize y."
+        flipped_x1_direction = 'smaller' if dx1 < 0 else 'larger'  # take the opposite of gradient
+        flipped_x2_direction = 'smaller' if dx2 < 0 else 'larger'
+        didactic_feedback_dict['fn'] += f"You chose {action}. Do not choose a {flipped_x1_direction} number than {x[0]} to minimize y."
+        didactic_feedback_dict['fn'] += f"You chose {action}. Do not choose a {flipped_x2_direction} number than {x[1]} to minimize y."
 
         self.prev_x = x
         self.left_attempts -= 1

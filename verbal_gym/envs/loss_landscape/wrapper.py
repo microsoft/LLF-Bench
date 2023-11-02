@@ -32,8 +32,6 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
         del info['feedback']
         del info['didactic_feedback']
 
-        print(didactic_feedback)
-
         if self._feedback_type == 'r':
             feedback = self.reformat(didactic_feedback[self._feedback_type], r_feedback_pos, template=r_feedback_pos_template)
             feedback = self.reformat(feedback, r_feedback_neg, template=r_feedback_neg_template)
@@ -46,6 +44,12 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
             feedback = self.reformat(feedback,
                                      eval("{}_feedback_dim2".format(self._feedback_type)),
                                      template=temp_dim2)
+
+            # this is to fix a capitalization issue in paraphrasing
+            if '. Increasing' not in feedback:
+                feedback = feedback.replace("Increasing", 'increasing')
+            elif '. Decreasing' not in feedback:
+                feedback = feedback.replace("Decreasing", 'decreasing')
         else:
             feedback = "No feedback available."
 
