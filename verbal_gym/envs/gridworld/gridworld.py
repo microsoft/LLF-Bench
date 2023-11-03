@@ -59,8 +59,7 @@ class Gridworld(gym.Env):
         self.goal_prev_visited = False
 
     def seed(self, seed=None):
-        # TODO
-        pass
+        random.seed(seed)
 
     def make_scene(self):
 
