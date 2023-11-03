@@ -53,7 +53,7 @@ class BanditGymWrapper(VerbalGymWrapper):
 
     @property
     def _bandit_env(self): # This is hardcoded for gym_bandits
-        return self.env.env.env.env.env.env.env  # this is the raw env
+        return self.env.env.env.env.env.env  # this is the raw env
 
     def seed(self, seed=None):  # This to fix the seeding issue for gym_bandits
         self._bandit_env._seed(seed)
@@ -66,7 +66,7 @@ class BanditGymWrapper(VerbalGymWrapper):
             r_dist = self.env.r_dist
         else:
             r_dist = np.array([mean for mean, scale in self.env.r_dist])
-        return self.env.p_dist * r_dist
+        return np.array(self.env.p_dist) * np.array(r_dist)
 
     def _expected_reward(self, idx):  # external action space
         idx = self.internal_action(idx)

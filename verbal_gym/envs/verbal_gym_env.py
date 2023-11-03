@@ -137,13 +137,13 @@ class VerbalGymWrapper(gym.Wrapper):
             return set()
         feedback_type = self.feedback_type
         if self.feedback_type == 'm': # using mixture  # TODO a better name
-            feedback_types = set(self.FEEDBACK_TYPES)
+            feedback_types = list(set(self.FEEDBACK_TYPES))
             feedback_types.remove('m')
             feedback_type = np.random.choice(feedback_types)  # str
         assert isinstance(self.feedback_type, str) or isinstance(self.feedback_type, set) \
             or isinstance(self.feedback_type, list) or isinstance(self.feedback_type, tuple), \
             'feedback_type must be a string, set, list, or tuple'
-        if type(feedback_type) == str:
+        if isinstance(feedback_type, str):
             feedback_type = [feedback_type]
         feedback_type = set(feedback_type)
         for f in feedback_type:
@@ -214,6 +214,7 @@ class VerbalGymWrapper(gym.Wrapper):
 
     def reset(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Reset the environment and return the initial observation."""
+        np.random.seed(seed)  # for paraphrasing
         observation, info = self._reset(seed=seed, options=options)
         self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation."
