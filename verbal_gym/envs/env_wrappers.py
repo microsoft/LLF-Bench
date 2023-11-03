@@ -31,7 +31,7 @@ def space_compatability(old_space: old_gym.Space) -> gym.Space:
     elif isinstance(old_space, old_gym.spaces.Dict):
         return gym.spaces.Dict({k: space_compatability(v) for k, v in old_space.spaces.items()})
     elif isinstance(old_space, old_gym.spaces.Text):
-        return gym.spaces.Text(max_length=old_space.max_length, min_length=old_space.min_length, charset=old_space.charset)
+        return gym.spaces.Text(max_length=old_space.max_length, min_length=old_space.min_length, charset=old_space._char_set)
     else:
         raise NotImplementedError(f"Unsupported space type {old_space}")
 

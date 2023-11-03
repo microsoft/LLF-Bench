@@ -58,6 +58,10 @@ class Gridworld(gym.Env):
         self.current_room = None
         self.goal_prev_visited = False
 
+    def seed(self, seed=None):
+        # TODO
+        pass
+
     def make_scene(self):
 
         # Process of creating a scene works as follows
@@ -227,7 +231,7 @@ class Gridworld(gym.Env):
         self.current_timestep += 1
         done = self.current_timestep == self.horizon
 
-        feedback = self.generate_feedback(self, old_gold_action, new_room)
+        feedback = self.generate_feedback(old_gold_action, new_room)
 
         info = {
             "feedback": feedback
@@ -243,9 +247,7 @@ class Gridworld(gym.Env):
 
         if feedback_type is None:
             feedback_type = self.feedback_type
-
         feedback = Feedback()
-
 
         if "r" in feedback_type:      # Reward described in text
             feedback.r = f"You got a reward of {reward}."
@@ -362,8 +364,6 @@ class Gridworld(gym.Env):
 
                 feedback.fp = f"You should go towards the {gold_action} direction from this " \
                            f"new room {self.current_room.get_name()}."
-        else:
-            raise AssertionError(f"Unhandled feedback level {feedback_type}")
 
         return feedback
 
