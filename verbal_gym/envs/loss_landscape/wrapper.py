@@ -1,5 +1,5 @@
 from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
-from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
+from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
 # from verbal_gym.envs.loss_landscape.loss_descent import
 from verbal_gym.envs.loss_landscape.prompts import *
 
@@ -28,32 +28,36 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
-        didactic_feedback = info['didactic_feedback']
+        didactic_feedback = info['feedback']
         del info['feedback']
-        del info['didactic_feedback']
+        del info['original_feedback']
 
-        if self._feedback_type == 'r':
-            feedback = self.reformat(didactic_feedback[self._feedback_type], r_feedback_pos, template=r_feedback_pos_template)
-            feedback = self.reformat(feedback, r_feedback_neg, template=r_feedback_neg_template)
-        elif self._feedback_type in didactic_feedback and didactic_feedback[self._feedback_type] != "":
-            temp_dim1 = eval("{}_feedback_dim1_template".format(self._feedback_type))
-            feedback = self.reformat(didactic_feedback[self._feedback_type],
-                                     eval("{}_feedback_dim1".format(self._feedback_type)),
-                                     template=temp_dim1)
-            temp_dim2 = eval("{}_feedback_dim2_template".format(self._feedback_type))
-            feedback = self.reformat(feedback,
-                                     eval("{}_feedback_dim2".format(self._feedback_type)),
-                                     template=temp_dim2)
+        paraphrased_feedback = Feedback()
 
-            # this is to fix a capitalization issue in paraphrasing
-            if '. Increasing' not in feedback:
-                feedback = feedback.replace("Increasing", 'increasing')
-            elif '. Decreasing' not in feedback:
-                feedback = feedback.replace("Decreasing", 'decreasing')
-        else:
-            feedback = "No feedback available."
+        for feedback_type in self._feedback_type:
+            if feedback_type == 'r':
+                feedback = self.reformat(didactic_feedback[feedback_type], r_feedback_pos, template=r_feedback_pos_template)
+                feedback = self.reformat(feedback, r_feedback_neg, template=r_feedback_neg_template)
+                paraphrased_feedback.r = feedback
+            elif feedback_type in didactic_feedback and didactic_feedback[feedback_type] != "":
+                temp_dim1 = eval("{}_feedback_dim1_template".format(feedback_type))
+                feedback = self.reformat(didactic_feedback[feedback_type],
+                                         eval("{}_feedback_dim1".format(feedback_type)),
+                                         template=temp_dim1)
+                temp_dim2 = eval("{}_feedback_dim2_template".format(feedback_type))
+                feedback = self.reformat(feedback,
+                                         eval("{}_feedback_dim2".format(feedback_type)),
+                                         template=temp_dim2)
 
-        observation = dict(instruction=None, observation=observation, feedback=feedback)
+                # this is to fix a capitalization issue in paraphrasing
+                if '. Increasing' not in feedback:
+                    feedback = feedback.replace("Increasing", 'increasing')
+                elif '. Decreasing' not in feedback:
+                    feedback = feedback.replace("Decreasing", 'decreasing')
+
+                paraphrased_feedback[feedback_type] = feedback
+
+        observation = dict(instruction=None, observation=observation, feedback=paraphrased_feedback)
         return observation, reward, terminated, truncated, info
 
     @property

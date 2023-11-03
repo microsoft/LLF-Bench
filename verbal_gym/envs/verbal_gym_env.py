@@ -55,10 +55,13 @@ class Feedback:
         setattr(self, k, v)
 
     def __getitem__(self, k):
-        getattr(self, k)
+        return eval(f"self.{k}")
 
     def __delitem__(self, k):
         self[k] = None
+
+    def __contains__(self, item):
+        return item in self.__dict__
 
 class VerbalGymWrapper(gym.Wrapper):
     """

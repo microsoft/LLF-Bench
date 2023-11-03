@@ -202,7 +202,7 @@ class LossLandscapeBase(gym.Env):
 
         self.prev_x = x
         self.left_attempts -= 1
-        return obs, -loss, False, {'feedback': feedback, 'didactic_feedback': didactic_feedback}
+        return obs, -loss, False, {'feedback': didactic_feedback, 'original_feedback': feedback}
 
 
 # now we wrap all loss functions by inheriting this class
