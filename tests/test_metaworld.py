@@ -7,8 +7,8 @@ import numpy as np
 print(metaworld.MT1.ENV_NAMES)
 
 
-env = gym.make('verbal-hand-insert-b-hn-v2')
-# env = gym.make('verbal-reach-b-hn-v2')
+env = gym.make('verbal-metaworld-hand-insert-b-hn-v2')
+# env = gym.make('verbal-metaworld-reach-b-hn-v2')
 
 # This tests the wrapper.
 obs = env.reset()

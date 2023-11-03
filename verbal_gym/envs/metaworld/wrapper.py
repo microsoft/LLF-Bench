@@ -21,8 +21,12 @@ class MetaworldWrapper(VerbalGymWrapper):
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
         # load the scripted policy
-        module = importlib.import_module(f"metaworld.policies.sawyer_{self.env.env_name.replace('-','_')}_policy")
-        self._policy = getattr(module, f"Sawyer{self.env.env_name.title().replace('-','')}Policy")()
+        if self.env.env_name=='peg-insert-side-v2':
+            module = importlib.import_module(f"metaworld.policies.sawyer_peg_insertion_side_v2_policy")
+            self._policy = getattr(module, f"SawyerPegInsertionSideV2Policy")()
+        else:
+            module = importlib.import_module(f"metaworld.policies.sawyer_{self.env.env_name.replace('-','_')}_policy")
+            self._policy = getattr(module, f"Sawyer{self.env.env_name.title().replace('-','')}Policy")()
         self.p_control_time_out = 20 # timeout of the position tracking (for convergnece of P controller)
         self.p_control_threshold = 1e-4 # the threshold for declaring goal reaching (for convergnece of P controller)
         self._current_observation = None
@@ -54,7 +58,7 @@ class MetaworldWrapper(VerbalGymWrapper):
             self.mw_policy.get_aciton
         """
         # Get the desired xyz position from the MW scripted policy
-        if type(self.mw_policy) in [type(SawyerDrawerOpenV1Policy), type(SawyerDrawerOpenV2Policy)]:
+        if type(self.mw_policy) in [SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy]:
             o_d = self.mw_policy._parse_obs(self.current_observation)
             # NOTE this policy looks different from the others because it must
             # modify its p constant part-way through the task
@@ -77,6 +81,10 @@ class MetaworldWrapper(VerbalGymWrapper):
                 compute_goal = self.mw_policy._desired_xyz
             elif hasattr(self.mw_policy,'_desired_pos'):
                 compute_goal = self.mw_policy._desired_pos
+            elif hasattr(self.mw_policy,'desired_pos'):
+                compute_goal = self.mw_policy.desired_pos
+            else:
+                raise NotImplementedError
             desired_xyz = compute_goal(self.mw_policy._parse_obs(self.current_observation))
         # Get the desired grab effort from the MW scripted policy
         desired_grab = self.mw_policy.get_action(self.current_observation)[-1]  # TODO should be getting the goal
@@ -175,12 +183,14 @@ class MetaworldWrapper(VerbalGymWrapper):
         """ Parse np.ndarray observation into text. """
         obs_dict = self.mw_policy._parse_obs(observation)
         # remove unused parts
-        unused_keys = [k for k in obs_dict.keys() if 'unused' in k]
+        unused_keys = [k for k in obs_dict.keys() if 'unused' in k or 'extra_info' in k]
         for k in unused_keys:
             del obs_dict[k]
         # convert np.ndarray to list
         for k,v in obs_dict.items():
             if isinstance(v, np.ndarray):
                 obs_dict[k] = np.array2string(v, precision=3)
+            else: # it's a scalar
+                obs_dict[k] = f"{v:.3f}"
         observation_text = json.dumps(obs_dict)
         return observation_text

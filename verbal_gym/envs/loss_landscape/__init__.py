@@ -28,7 +28,7 @@ configs = generate_combinations_dict(
 
 for config in configs:
     register(
-        id=f"verbal-{config['env_name']}-{config['instruction_type']}-{config['feedback_type']}-v0",
+        id=f"verbal-optimization-{config['env_name']}-{config['instruction_type']}-{config['feedback_type']}-v0",
         entry_point='verbal_gym.envs.loss_landscape:make_env',
         kwargs=config,
     )
@@ -36,7 +36,7 @@ for config in configs:
 for env_name in ENVIRONMENTS:
     # default version (backwards compatibility)
     register(
-        id=f"verbal-{env_name}-v0",
+        id=f"verbal-optimization-{env_name}-v0",
         entry_point='verbal_gym.envs.loss_landscape:make_env',
         kwargs=dict(env_name=env_name, feedback_type='r', instruction_type='b')
     )
