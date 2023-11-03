@@ -39,7 +39,7 @@ class BanditGymWrapper(VerbalGymWrapper):
             feedback.r = self.format(r_feedback, reward=reward)  # base reward feedback
         if 'hp' in feedback_type:  # hindsight positive: explaination on why something is correct
             if action == self._best_arm:
-                feedback.hp += self.format(hp_feedback)
+                feedback.hp = self.format(hp_feedback)
         if 'hn' in feedback_type:  # hindsight negative: explaination on why something is incorrect
             if action != self._best_arm:
                 feedback.hn = self.format(hn_feedback)
