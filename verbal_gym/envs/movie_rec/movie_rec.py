@@ -36,6 +36,12 @@ class DidacticFeedback:
         """
         return asdict(self)
 
+# 'hn' -> [DidacticFeedback(), DidacticFeedback()...]
+# These movies are not Action movies
+# These movies don't come from 1950s
+# 'hn'
+# have the unique hn patterns, and just loop through all hns
+# can have as many unique patterns for hn as you want...
 
 def get_details_via_omdb(title, verbose=False):
     url = "http://www.omdbapi.com/"
@@ -428,7 +434,7 @@ class MovieRec(gym.Env):
                 feedback += f" {item[0]} is from {item[1]}."
             feedback += f" I want {self.profile['type_']}s from the {correct_years}."
 
-        hp = "These {self.profile['type_']}s are indeed from the {self._list_to_string(profile_years)}:"
+        hp = f"These {self.profile['type_']}s are indeed from the {self._list_to_string(profile_years)}:"
         for item in success_items:
             hp += f" {item[0]} is from {item[1]},"
         didactic_feedback.hp = hp

@@ -38,8 +38,27 @@ class Feedback:
     fp: Union[str,None] = None
     fn: Union[str,None] = None
 
+    def __init__(self, r=None, hp=None, hn=None, fp=None, fn=None):
+        self.r = r
+        self.hp = hp
+        self.hn = hn
+        self.fp = fp
+        self.fn = fn
+
     def asdict(self):
+        """
+        get a python dictionary
+        """
         return asdict(self)
+
+    def __setitem__(self, k, v):
+        setattr(self, k, v)
+
+    def __getitem__(self, k):
+        getattr(self, k)
+
+    def __delitem__(self, k):
+        self[k] = None
 
 class VerbalGymWrapper(gym.Wrapper):
     """

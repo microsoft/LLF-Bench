@@ -7,6 +7,7 @@ import numpy as np
 from textwrap import dedent, indent
 
 from gym.utils import seeding
+from verbal_gym.envs.verbal_gym_env import Feedback
 
 class LossLandscapeBase(gym.Env):
     def __init__(self, callable_func, x_low, x_high, min_y, optimal_sol,
@@ -114,9 +115,7 @@ class LossLandscapeBase(gym.Env):
 
     def step(self, action):
         # observation, reward, terminal, info
-        didactic_feedback_dict = {
-            'hp': "", 'hn': "", 'fp': "", 'fn': ""
-        }
+        didactic_feedback = Feedback(r="", hp="", hn="", fp="", fn="")
 
         x, stop = self.text_extract(action)
         if x is None and stop is False:
@@ -129,9 +128,9 @@ class LossLandscapeBase(gym.Env):
 
         if np.abs(loss - self.min_y) < 1e-2:
             # r_pos
-            didactic_feedback_dict['r'] = 'You have reached the minimum!'
+            didactic_feedback['r'] = 'You have reached the minimum!'
             return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {
-                'feedback': 'You have reached the minimum!', 'didactic_feedback_dict': didactic_feedback_dict}
+                'feedback': 'You have reached the minimum!', 'didactic_feedback_dict': didactic_feedback}
 
         # r_neg
         obs = "Function outputs y = {}\nYou have {} attempts left!\n".format(loss, self.left_attempts)
@@ -140,7 +139,7 @@ class LossLandscapeBase(gym.Env):
         obs += "Output:"
 
         # TODO: what's the diff between r and observation?
-        didactic_feedback_dict['r'] = "You have not reached the minimum!"
+        didactic_feedback['r'] = "You have not reached the minimum!"
         feedback = ""  # y is not minimized yet. Keep going!
 
         # not changing original feedback
@@ -180,30 +179,30 @@ class LossLandscapeBase(gym.Env):
 
         # TODO: check this
         if np.sign(change_x1) == np.sign(-prev_dx1):
-            didactic_feedback_dict['hp'] += f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} does minimize y.\n"
+            didactic_feedback['hp'] += f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} does minimize y.\n"
         else:
-            didactic_feedback_dict['hn'] += f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} does not minimize y.\n"
+            didactic_feedback['hn'] += f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} does not minimize y.\n"
 
         if np.sign(change_x2) == np.sign(-prev_dx2):
-            didactic_feedback_dict['hp'] += f"You chose {action} from {self.prev_x}. {prev_x2_direction} the second number {self.prev_x[1]} does minimize y."
+            didactic_feedback['hp'] += f"You chose {action} from {self.prev_x}. {prev_x2_direction} the second number {self.prev_x[1]} does minimize y."
         else:
-            didactic_feedback_dict['hn'] += f"You chose {action} from {self.prev_x}. {prev_x2_direction} the second number {self.prev_x[1]} does not minimize y."
+            didactic_feedback['hn'] += f"You chose {action} from {self.prev_x}. {prev_x2_direction} the second number {self.prev_x[1]} does not minimize y."
 
         dx = self.grad_func(x)
         dx1, dx2 = dx[0], dx[1]
         x1_direction = 'smaller' if dx1 > 0 else 'larger'  # take the opposite of gradient
         x2_direction = 'smaller' if dx2 > 0 else 'larger'
-        didactic_feedback_dict['fp'] += f"You chose {action}. Choose a {x1_direction} number than {x[0]} to minimize y.\n"
-        didactic_feedback_dict['fp'] += f"You chose {action}. Choose a {x2_direction} number than {x[1]} to minimize y.\n"
+        didactic_feedback['fp'] += f"You chose {action}. Choose a {x1_direction} number than {x[0]} to minimize y.\n"
+        didactic_feedback['fp'] += f"You chose {action}. Choose a {x2_direction} number than {x[1]} to minimize y.\n"
 
         flipped_x1_direction = 'smaller' if dx1 < 0 else 'larger'  # take the opposite of gradient
         flipped_x2_direction = 'smaller' if dx2 < 0 else 'larger'
-        didactic_feedback_dict['fn'] += f"You chose {action}. Do not choose a {flipped_x1_direction} number than {x[0]} to minimize y."
-        didactic_feedback_dict['fn'] += f"You chose {action}. Do not choose a {flipped_x2_direction} number than {x[1]} to minimize y."
+        didactic_feedback['fn'] += f"You chose {action}. Do not choose a {flipped_x1_direction} number than {x[0]} to minimize y."
+        didactic_feedback['fn'] += f"You chose {action}. Do not choose a {flipped_x2_direction} number than {x[1]} to minimize y."
 
         self.prev_x = x
         self.left_attempts -= 1
-        return obs, -loss, False, {'feedback': feedback, 'didactic_feedback': didactic_feedback_dict}
+        return obs, -loss, False, {'feedback': feedback, 'didactic_feedback': didactic_feedback}
 
 
 # now we wrap all loss functions by inheriting this class
