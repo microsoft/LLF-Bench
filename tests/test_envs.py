@@ -52,8 +52,8 @@ def test_env(env_name, seed=0):
     # env_name = 'verbal-box-close-b-n-v2'
     # env_name = 'verbal-drawer-open-b-n-v2'
 
-    if 'Gridworld' in env_name or 'verbal-optimization' in env_name or 'verbal-metaworld' in env_name:
-        return
+    # if 'Gridworld' in env_name or 'verbal-optimization' in env_name or 'verbal-metaworld' in env_name or 'MovieRec' in env_name or 'verbal-poem' in env_name:
+    #     return
 
     print(env_name)
     env = gym.make(env_name)
