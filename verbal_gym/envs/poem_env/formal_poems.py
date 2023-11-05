@@ -195,7 +195,7 @@ class Haiku(PoemUtil, gym.Env):
             didactic_feedback.hp = didactic_feedback.r + " " +  "However, these lines are correct because they have the correct syllables: "
             for tup in success_info:
                 i, line, count, diff = tup
-                didactic_feedback.hp += f"{i + 1} has {count} syllables,"
+                didactic_feedback.hp += f"line {i + 1} has {count} syllables,"
             didactic_feedback.hp = didactic_feedback.hp[:-1]
             didactic_feedback.hp += "."
 
@@ -235,7 +235,19 @@ class Haiku(PoemUtil, gym.Env):
         return feedback, didactic_feedback
 
     def step(self, a):
-        # observation, reward, terminal, info
+        """
+        LineSyllableConstrainedPoem environment has two latent attributes:
+        - Did you have the right number of lines?
+        - Did you have the right number of syllables in each line?
+
+        The feedback is structured -- if the line number is wrong, we only provide feedback for the line number.
+        (Because it's meaningless to compare syllables)
+
+        If the line number is correct, we provide feedback for the syllables.
+
+        This means at a given point, there is one DidacticFeedback
+        But since there are two types of errors, there can be two kinds of DidacticFeedbacks
+        """
 
         if self.use_extractor:
             if self.extractor is None:
@@ -243,7 +255,7 @@ class Haiku(PoemUtil, gym.Env):
                     "Must pass in an extractor through initialize_text_extractor before using the extractor.")
             a = self.extractor(a)
 
-        feedbacks, didactic_feedbacks = [], []
+        feedbacks, didactic_feedback = [], Feedback()
         success = True
 
         lines = []
@@ -256,7 +268,6 @@ class Haiku(PoemUtil, gym.Env):
             success = False
 
             feedback, didactic_feedback = self.line_number_incorrect(len(lines))
-            didactic_feedbacks.append(didactic_feedback)
             feedbacks.append(feedback)
             frac = 0
             # if line numbers are wrong, it's a severe problem, reward we manually set to be 0
@@ -266,16 +277,16 @@ class Haiku(PoemUtil, gym.Env):
 
             feedback, didactic_feedback = self.produce_line_feedback(error_info, success_info)
             feedbacks.append(feedback)
-            didactic_feedbacks.append(didactic_feedback)
 
         if success:
             feedback += "Congrats! You have successfully produced a poem that matches the assignment description."
 
         terminal = False   # one step environment
 
+        # observation, reward, terminated, info
         return self.assignment, frac, terminal, {'original_feedback': feedback,
-                                                 'didactic_feedback': didactic_feedbacks,
-                                                 'success': int(success)}
+                                                         'didactic_feedback': didactic_feedback,
+                                                         'success': int(success)}
 
 class Tanka(Haiku):
     def __init__(self, feedback=0, silent=True, use_extractor=False):
@@ -328,7 +339,7 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
     def get_line_feedback(self, text):
         success = True
         success_line, total_line = 0, 0
-        info = []
+        error_info, success_info = [], []
         for i, line in enumerate(text.strip().split('\n')):
             if line == '':
                 # this means it's just a segment break
@@ -337,43 +348,50 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
             success *= count == self.syllable
             if count != self.syllable:
                 diff = self.syllable - count  # positive: increase syllable; negative: decrease syllable
-                info.append([i, line, count, diff])
+                error_info.append([i, line, count, diff])
             else:
                 success_line += 1
+                success_info.append([i, line, count, 0])
             total_line += 1
-        return success, success_line / total_line, info
+        return success, success_line / total_line, error_info, success_info
 
     def step(self, a):
+        """
+        SyllableConstrainedPoem only has one error type
+        Which is the syllable count per line
+        """
         # observation, reward, terminal, info
         if self.use_extractor:
             if self.extractor is None:
                 raise Exception("Must pass in an extractor through initialize_text_extractor before using the extractor.")
             a = self.extractor(a)
-        success, frac, info = self.get_line_feedback(a)
+        success, frac, error_info, success_info = self.get_line_feedback(a)
 
         if success:
             feedback = "Congrats! You have successfully produced a poem that matches the assignment description."
-            return self.assignment, frac, False, {'frac': frac, 'feedback': feedback, 'success': 1}
+            didactic_feedback = Feedback(r=feedback)
+            return self.assignment, frac, False, {'frac': frac, 'original_feedback': feedback,
+                                                  'feedback': didactic_feedback, 'success': 1}
+
 
         if self.feedback == 0:
-            # we just say "The generated poem is not correct."
             feedback = "The generated poem is incorrect."
         elif self.feedback == 0.5:
             # we offer an explanation or error message (on exactly which line is at fault)
             # Generated poem is incorrect because <which rule was violated, and where:> poem needs to have exactly 7 syllables in each line, but lines x,y do not.
             feedback = "The generated poem is incorrect.\n"
             feedback += f"This is because the poem needs to have exactly {self.syllable} syllables in each line"
-            feedback += ", but lines " if len(info) > 1 else ", but line "
-            for tup in info:
+            feedback += ", but lines " if len(error_info) > 1 else ", but line "
+            for tup in error_info:
                 i, line, count, diff = tup
                 feedback += f"{i + 1},"
             feedback = feedback[:-1]
-            feedback += " do not." if len(info) > 1 else " does not."
+            feedback += " do not." if len(error_info) > 1 else " does not."
         elif self.feedback == 1:
             # we offer a directional suggestion (you should decrease the number of syllables in this line)
             feedback = "The generated poem is incorrect.\n"
             feedback += "Here are some suggestions to fix your error:\n"
-            for tup in info:
+            for tup in error_info:
                 i, line, count, diff = tup
                 improv_direction = "more" if diff > 0 else "less"
                 feedback += f'The line: "{line}" has {count} syllables. It should only have {self.syllable} syllables. '
@@ -383,5 +401,31 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
 
         terminal = False   # one step environment
 
-        out =  self.assignment, frac, terminal, {'frac': frac, 'feedback': feedback, 'success': 0}
+        didactic_feedback = Feedback()
+        didactic_feedback.r = "The generated poem is incorrect."
+
+        didactic_feedback.hn = didactic_feedback.r + " " + f"This is because you need to have exactly {self.syllable} syllables for each line"
+        didactic_feedback.hn += ", but lines " if len(error_info) > 1 else ", but line "
+        for tup in error_info:
+            i, line, count, diff = tup
+            didactic_feedback.hn += f"{i + 1},"
+        didactic_feedback.hn = didactic_feedback.hn[:-1]
+        didactic_feedback.hn += " do not." if len(error_info) > 1 else " does not."
+
+        didactic_feedback.hp = didactic_feedback.r + " " + "However, these lines are correct because they have the correct syllables: "
+        for tup in success_info:
+            i, line, count, diff = tup
+            didactic_feedback.hp += f"line {i + 1} has {count} syllables,"
+        didactic_feedback.hp = didactic_feedback.hp[:-1]
+        didactic_feedback.hp += "."
+
+        didactic_feedback.fp = didactic_feedback.r + " " + "Here are some suggestions to fix your error:\n"
+        for tup in error_info:
+            i, line, count, diff = tup
+            improv_direction = "more" if diff > 0 else "less"
+            didactic_feedback.fp += f'The line: "{line}" has {count} syllables. It should only have {self.syllable} syllables. '
+            didactic_feedback.fp += f'You should rewrite the line to have {improv_direction} syllables.' + '\n'
+
+        out = self.assignment, frac, terminal, {'frac': frac, 'original_feedback': feedback,
+                                                "feedback": didactic_feedback, 'success': 0}
         return out
