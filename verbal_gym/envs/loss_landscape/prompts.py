@@ -99,7 +99,7 @@ hn_feedback_dim2 = (
     "You’ve chosen {action} starting from {prev_x}, but unfortunately, {increasing} the second number in {x2} doesn’t lead to a minimized y."
 )
 
-fp_feedback_dim1_template = "You chose {action}. Choose a {x1_direction} number than {x2} to minimize y."
+fp_feedback_dim1_template = "You chose {x}. Choose a {smaller} number than {x2} to minimize y."
 fp_feedback_dim1 = (
     "Your selection was {x}. To minimize y, provide a {smaller} number than the first value in {x2}.",
     "Having chosen {x}, you should now issue a {smaller} number than the first element of {x2} to reduce y.",
@@ -113,7 +113,7 @@ fp_feedback_dim1 = (
     "Your selection was {x}, and to minimize y, you need to output a {smaller} number than the first value from {x2}."
 )
 
-fp_feedback_dim2_template = "You chose {action}. Choose a {x2_direction} number than {x2} to minimize y."
+fp_feedback_dim2_template = "You chose {x}. Choose a {smaller} number than {x2} to minimize y."
 fp_feedback_dim2 = (
     "Your selection was {x}. To minimize y, provide a {smaller} number than the second value in {x2}.",
     "Having chosen {x}, you should now issue a {smaller} number than the second element of {x2} to reduce y.",
@@ -127,7 +127,7 @@ fp_feedback_dim2 = (
     "Your selection was {x}, and to minimize y, you need to output a {smaller} number than the second value from {x2}."
 )
 
-fn_feedback_dim1_template = "You chose {action}. Do not choose a {flipped_x1_direction} number than {x2} to minimize y."
+fn_feedback_dim1_template = "You chose {x}. Do not choose a {smaller} number than {x2} to minimize y."
 fn_feedback_dim1 = (
     "Your selection was {x}. To achieve a minimized y, you should avoid issuing a {smaller} number than the first value in {x2}.",
     "Having picked {x}, it’s crucial to not provide a {smaller} number than the first element of {x2} in order to reduce y.",
@@ -141,7 +141,7 @@ fn_feedback_dim1 = (
     "Having chosen {x}, remember that outputting a {smaller} number than the first value in {x} will not help minimize y."
 )
 
-fn_feedback_dim2_template = "You chose {action}. Do not choose a {flipped_x2_direction} number than {x2} to minimize y."
+fn_feedback_dim2_template = "You chose {x}. Do not choose a {smaller} number than {x2} to minimize y."
 fn_feedback_dim2 = (
     "Your selection was {x}. To achieve a minimized y, you should avoid issuing a {smaller} number than the second value in {x2}.",
     "Having picked {x}, it’s crucial to not provide a {smaller} number than the second element of {x2} in order to reduce y.",
