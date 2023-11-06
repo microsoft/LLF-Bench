@@ -55,8 +55,7 @@ class BanditGymWrapper(VerbalGymWrapper):
             feedback.fn = self.format(fn_feedback, bad_action=bad_action, reward=self._expected_reward(bad_action))
         observation = dict(instruction=None, observation=None, feedback=feedback)
 
-        if action==self._best_arm:
-            info['success'] = True
+        info['success'] = action==self._best_arm
 
         return observation, reward, terminated, truncated, info
 

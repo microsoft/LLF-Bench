@@ -32,6 +32,6 @@ for env_name in ENVIRONMENTS:
     # default version (backwards compatibility)
     register(
         id=f"verbal-bandits-{env_name}",
-        entry_point='verbal_gym.envs.gym_bandits:make_env',
+        entry_point='verbal_gym.envs.bandits:make_env',
         kwargs=dict(env_name=env_name, feedback_type='r', instruction_type='b')
     )

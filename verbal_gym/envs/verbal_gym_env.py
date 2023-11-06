@@ -219,6 +219,7 @@ class VerbalGymWrapper(gym.Wrapper):
         self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation."
         assert observation['instruction'] is not None, "The instruction must be provided in the initial observation."
+        info['success'] = False
         return observation, info
 
     def _reset(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
@@ -239,6 +240,7 @@ class VerbalGymWrapper(gym.Wrapper):
         self.obs_check(observation)
         if observation['feedback'] is not None:
             observation['feedback'] = self._verbalize_feedback(observation['feedback'])
+        assert 'success' in info
         return observation, reward, terminal, truncated, info
 
     def _step(self, action: Any) -> Tuple[Union[str, Dict[str, Any]], float, bool, bool, Dict[str, Any]]:
