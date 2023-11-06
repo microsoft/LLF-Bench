@@ -280,13 +280,12 @@ class Haiku(PoemUtil, gym.Env):
 
         if success:
             feedback += "Congrats! You have successfully produced a poem that matches the assignment description."
-            didactic_feedback.r += "Congrats! You have successfully produced a poem that matches the assignment description."
 
         terminal = False   # one step environment
 
         # observation, reward, terminated, info
         return self.assignment, frac, terminal, {'original_feedback': feedback,
-                                                         'feedback': didactic_feedback,
+                                                         'didactic_feedback': didactic_feedback,
                                                          'success': int(success)}
 
 class Tanka(Haiku):
