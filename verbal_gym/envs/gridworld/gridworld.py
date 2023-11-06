@@ -8,6 +8,7 @@ from verbal_gym.envs.gridworld.room import Room
 from verbal_gym.envs.gridworld.scene import Scene
 from verbal_gym.envs.verbal_gym_env import Feedback
 
+
 class Gridworld(gym.Env):
 
     # Basic (b), partial (p), and complete (c)
