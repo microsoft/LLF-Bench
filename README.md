@@ -25,11 +25,11 @@ When a field is missing, its value is represented as None. For example, 'instruc
 
 We design verbal-gym as a benchmark to test the "learning" ability of interactive agents.
 
-We design each environment in verbal-gym such that, from 'observation' and 'instruction' in `observation_dict`, it is suffcient (for a human) to tell the agent has reached the goal when the task is indeed solved . Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems.
+We design each environment in verbal-gym such that, from 'observation' and 'instruction' in `observation_dict`, it is suffcient (for a human) to tell that the agent has reached the goal when the task is indeed solved. Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems.
 
-However, we also design these environments such that 'observation' and 'instruction' are not suffcient for designing or *efficiently* learning the goal-reaching policies. Each evironment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, terminatation, so that the agent cannot figure out the optimal policy just based on 'instruction' without learning. In addition, since 'observation' and 'instruction' together only provides sparse informaiton about success, learning the optimal policy based on them can be exponentially hard.
+However, we also design these environments such that 'observation' and 'instruction' are not suffcient for designing or *efficiently* learning the goal-reaching policies. Each environment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, termination, so that the agent cannot figure out the optimal policy just based on 'instruction' without learning. In addition, since 'observation' and 'instruction' together only provides sparse informaiton about success, learning the optimal policy based on them can be exponentially hard.
 
-These features are designed to test an agent's *learning* ability, espeically, the ability to learn from verbal feedback. Verbal feedback is a generalization of reward in reinforcement learning. It can provide information about reward/success, but it can also convey more expressive feedback such as explanations and suggestions. The verbal feedback is implemented as the field 'feedback' in `observation_dict`, which is an accelerator to help learning the policy faster.
+These features are designed to test an agent's *learning* ability, especially, the ability to learn from verbal feedback. Verbal feedback is a generalization of reward in reinforcement learning. It can provide information about reward/success, but it can also convey more expressive feedback such as explanations and suggestions. The verbal feedback is implemented as the field 'feedback' in `observation_dict`, which is an accelerator to help learning the policy faster.
 
 
 
@@ -50,7 +50,7 @@ or
 
 Some valid options:
 
-    metaworld: for using metawolrd envs
+    metaworld: for using metaworld envs
 
 For example, to use metaworld, install the repo by `pip install -e.[metaworld]`.
 

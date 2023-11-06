@@ -77,12 +77,24 @@ class PoemGymWrapper(VerbalGymWrapper):
         paraphrased_feedback = Feedback()
 
         for feedback_type in self._feedback_type:
+            feedback = didactic_feedback[feedback_type]
             if feedback_type == 'r':
-                feedback = self.reformat(didactic_feedback[feedback_type], r_feedback_pos)
+                feedback = self.reformat(feedback, r_feedback_pos)
                 feedback = self.reformat(feedback, r_feedback_neg)
-                paraphrased_feedback.r = feedback
-            elif feedback_type in didactic_feedback and didactic_feedback[feedback_type] is not None:
-                pass
+            elif feedback_type == 'hn':
+                feedback = self.reformat(feedback, line_number_hn_feedback)
+                feedback = self.reformat(feedback, syllable_hn_feedback)
+            elif feedback_type == 'hp':
+                feedback = self.reformat(feedback, syllable_hp_feedback)
+            elif feedback_type == 'fp':
+                feedback = self.reformat(feedback, line_number_fp_feedback)
+                feedback = self.reformat(feedback, syllable_fp_feedback_1)
+                feedback = self.reformat(feedback, syllable_fp_feedback_2)
+            elif feedback_type == 'fn':
+                feedback = self.reformat(feedback, line_number_fn_feedback)
+            else:
+                raise ValueError(f'Unknown feedback type: {feedback_type}')
+            paraphrased_feedback[feedback_type] = feedback
 
         observation = dict(instruction=None, observation=None, feedback=paraphrased_feedback)
 
