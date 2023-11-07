@@ -44,6 +44,7 @@ def step_env(env_name, seed, config):
     assert next_obs['instruction'] is None
     assert not info['success']
     assert 'success' in next_info
+    assert reward>= env.reward_range[0] and reward<= env.reward_range[1]
 
     return dict(obs=obs,
                 action=action,
