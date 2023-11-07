@@ -27,6 +27,7 @@ setup(
 
         # highway
         "highway-env",
+
     ],
     extras_require={
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
