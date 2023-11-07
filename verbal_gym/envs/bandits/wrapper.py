@@ -33,7 +33,7 @@ class BanditGymWrapper(VerbalGymWrapper):
             instruction += '\n'+self.format(p_instruction, bad_action=bad_action, reward=self._expected_reward(bad_action))
         if self.instruction_type=='c':
             instruction += '\n'+self.format(c_instruction, best_arm=self._best_arm)
-        return dict(instruction=instruction, observation=None, feedback=None), {}
+        return dict(instruction=instruction, observation=None, feedback=None), {'success':False}
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
