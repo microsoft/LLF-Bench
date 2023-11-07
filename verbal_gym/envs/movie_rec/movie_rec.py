@@ -297,6 +297,8 @@ class MovieRec(gym.Env):
 
         self.is_first_order_feedback = self.feedback_level == 1
 
+        self.reward_range = (0, 1)
+
         self.docstring = dedent("""
         You are a helpful assistant trying to recommend movies to your users according to what they want.
         """)

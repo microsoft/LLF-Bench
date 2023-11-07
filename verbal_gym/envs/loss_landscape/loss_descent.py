@@ -44,6 +44,9 @@ class LossLandscapeBase(gym.Env):
 
         self._seed = self.seed(seed)
 
+        # reward = -loss
+        self.reward_range = (self.get_min_reward(), -self.min_y)
+
         # Note: currently we treat the first line as "instruction"
         self.docstring = dedent("""
         You are trying to minimize the output (y) of a function by choosing input (x). The goal is to choose x such that y is as small as possible.
@@ -64,6 +67,12 @@ class LossLandscapeBase(gym.Env):
 
         self.docstring = self.docstring.strip()
         self.docstring = self.docstring.format(self.x_low, self.x_high, self.horizon)
+
+    def get_min_reward(self):
+        x_range = [self.x_low, self.x_high]
+        y_max = [self.callable_func(np.array([x_range[i], x_range[j]])) for i in range(2) for j in range(2)]
+        y_max = max(y_max)
+        return -y_max
 
     def get_optimal_solution(self):
         return self.optimal_sol
@@ -130,7 +139,8 @@ class LossLandscapeBase(gym.Env):
             # r_pos
             didactic_feedback['r'] = 'You have reached the minimum!'
             return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {
-                'feedback': 'You have reached the minimum!', 'didactic_feedback_dict': didactic_feedback}
+                'feedback': 'You have reached the minimum!', 'didactic_feedback_dict': didactic_feedback,
+                "success": True}
 
         # r_neg
         obs = "Function outputs y = {}\nYou have {} attempts left!\n".format(loss, self.left_attempts)
@@ -202,7 +212,7 @@ class LossLandscapeBase(gym.Env):
 
         self.prev_x = x
         self.left_attempts -= 1
-        return obs, -loss, False, {'feedback': didactic_feedback, 'original_feedback': feedback}
+        return obs, -loss, False, {'feedback': didactic_feedback, 'original_feedback': feedback, "success": False}
 
 
 # now we wrap all loss functions by inheriting this class

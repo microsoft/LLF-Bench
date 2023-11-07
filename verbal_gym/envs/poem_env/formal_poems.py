@@ -283,7 +283,7 @@ class Haiku(PoemUtil, gym.Env):
         # observation, reward, terminated, info
         return self.assignment, frac, terminal, {'original_feedback': feedback,
                                                  'feedback': didactic_feedback,
-                                                 'success': int(success)}
+                                                 'success': success}
 
 class Tanka(Haiku):
     def __init__(self, feedback=0, silent=True, use_extractor=False):
@@ -368,7 +368,7 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
             feedback = f"The generated poem is correct. Congrats! You have successfully produced a poem that matches the assignment description."
             didactic_feedback = Feedback(r=feedback)
             return self.assignment, frac, False, {'frac': frac, 'original_feedback': feedback,
-                                                  'feedback': didactic_feedback, 'success': 1}
+                                                  'feedback': didactic_feedback, 'success': True}
 
 
         if self.feedback == 0:
@@ -424,5 +424,5 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
             didactic_feedback.fp += f'You should rewrite the line to have {improv_direction} syllables.' + '\n'
 
         out = self.assignment, frac, terminal, {'frac': frac, 'original_feedback': feedback,
-                                                "feedback": didactic_feedback, 'success': 0}
+                                                "feedback": didactic_feedback, 'success': False}
         return out

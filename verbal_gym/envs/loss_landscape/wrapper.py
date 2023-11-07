@@ -13,8 +13,8 @@ This wrapper will only produce didactic feedback
 
 
 class LossLandscapeGymWrapper(VerbalGymWrapper):
-    INSTRUCTION_TYPES = ('b')  # , 'p', 'c')
-    FEEDBACK_TYPES = ('m', 'r', 'hp', 'hn', 'fp', 'fn')
+    INSTRUCTION_TYPES = ('b')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
@@ -31,6 +31,8 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
         didactic_feedback = info['feedback']
         del info['feedback']
         del info['original_feedback']
+
+        assert 'success' in info
 
         paraphrased_feedback = Feedback()
 
@@ -63,3 +65,7 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
     @property
     def _loss_env(self):
         return self.env.env.env
+
+    @property
+    def reward_range(self):
+        return self._loss_env.reward_range

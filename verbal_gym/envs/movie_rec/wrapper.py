@@ -14,7 +14,7 @@ This wrapper will only produce didactic feedback
 
 class MovieRecGymWrapper(VerbalGymWrapper):
     INSTRUCTION_TYPES = ('b')  # , 'p', 'c')
-    FEEDBACK_TYPES = ('m', 'r', 'hp', 'hn', 'fp', 'fn')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
@@ -82,4 +82,8 @@ class MovieRecGymWrapper(VerbalGymWrapper):
 
     @property
     def _movie_rec_env(self):
-        return self.env.env
+        return self.env.env.env
+
+    @property
+    def reward_range(self):
+        return self._movie_rec_env.reward_range

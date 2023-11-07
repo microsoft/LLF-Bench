@@ -49,7 +49,7 @@ from verbal_gym.envs.poem_env.prompts import *
 class PoemGymWrapper(VerbalGymWrapper):
 
     INSTRUCTION_TYPES = ('b') #, 'p', 'c')
-    FEEDBACK_TYPES = ('m', 'r', 'hn', 'fp')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
