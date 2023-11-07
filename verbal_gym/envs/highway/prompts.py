@@ -13,14 +13,6 @@ b_instruction = (
     "Output a good action in the form of [throttle input, steering input].",
 )
 
-p_instruction = (
-    "Note: The action {bad_action} is not good because it only achieves a reward of {reward}.",
-)
-
-c_instruction = (
-    "Suggestion: The best action to take is {best_action}",
-)
-
 r_feedback = (
     "You received a reward of {reward}.",
 )
@@ -30,13 +22,5 @@ hp_feedback = (
 )
 
 hn_feedback = (
-    "This is not the best action, as it does not lead to the highest expected reward.",
-)
-
-fp_feedback = (
-    "You will receive an expected reward of {reward} if you choose action {best_action}.",
-)
-
-fn_feedback = (
-    "Hint: Action {bad_action} is not correct because it only gets an expected reward of {reward}.",
+    "This is a bad action, because the vehicle crashed.",
 )
