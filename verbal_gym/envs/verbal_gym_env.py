@@ -219,7 +219,7 @@ class VerbalGymWrapper(gym.Wrapper):
         else:
             return format(prompts, self.paraphrase_method, **kwargs)
 
-    def reformat(self, original: str, prompts: List[str], template=None) -> str:
+    def reformat(self, original: Union[str, None], prompts: List[str], template=None) -> str:
         """ A helper method for reformatting a string using a template.
 
             Args:
@@ -243,6 +243,8 @@ class VerbalGymWrapper(gym.Wrapper):
                 prompts = ['This is not an {fruit}']
                 paraphrased = 'This is not an apple. This is a banana. This is not an apple.'
         """
+        if original is None:
+            return original
         template = template or prompts[0]
         parsed = parse.search(template, original)
         if parsed is None:
