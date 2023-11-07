@@ -10,6 +10,18 @@ movie_instruction = (
     "As an attentive assistant, you make it your job to endorse movies that your users express an interest in."
 )
 
+no_rec_r_neg_template = "You didn't recommend anything to me."
+no_rec_r_neg = (
+    "You haven’t provided any recommendations to me.",
+    "No suggestions have been made on your part.",
+    "You failed to suggest any titles to me.",
+    "I haven't received any movie or TV show recommendations from you.",
+    "It seems like you've overlooked recommending any movies or shows to me.",
+    "You've not offered any recommendations for movies or TV series.",
+    "No movie or TV show recommendations have come my way from you.",
+    "You haven't made any movie or TV suggestions to me."
+)
+
 hallucination_r_pos_template = "I can find all the recommended {movie}s, nice!"
 hallucination_r_pos = (
     "All of the suggested {movie}s are available, which is great!",
@@ -237,13 +249,13 @@ year_r_pos = (
 
 year_r_neg_template = "The recommended {movie}s are not from the {correct_years}."
 year_r_neg = (
-    "The suggested {movie}s don't hail from the {correct_years}.",
-    "None of the recommended {movie}s originate from the {correct_years}.",
-    "The {movie}s you've recommended aren't from the {correct_years}.",
-    "It turns out the recommended {movie}s are not from the {correct_years}.",
+    "The suggested {movie}s don't all hail from the {correct_years}.",
+    "Some of the recommended {movie}s do not originate from the {correct_years}.",
+    "The {movie}s you've recommended aren't all from the {correct_years}.",
+    "It turns out the recommended {movie}s are not all from the {correct_years}.",
     "The list of recommended {movie}s are not all from the {correct_years}.",
     "Regrettably, some of the recommended {movie}s fall outside of the {correct_years}.",
-    "Some of the recommended {movie}s are unfortunately not from the specified {correct_years}."
+    "Some of the recommended {movie}s are unfortunately not all from the specified {correct_years}."
 )
 
 year_hp_template = "These {movie}s are indeed from the {correct_years}:"
@@ -258,16 +270,16 @@ year_hp = (
     "Yes, these {movie}s are from the era of the {correct_years}:"
 )
 
-year_hn_template = "These {movie}s are not from the {correct_years}:"
+year_hn_template = "These {movie}s are not all from the {correct_years}:"
 year_hn = (
-    "These {movie}s do not belong to the {correct_years}:",
-    "The {movie}s listed here are outside the {correct_years}:",
-    "These {movie}s were not produced in the {correct_years}:",
-    "It appears that these {movie}s aren't from the {correct_years}:",
-    "The production years of these {movie}s do not align with the {correct_years}:",
-    "These {movie}s are from years other than the {correct_years}:",
-    "Contrary to expectations, these {movie}s don't come from the {correct_years}:",
-    "These {movie}s aren't associated with the {correct_years}:"
+    "Not every one of these {movie}s originates from the {correct_years}:",
+    "These {movie}s don't all hail from the {correct_years}:",
+    "A number of these {movie}s fall outside the {correct_years}:",
+    "Some of these {movie}s are not dated within the {correct_years}:",
+    "The release years of these {movie}s don't all match the {correct_years}:",
+    "These {movie}s aren't exclusively from the {correct_years}:",
+    "It's not the case that all these {movie}s were produced in the {correct_years}:",
+    "Each of these {movie}s does not necessarily correspond to the {correct_years}:"
 )
 
 year_fp_template = "Recommend {movie}s that are from {correct_years}, like"

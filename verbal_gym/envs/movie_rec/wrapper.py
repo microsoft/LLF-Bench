@@ -19,8 +19,8 @@ class MovieRecGymWrapper(VerbalGymWrapper):
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(TerminalFreeWrapper(EnvCompatibility(env)), instruction_type, feedback_type)
 
-    def _reset(self, *, seed=None, options=None):  # TODO types of instructions
-        instruction = self._loss_env.docstring
+    def _reset(self, *, seed=None, options=None):
+        instruction = self._movie_rec_env.docstring
         obs, info = self.env.reset(seed=seed, options=options)
         instruction = self.reformat(instruction, movie_instruction, template=movie_instruction_template)
 
@@ -32,38 +32,54 @@ class MovieRecGymWrapper(VerbalGymWrapper):
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
-        didactic_feedback = info['didactic_feedback']
-        del info['didactic_feedback']
+        didactic_feedback = info['feedback']
+        del info['original_feedback']
         del info['feedback']
 
-        paraphrased_feedback = Feedback()
+        attribute_list = ["hallucination", "type", "genre", "year", "child_friendly"]
 
-        for feedback_type in self._feedback_type:
-            if feedback_type == 'r':
-                feedback = self.reformat(didactic_feedback[feedback_type], r_feedback_pos, template=r_feedback_pos_template)
-                feedback = self.reformat(feedback, r_feedback_neg, template=r_feedback_neg_template)
-                paraphrased_feedback.r = feedback
-            elif feedback_type in didactic_feedback and didactic_feedback[feedback_type] is not None:
-                temp_dim1 = eval("{}_feedback_dim1_template".format(feedback_type))
-                feedback = self.reformat(didactic_feedback[feedback_type],
-                                         eval("{}_feedback_dim1".format(feedback_type)),
-                                         template=temp_dim1)
-                temp_dim2 = eval("{}_feedback_dim2_template".format(feedback_type))
-                feedback = self.reformat(feedback,
-                                         eval("{}_feedback_dim2".format(feedback_type)),
-                                         template=temp_dim2)
+        paraphrased_feedback = Feedback(r="", hp="", hn="", fp="", fn="")
 
-                # this is to fix a capitalization issue in paraphrasing
-                if '. Increasing' not in feedback:
-                    feedback = feedback.replace("Increasing", 'increasing')
-                elif '. Decreasing' not in feedback:
-                    feedback = feedback.replace("Decreasing", 'decreasing')
+        for attribute in attribute_list:
+            if attribute not in didactic_feedback:
+                continue
+            for feedback_type in self._feedback_type:
+                if feedback_type == 'r':
+                    r_pos_temp = eval(f"{attribute}_r_pos_template")
+                    r_pos = eval(f"{attribute}_r_pos")
+                    feedback = self.reformat(didactic_feedback[attribute][feedback_type], r_pos, template=r_pos_temp)
 
-                paraphrased_feedback[feedback_type] = feedback
+                    r_neg_temp = eval(f"{attribute}_r_neg_template")
+                    r_neg = eval(f"{attribute}_r_neg")
+                    feedback = self.reformat(feedback, r_neg, template=r_neg_temp)
+
+                    paraphrased_feedback.r += feedback + '\n'
+
+                elif didactic_feedback[attribute][feedback_type] is not None:
+                    # design issue:
+                    # if LLM suggestion is correct on the attribute, some feedback might not show up
+                    # like, r is filled, but not hn
+                    feedback_temp = eval(f"{attribute}_{feedback_type}_template")
+                    feedback_prompts = eval(f"{attribute}_{feedback_type}")
+                    feedback = self.reformat(didactic_feedback[attribute][feedback_type], feedback_prompts, template=feedback_temp)
+
+                    # We might want to do some minor grammar fix here
+                    # like "an" vs "a"
+                    paraphrased_feedback[feedback_type] += feedback + '\n'
+
+        if 'no_rec' in didactic_feedback:
+            feedback = self.reformat(didactic_feedback['no_rec'].r,
+                                                no_rec_r_neg, template=no_rec_r_neg_template)
+            paraphrased_feedback.r += feedback + '\n'
+
+        # manually set things to None for consistency
+        for ftype in ['r', 'hp', 'hn', 'fp', 'fn']:
+            if paraphrased_feedback[ftype] == '':
+                paraphrased_feedback[ftype] = None
 
         observation = dict(instruction=None, observation=observation, feedback=paraphrased_feedback)
         return observation, reward, terminated, truncated, info
 
     @property
-    def _loss_env(self):
-        return self.env.env.env
+    def _movie_rec_env(self):
+        return self.env.env
