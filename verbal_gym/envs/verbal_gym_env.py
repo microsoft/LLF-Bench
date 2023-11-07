@@ -3,7 +3,7 @@ import numpy as np
 from typing import Dict, Any, Tuple, Union, List, Callable, Set
 from verbal_gym.envs.utils import format
 import parse
-import sys
+import sys, string
 
 """
 
@@ -130,8 +130,8 @@ class VerbalGymWrapper(gym.Wrapper):
         self.set_feedback_type(feedback_type)  # This is the external api.
         self.set_paraphrase_method('random')
         self.observation_space = gym.spaces.Dict({"observation": self.env.observation_space,
-                                                  "feedback": gym.spaces.Text(sys.maxsize),
-                                                  "instruction": gym.spaces.Text(sys.maxsize)})
+                                                  "feedback": gym.spaces.Text(sys.maxsize, charset=string.printable),
+                                                  "instruction": gym.spaces.Text(sys.maxsize, charset=string.printable)})
 
     @property
     def instruction_type(self) -> str:

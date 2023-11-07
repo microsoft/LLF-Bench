@@ -8,6 +8,7 @@ from textwrap import dedent, indent
 
 from gym.utils import seeding
 from verbal_gym.envs.verbal_gym_env import Feedback
+import string
 
 class LossLandscapeBase(gym.Env):
     def __init__(self, callable_func, x_low, x_high, min_y, optimal_sol,
@@ -22,8 +23,8 @@ class LossLandscapeBase(gym.Env):
         self.feedback = feedback
         assert self.feedback in {0, 0.5, 1}
 
-        self.action_space = gym.spaces.Text(sys.maxsize)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         self._np_random = None
 
@@ -50,10 +51,10 @@ class LossLandscapeBase(gym.Env):
         # Note: currently we treat the first line as "instruction"
         self.docstring = dedent("""
         You are trying to minimize the output (y) of a function by choosing input (x). The goal is to choose x such that y is as small as possible.
-        
+
         You get to observe y once you choose the value of x, where x is a 2-dimensional vector.
         This means x = [x1, x2], where x1 and x2 are real numbers.
-        
+
 
         The range of x1 and x2 is [{}, {}].
         Please do not choose x outside of this range.
@@ -178,7 +179,7 @@ class LossLandscapeBase(gym.Env):
         - (hp) hindsight positive: explaination on why the current action is correct
         - (hn) hindsight negative: explaination on why the current action is incorrect
         - (fp) future positive: suggestion of things (future action) to do
-        - (fn) future negative: suggestion of things (future action) to avoid        
+        - (fn) future negative: suggestion of things (future action) to avoid
         """
         change_x = x - self.prev_x  # change in x
         change_x1, change_x2 = change_x[0], change_x[1]

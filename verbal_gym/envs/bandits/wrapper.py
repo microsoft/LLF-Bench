@@ -57,7 +57,7 @@ class BanditGymWrapper(VerbalGymWrapper):
 
         info['success'] = action==self._best_arm
 
-        return observation, reward, terminated, truncated, info
+        return observation, float(reward), terminated, truncated, info
 
     @property
     def _bandit_env(self): # This is hardcoded for gym_bandits

@@ -13,6 +13,7 @@ import requests
 from dataclasses import dataclass, asdict
 
 from verbal_gym.agents.parser_util import SimpleGuidanceParser
+import string
 
 api_key = "4ace3dfa"
 
@@ -283,7 +284,7 @@ Extract the movies and additional information from the following generated conte
 ```
 into a JSON format that looks like this:
 ```
-[{"title": "movie1"}, 
+[{"title": "movie1"},
  {"title": "movie2"}]
 ```
 You must output a valid JSON:
@@ -312,8 +313,8 @@ class MovieRec(gym.Env):
 
         self.profile = None
 
-        self.action_space = gym.spaces.Text(sys.maxsize)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         self.is_first_order_feedback = self.feedback == 1
 

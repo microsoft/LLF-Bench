@@ -12,7 +12,7 @@ import numpy as np
 from textwrap import dedent, indent
 
 from gym.utils import seeding
-
+import string
 
 def global_callable_func(l2, theta2, l1, theta1, goal_l2, goal_theta2):
     # l2, theta2 = x
@@ -53,8 +53,8 @@ class RoboticArmFunction(gym.Env):
         self.feedback = feedback
         assert self.feedback in {0, 0.5, 1}
 
-        self.action_space = gym.spaces.Text(sys.maxsize)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         self._np_random = None
 
@@ -77,20 +77,20 @@ class RoboticArmFunction(gym.Env):
         # Note: currently we treat the first line as "instruction"
         self.docstring = dedent("""
         You are controlling a robotic arm with two segments.
-        Your goal is for the second segment's endopint to reach the goal. 
-        
+        Your goal is for the second segment's endopint to reach the goal.
+
         The first segment is fixed at the origin.
         You can control the second segment, which is attached to the first segment.
-        
+
         The second segment is retractable, so you can control its length.
         The second segment is also rotatable, so you can control its angle.
-        
+
         You get to observe the position of the endopint and distance to the goal.
         You need to minimize the distance to the goal.
 
         The range of length is [0, 1].
         The range of angle is [0, 6.28].
-        
+
         Do not choose outside of these ranges.
 
         Choose them within {} attempts.

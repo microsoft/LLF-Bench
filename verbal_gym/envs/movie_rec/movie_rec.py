@@ -248,21 +248,21 @@ class RecContentExtractor(object):
         {{#system~}}
         You are a helpful assistant.
         {{~/system}}
-        
+
         {{#user~}}
-        
+
         Extract the movies and additional information from the following generated content:
         ```
         {{content}}
         ```
         into a JSON format that looks like this:
         ```
-        [{"title": "movie1"}, 
+        [{"title": "movie1"},
          {"title": "movie2"}]
         ```
         You must output a valid JSON:
         {{~/user}}
-        
+
         {{#assistant~}}
         {{gen 'content' temperature=0}}
         {{~/assistant}}
@@ -292,8 +292,8 @@ class MovieRec(gym.Env):
 
         self.profile = None
 
-        self.action_space = gym.spaces.Text(sys.maxsize)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         self.is_first_order_feedback = self.feedback_level == 1
 

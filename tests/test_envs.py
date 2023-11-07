@@ -3,13 +3,22 @@ import verbal_gym
 import numpy as np
 import random
 from verbal_gym.utils.utils import generate_combinations_dict
+from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
 
-def step_env(env_name, seed):
+
+def obs_space_contains_obs(obs, obs_space):
+    for k in obs:
+        if isinstance(obs[k], str):
+            if len(obs)==0:
+                return True
+        return obs_space[k].contains(obs[k]) or (obs[k] is None)
+
+def step_env(env_name, seed, config):
     random.seed(seed)
     np.random.seed(seed)
 
-    env = gym.make(env_name)
-    env.reward_range
+    env = verbal_gym.make(env_name, **config)
+    assert len(env.reward_range)==2
     obs, info = env.reset(seed=seed)
 
     if isinstance(env.action_space , gym.spaces.Text):
@@ -21,6 +30,21 @@ def step_env(env_name, seed):
         action = env.action_space.sample()
 
     next_obs, reward, terminated, truncated, next_info = env.step(action)
+
+    assert env.action_space.contains(action)
+    assert obs_space_contains_obs(obs, env.observation_space)
+    assert obs_space_contains_obs(next_obs, env.observation_space)
+    assert type(terminated) == bool
+    assert type(truncated) == bool
+    assert type(reward)==float
+    assert type(info)==dict and type(next_info) == dict
+
+    assert obs['instruction'] is not None
+    assert obs['feedback'] is None
+    assert next_obs['instruction'] is None
+    assert not info['success']
+    assert 'success' in next_info
+
     return dict(obs=obs,
                 action=action,
                 info=info,
@@ -47,15 +71,24 @@ def check_equivalence(nested1, nested2, name=None):
         else:
             assert nested1 == nested2, (name, nested1, nested2)
 
+def test_wrapper(env):
+    if isinstance(env,VerbalGymWrapper):
+        return True
+    elif hasattr(env, 'env'):
+        return test_wrapper(env.env)
+    else:
+        return False
+
 def test_env(env_name, seed=0):
     print(env_name)
     instruction_types, feedback_types = verbal_gym.supported_types(env_name)
     feedback_types = list(feedback_types) + ['n', 'a', 'm']
     configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
     for config in configs:
-        env = verbal_gym.make(env_name, **config)
-        ouputs1 = step_env(env_name, seed)
-        ouputs2 = step_env(env_name, seed)
+        env = verbal_gym.make(env_name, **config)  # test verbal_gym.make
+        assert test_wrapper(env) # test VerbalGymWrapper is used
+        ouputs1 = step_env(env_name, seed, config=config)
+        ouputs2 = step_env(env_name, seed, config=config)
         check_equivalence(ouputs1, ouputs2)
 
 def test_benchmark(benchmark_prefix):

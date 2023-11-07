@@ -5,6 +5,7 @@ import gym
 import cmudict
 import syllables
 import sys
+import string
 
 from verbal_gym.utils.parser_utils import SimpleGuidanceParser
 from verbal_gym.envs.verbal_gym_env import Feedback
@@ -110,8 +111,8 @@ class Haiku(PoemUtil, gym.Env):
         self.syllable_req_str = [str(i) for i in self.syllable_req]
         assert feedback in {0, 0.5, 1}
 
-        self.action_space = gym.spaces.Text(sys.maxsize)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         super().__init__()
 
@@ -324,8 +325,8 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         self.cmudict = cmudict.dict()
         self.extractor = None
 
-        self.action_space = gym.spaces.Text(sys.maxsize)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
     def reset(self, **kwargs):
         return self.assignment

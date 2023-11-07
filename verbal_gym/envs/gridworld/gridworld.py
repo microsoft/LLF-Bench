@@ -2,6 +2,7 @@ import pdb
 import gym
 import sys
 import random
+import string
 
 from collections import deque
 from verbal_gym.envs.gridworld.room import Room
@@ -31,7 +32,7 @@ class Gridworld(gym.Env):
         # Action space consists of 4 actions: North, South, East and West
         self.num_actions = 4
         self.action_space = gym.spaces.Discrete(self.num_actions)
-        self.observation_space = gym.spaces.Text(sys.maxsize)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
