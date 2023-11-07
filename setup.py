@@ -18,7 +18,6 @@ setup(
         "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits",
         # poem_env
         "cmudict",
-        "guidance",
         "syllables",
 
         # loss_landscape
