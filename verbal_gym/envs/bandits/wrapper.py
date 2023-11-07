@@ -1,7 +1,8 @@
+from typing import SupportsFloat
 import numpy as np
 from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, RandomActionOrderWrapper, EnvCompatibility
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
-from verbal_gym.envs.gym_bandits.prompts import *
+from verbal_gym.envs.bandits.prompts import *
 
 
 class BanditGymWrapper(VerbalGymWrapper):
@@ -9,11 +10,15 @@ class BanditGymWrapper(VerbalGymWrapper):
     """ This is a wrapper for gym_bandits. """
 
     INSTRUCTION_TYPES = ('b', 'p', 'c')
-    FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
         env = TerminalFreeWrapper(RandomActionOrderWrapper(EnvCompatibility(env)))
         super().__init__(env, instruction_type, feedback_type)
+
+    @property
+    def reward_range(self):
+        return (0, 1.0)
 
     def _reset(self, seed=None, options=None):
         options = options or {}
@@ -49,6 +54,9 @@ class BanditGymWrapper(VerbalGymWrapper):
             bad_action = np.random.choice(np.delete(np.arange(self.env.action_space.n), self._best_arm))
             feedback.fn = self.format(fn_feedback, bad_action=bad_action, reward=self._expected_reward(bad_action))
         observation = dict(instruction=None, observation=None, feedback=feedback)
+
+        info['success'] = action==self._best_arm
+
         return observation, reward, terminated, truncated, info
 
     @property
