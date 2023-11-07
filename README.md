@@ -51,6 +51,7 @@ or
 Some valid options:
 
     metaworld: for using metaworld envs
+    alfworld: for using alfworld envs
 
 For example, to use metaworld, install the repo by `pip install -e.[metaworld]`.
 
