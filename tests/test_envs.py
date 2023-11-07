@@ -36,7 +36,7 @@ def step_env(env_name, seed, config):
     assert obs_space_contains_obs(next_obs, env.observation_space)
     assert type(terminated) == bool
     assert type(truncated) == bool
-    assert type(reward)==float
+    assert type(reward)==float or type(reward)==int
     assert type(info)==dict and type(next_info) == dict
 
     assert obs['instruction'] is not None
