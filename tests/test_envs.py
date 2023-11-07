@@ -52,7 +52,6 @@ def test_env(env_name, seed=0):
     feedback_types = list(feedback_types) + ['n', 'a', 'm']
     configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
     for config in configs:
-        print('\t', config)
         env = verbal_gym.make(env_name, **config)
         ouputs1 = step_env(env_name, seed)
         ouputs2 = step_env(env_name, seed)

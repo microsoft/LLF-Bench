@@ -124,9 +124,10 @@ class VerbalGymWrapper(gym.Wrapper):
                     or any subsets from of the FEEDBACK_TYPES.
         """
         super().__init__(env)
-        self.instruction_type = instruction_type # This is the external api.
-        self.feedback_type = feedback_type  # This is the external api.
-        self._paraphrase_method = 'random'
+        # gym doesn't support setter
+        self.set_instruction_type(instruction_type) # This is the external api.
+        self.set_feedback_type(feedback_type)  # This is the external api.
+        self.set_paraphrase_method('random')
 
     @property
     def instruction_type(self) -> str:
@@ -140,8 +141,7 @@ class VerbalGymWrapper(gym.Wrapper):
         # Either 'n', 'a', 'm', or a subset of FEEDBACK_TYPES.
         return self.__feedback_type
 
-    @feedback_type.setter
-    def feedback_type(self, feedback_type: Union[str, Set[str], List[str], Tuple[str]]):
+    def set_feedback_type(self, feedback_type: Union[str, Set[str], List[str], Tuple[str]]):
         """
             Args:
                 feedback_type: The type of feedback. It can be a string from 'n',
@@ -163,8 +163,7 @@ class VerbalGymWrapper(gym.Wrapper):
             self.__feedback_type = feedback_type
         assert isinstance(self.__feedback_type, set) or self.__feedback_type in ('n', 'a', 'm')
 
-    @instruction_type.setter
-    def instruction_type(self, instruction_type: str):
+    def set_instruction_type(self, instruction_type: str):
         assert instruction_type in self.INSTRUCTION_TYPES, f'Instruction type {instruction_type} is not supported.'
         self.__instruction_type = instruction_type
 
@@ -196,8 +195,7 @@ class VerbalGymWrapper(gym.Wrapper):
     def paraphrase_method(self) -> Union[None, int]:
         return self._paraphrase_method
 
-    @paraphrase_method.setter
-    def paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
+    def set_paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
         """
             Args:
                 method: The method to use in selecting the prompt.
