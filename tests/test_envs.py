@@ -9,6 +9,7 @@ def step_env(env_name, seed):
     np.random.seed(seed)
 
     env = gym.make(env_name)
+    env.reward_range
     obs, info = env.reset(seed=seed)
 
     if isinstance(env.action_space , gym.spaces.Text):

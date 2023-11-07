@@ -10,7 +10,7 @@ class BanditGymWrapper(VerbalGymWrapper):
     """ This is a wrapper for gym_bandits. """
 
     INSTRUCTION_TYPES = ('b', 'p', 'c')
-    FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
         env = TerminalFreeWrapper(RandomActionOrderWrapper(EnvCompatibility(env)))
