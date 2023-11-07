@@ -1,6 +1,6 @@
 import gymnasium as gym
 import numpy as np
-from typing import Dict, Any, Tuple, Union, List, Callable
+from typing import Dict, Any, Tuple, Union, List, Callable, Set
 from verbal_gym.envs.utils import format
 import parse
 
@@ -99,9 +99,15 @@ class VerbalGymWrapper(gym.Wrapper):
 
     # These are the instruction and feedback types that are supported by this environment.
     INSTRUCTION_TYPES = ('b', 'p', 'c')
-    FEEDBACK_TYPES = ('m', 'n', 'r', 'hp', 'hn', 'fp', 'fn')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')  # these are the basic feedback types
 
-    def __init__(self, env: gym.Env, instruction_type: str, feedback_type: str):
+    # r: reward,
+    # hp: hindsight positive
+    # hn: hindsight negative
+    # fp: future positive
+    # fn: future negative
+
+    def __init__(self, env: gym.Env, instruction_type: str, feedback_type: Union[str, Set[str], List[str], Tuple[str]]):
         """
             Initialize the wrapper.
 
@@ -111,51 +117,91 @@ class VerbalGymWrapper(gym.Wrapper):
                 instruction_type: The type of instruction. b: basic, p: partial,
                 c: complete. Should be one of the INSTRUCTION_TYPES.
 
-                # TODO update
-                feedback_type: The type of feedback. m: mixed, n: none, r:
-                reward, hp: hindsight positive, hn: hindsight negative, fp:
-                future positive, fn: future negative. Should be one of the
-                FEEDBACK_TYPES.
+                feedback_type: The type of feedback.
+                    a: auto (all),
+                    m: mixed (random),
+                    n: none
+                    or any subsets from of the FEEDBACK_TYPES.
         """
         super().__init__(env)
-        self.instruction_type = instruction_type
+        self.instruction_type = instruction_type # This is the external api.
         self.feedback_type = feedback_type  # This is the external api.
-        assert self.instruction_type in self.INSTRUCTION_TYPES
-        assert self.feedback_type in self.FEEDBACK_TYPES
         self._paraphrase_method = 'random'
+
+    @property
+    def instruction_type(self) -> str:
+        # This is the external api.
+        # Either 'b', 'p', or 'c'.
+        return self.__instruction_type
+
+    @property
+    def feedback_type(self) -> Union[str, Set]:
+        # This is the external api.
+        # Either 'n', 'a', 'm', or a subset of FEEDBACK_TYPES.
+        return self.__feedback_type
+
+    @feedback_type.setter
+    def feedback_type(self, feedback_type: Union[str, Set[str], List[str], Tuple[str]]):
+        """
+            Args:
+                feedback_type: The type of feedback. It can be a string from 'n',
+                'a', 'm', or from FEEDBACK_TYPES. Or a subset of
+                FEEDBACK_TYPES (represented as set, list or tuple).
+        """
+        assert isinstance(feedback_type, str) or isinstance(feedback_type, set) \
+            or isinstance(feedback_type, list) or isinstance(feedback_type, tuple), \
+            'feedback_type must be a string, set, list, or tuple'
+        if feedback_type in ('n', 'a', 'm'):
+            self.__feedback_type = feedback_type
+        else:
+            if isinstance(feedback_type, str):
+                assert feedback_type in self.FEEDBACK_TYPES, f'Feedback type {feedback_type} is not supported.'
+                feedback_type = [feedback_type]
+            feedback_type = set(feedback_type)
+            for f in feedback_type:
+                assert f in self.FEEDBACK_TYPES, f'Feedback type {f} is not supported.'
+            self.__feedback_type = feedback_type
+        assert isinstance(self.__feedback_type, set) or self.__feedback_type in ('n', 'a', 'm')
+
+    @instruction_type.setter
+    def instruction_type(self, instruction_type: str):
+        assert instruction_type in self.INSTRUCTION_TYPES, f'Instruction type {instruction_type} is not supported.'
+        self.__instruction_type = instruction_type
+
+    @property
+    def _feedback_type(self) -> set:
+        """ This is the internal api.
+
+            This is the feedback type that is used in the current step. In
+            subclassing the wrapper, use this to determine  the feedback types
+            needed to be computed in _step.
+
+            Returns:
+                A set of feedback types, subset of FEEDBACK_TYPES.
+        """
+        feedback_type = self.feedback_type
+        if feedback_type == 'n': # using none
+            feedback_type = set()
+        if feedback_type == 'a': # using auto
+            feedback_type = set(self.FEEDBACK_TYPES)  # need to compute all
+        if feedback_type == 'm': # using mixture  # TODO a better name
+            feedback_type = set([np.random.choice(list(set(self.FEEDBACK_TYPES)))])  # str
+        assert isinstance(feedback_type, set)
+        # At this point, it should be a subset of FEEDBACK_TYPES.
+        for f in feedback_type:
+            assert f in self.FEEDBACK_TYPES, f'Feedback type {f} is not supported.'
+        return feedback_type
 
     @property
     def paraphrase_method(self) -> Union[None, int]:
         return self._paraphrase_method
 
-    @property
-    def _feedback_type(self) -> set:
-        """ This is the feedback type that is used in the current step. In
-        subclassing the wrapper, use this to determine the feedback type in
-        _step. """
-        if self.feedback_type == 'n': # using none
-            return set()
-        feedback_type = self.feedback_type
-        if self.feedback_type == 'm': # using mixture  # TODO a better name
-            feedback_types = list(set(self.FEEDBACK_TYPES))
-            feedback_types.remove('m')
-            feedback_type = np.random.choice(feedback_types)  # str
-        assert isinstance(self.feedback_type, str) or isinstance(self.feedback_type, set) \
-            or isinstance(self.feedback_type, list) or isinstance(self.feedback_type, tuple), \
-            'feedback_type must be a string, set, list, or tuple'
-        if isinstance(feedback_type, str):
-            feedback_type = [feedback_type]
-        feedback_type = set(feedback_type)
-        for f in feedback_type:
-            assert f in self.FEEDBACK_TYPES, f'Feedback type {f} is not supported.'
-        return feedback_type
-
-    def set_paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
+    @paraphrase_method.setter
+    def paraphrase_method(self, method: Union[str, int, Callable[[List[str],  Dict[str, str]], str]]):
         """
             Args:
                 method: The method to use in selecting the prompt.
-
-                It can be either 'random', 'llm', a callable, or an integer.
+                It can be either 'random',  a callable, or an integer.
                 - 'random': a template would be randomly selected from `prompts`.
                 - integer: it is used as the index to select from the template in
                   `prompts`.
@@ -266,6 +312,7 @@ class VerbalGymWrapper(gym.Wrapper):
     def _verbalize_feedback(self, feedback_dict: Feedback) -> str:
         """ Implement this in the subclass to get the desired feedback string.
         """
+
         feedback = []
         for k, v in feedback_dict.asdict().items():
             if v is not None:

@@ -2,7 +2,7 @@ import gymnasium as gym
 import verbal_gym
 import numpy as np
 import random
-
+from verbal_gym.utils.utils import generate_combinations_dict
 
 def step_env(env_name, seed):
     random.seed(seed)
@@ -29,7 +29,6 @@ def step_env(env_name, seed):
                 truncated=truncated,
                 next_info=next_info)
 
-
 def check_equivalence(nested1, nested2, name=None):
     """ Check whether two nested structures are equivalent."""
     assert type(nested1) == type(nested2)
@@ -48,26 +47,29 @@ def check_equivalence(nested1, nested2, name=None):
             assert nested1 == nested2, (name, nested1, nested2)
 
 def test_env(env_name, seed=0):
-
-    # env_name = 'verbal-box-close-b-n-v2'
-    # env_name = 'verbal-drawer-open-b-n-v2'
-
-    # if 'Gridworld' in env_name or 'verbal-optimization' in env_name or 'verbal-metaworld' in env_name or 'MovieRec' in env_name or 'verbal-poem' in env_name:
-    #     return
-
     print(env_name)
-    env = gym.make(env_name)
-    ouputs1 = step_env(env_name, seed)
-    ouputs2 = step_env(env_name, seed)
-    check_equivalence(ouputs1, ouputs2)
+    instruction_types, feedback_types = verbal_gym.supported_types(env_name)
+    feedback_types = list(feedback_types) + ['n', 'a', 'm']
+    configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
+    for config in configs:
+        print('\t', config)
+        env = verbal_gym.make(env_name, **config)
+        ouputs1 = step_env(env_name, seed)
+        ouputs2 = step_env(env_name, seed)
+        check_equivalence(ouputs1, ouputs2)
+
+def test_benchmark(benchmark_prefix):
+    all_envs = []
+    for env_name in gym.envs.registry:
+        if benchmark_prefix in env_name:
+            all_envs.append(env_name)
+    print(f'Number of {benchmark_prefix} environments: ', len(all_envs))
+    for env_name in all_envs:
+        test_env(env_name)
 
 
-all_envs = []
-for env_name in gym.envs.registry:
-    if 'verbal-' in env_name:
-        all_envs.append(env_name)
-
-print('Number of verbal-gym environments: ', len(all_envs))
-
-for env_name in all_envs:
-    test_env(env_name)
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('benchmark_prefix', type=str, default='verbal-bandits')
+    test_benchmark(**vars(parser.parse_args()))

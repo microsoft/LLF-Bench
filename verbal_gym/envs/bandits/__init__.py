@@ -20,7 +20,7 @@ ENVIRONMENTS = (
 
 def make_env(env_name,
              instruction_type='b',
-             feedback_type='r',
+             feedback_type='a',
              ):
     """ Make the original env and wrap it with the VerbalGymWrapper. """
     env = old_gym.make(env_name)  # env_name is the original env name of gym_bandits
@@ -33,5 +33,5 @@ for env_name in ENVIRONMENTS:
     register(
         id=f"verbal-bandits-{env_name}",
         entry_point='verbal_gym.envs.bandits:make_env',
-        kwargs=dict(env_name=env_name, feedback_type='r', instruction_type='b')
+        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
     )
