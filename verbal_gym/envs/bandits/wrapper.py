@@ -1,4 +1,5 @@
 from typing import SupportsFloat
+import gym as old_gym
 import numpy as np
 from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, RandomActionOrderWrapper, EnvCompatibility
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
@@ -61,7 +62,14 @@ class BanditGymWrapper(VerbalGymWrapper):
 
     @property
     def _bandit_env(self): # This is hardcoded for gym_bandits
-        return self.env.env.env.env.env.env  # this is the raw env
+        env = self.env
+        while True:
+            if hasattr(env, 'env'):
+                env = env.env
+            else:
+                assert isinstance(env, old_gym.Env)
+                break
+        return env # this is the raw env
 
     def seed(self, seed=None):  # This to fix the seeding issue for gym_bandits
         self._bandit_env._seed(seed)
