@@ -22,6 +22,7 @@ class LossLandscapeGymWrapper(VerbalGymWrapper):
     def _reset(self, *, seed=None, options=None):  # TODO types of instructions
         instruction = self._loss_env.docstring
         obs, info = self.env.reset(seed=seed, options=options)
+        info['success'] = False
 
         instruction = self.reformat(instruction, loss_b_instruction)
         return dict(instruction=instruction, observation=obs, feedback=None), info

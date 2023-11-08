@@ -25,7 +25,9 @@ def step_env(env_name, seed, config):
     if isinstance(env.action_space , gym.spaces.Text):
         action = 'test action'
         if 'verbal-optimization' in env_name:
-            action = 'x = [-4.0, 5.0]'
+            action = 'x = [1.0, 2.0]'
+        elif 'verbal-rec-MovieRec' in env_name:
+            action = """[{"title": "John Wick"}]"""
     else:
         env.action_space.seed(seed)
         action = env.action_space.sample()

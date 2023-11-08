@@ -22,6 +22,7 @@ class MovieRecGymWrapper(VerbalGymWrapper):
     def _reset(self, *, seed=None, options=None):
         instruction = self._movie_rec_env.docstring
         obs, info = self.env.reset(seed=seed, options=options)
+        info['success'] = False
         instruction = self.reformat(instruction, movie_instruction, template=movie_instruction_template)
 
         # interestingly, for movie rec
