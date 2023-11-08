@@ -3,7 +3,7 @@ import copy
 import numpy as np
 import random
 import traceback
-
+import string
 import gym as old_gym
 from typing import Any, Optional
 from gymnasium.wrappers.compatibility import LegacyEnv
@@ -31,7 +31,13 @@ def space_compatability(old_space: old_gym.Space) -> gym.Space:
     elif isinstance(old_space, old_gym.spaces.Dict):
         return gym.spaces.Dict({k: space_compatability(v) for k, v in old_space.spaces.items()})
     elif isinstance(old_space, old_gym.spaces.Text):
-        return gym.spaces.Text(max_length=old_space.max_length, min_length=old_space.min_length, charset=old_space._char_set)
+        if hasattr(old_space, 'charset'):
+            charset = old_space.charset
+        elif hasattr(old_space, '_char_set'):
+            charset = old_space._char_set
+        else:
+            raise AttributeError(f"Cannot find charset for space {old_space}")
+        return gym.spaces.Text(max_length=old_space.max_length, min_length=old_space.min_length, charset=charset)
     else:
         raise NotImplementedError(f"Unsupported space type {old_space}")
 

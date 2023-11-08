@@ -46,18 +46,11 @@ configs = generate_combinations_dict(
                      feedback_type=MetaworldWrapper.FEEDBACK_TYPES,
                      instruction_type=MetaworldWrapper.INSTRUCTION_TYPES))
 
-for config in configs:
-    env_name, version = config['env_name'].split('-v')
-    register(
-        id=f"verbal-metaworld-{env_name}-{config['instruction_type']}-{config['feedback_type']}-v{version}",
-        entry_point='verbal_gym.envs.metaworld:make_env',
-        kwargs=config,
-    )
 
 for env_name in ENVIRONMENTS:
     # default version (backward compatibility)
     register(
         id=f"verbal-metaworld-{env_name}",
         entry_point='verbal_gym.envs.metaworld:make_env',
-        kwargs=dict(env_name=env_name, feedback_type='r', instruction_type='b')
+        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
     )

@@ -1,4 +1,4 @@
-from typing import Dict, Union
+from typing import Dict, SupportsFloat, Union
 import numpy as np
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
 from verbal_gym.envs.metaworld.prompts import *
@@ -16,7 +16,7 @@ class MetaworldWrapper(VerbalGymWrapper):
     """ This is wrapper for gym_bandits. """
 
     INSTRUCTION_TYPES = ('b') #('b', 'p', 'c')
-    FEEDBACK_TYPES = ('n', 'r', 'hp', 'hn', 'fp', 'm')
+    FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp')
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
@@ -30,6 +30,10 @@ class MetaworldWrapper(VerbalGymWrapper):
         self.p_control_time_out = 20 # timeout of the position tracking (for convergnece of P controller)
         self.p_control_threshold = 1e-4 # the threshold for declaring goal reaching (for convergnece of P controller)
         self._current_observation = None
+
+    @property
+    def reward_range(self):
+        return (0,10)
 
     @property
     def mw_env(self):
@@ -163,13 +167,15 @@ class MetaworldWrapper(VerbalGymWrapper):
         if 'fp' in feedback_type:  # suggest the expert goal
             feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
         observation = self.textualize_observation(observation)
-        return dict(instruction=None, observation=observation, feedback=feedback), reward, terminated, truncated, info
+        info['success'] = bool(info['success'])
+        return dict(instruction=None, observation=observation, feedback=feedback), float(reward), terminated, truncated, info
 
     def _reset(self, *, seed=None, options=None):
         self._current_observation, info = self.env.reset(seed=seed, options=options)
         observation = self.textualize_observation(self._current_observation)
         task = self.env.env_name.split('-')[0]
         instruction = self.format(mw_instruction, task=task)
+        info['success'] = False
         return dict(instruction=instruction, observation=observation, feedback=None), info
 
 
