@@ -1,7 +1,7 @@
 from verbal_gym.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper, Feedback
 # from verbal_gym.envs.loss_landscape.loss_descent import
-from verbal_gym.envs.loss_landscape.prompts import *
+from verbal_gym.envs.optimization.prompts import *
 
 """
 The original env produces support for both
