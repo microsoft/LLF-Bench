@@ -178,7 +178,7 @@ class Gridworld(gym.Env):
 
     def get_optimal_path_desc(self, partial=False):
 
-        optimal_path = self.current_scene.get_optimal_path()
+        optimal_path = self.current_scene.get_optimal_path(self.current_room)
 
         if len(optimal_path) == 0:
             path_descps = ["Congratulations! You are already in the room with treasure."]
