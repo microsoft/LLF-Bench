@@ -27,7 +27,7 @@ def step_env(env_name, seed, config):
         if 'verbal-optimization' in env_name:
             action = 'x = [1.0, 2.0]'
         elif 'verbal-rec-MovieRec' in env_name:
-            action = """[{"title": "John Wick", "year": "2014", "platform": "Netflix", "genre": "action"}]"""
+            action = """[{"title": "John Wick"}]"""
     else:
         env.action_space.seed(seed)
         action = env.action_space.sample()

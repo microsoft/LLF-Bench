@@ -763,8 +763,10 @@ class MovieRec(gym.Env):
             try:
                 a = eval(a)
             except:
-                raise Exception(
-                    "Must pass in an extractor through initialize_text_extractor before using the extractor.")
+                didactic_feedback = Feedback()
+                didactic_feedback.r = f'You entered an action with invalid format: {a}'
+                didactic_feedback.fp = didactic_feedback.r + """ Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]"""
+                return None, 0, True, {'success': False, 'feedback': didactic_feedback}
 
         if type(a) == list:
             rec_movies = a
