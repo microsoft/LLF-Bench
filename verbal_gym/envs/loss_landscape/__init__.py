@@ -32,11 +32,3 @@ for config in configs:
         entry_point='verbal_gym.envs.loss_landscape:make_env',
         kwargs=config,
     )
-
-for env_name in ENVIRONMENTS:
-    # default version (backwards compatibility)
-    register(
-        id=f"verbal-optimization-{env_name}-v0",
-        entry_point='verbal_gym.envs.loss_landscape:make_env',
-        kwargs=dict(env_name=env_name, feedback_type='r', instruction_type='b')
-    )

@@ -129,10 +129,20 @@ class LossLandscapeBase(gym.Env):
 
         x, stop = self.text_extract(action)
         if x is None and stop is False:
-            raise ValueError(f'Invalid action: {action}')
+            didactic_feedback.r = f'You entered an invalid action: {action}'
+            didactic_feedback.fp = didactic_feedback.r + f" Please enter a valid action within ({self.x_low, self.x_high})"
+            didactic_feedback.fn = didactic_feedback.r + f" Do not enter a valid action outside of ({self.x_low, self.x_high})"
+            return None, -1000, True, {'success': False, 'feedback': didactic_feedback}
 
         if stop:
-            return None, self.callable_func(self.prev_x), True, {}
+            success = np.abs(self.callable_func(self.prev_x) - self.min_y) < 1e-2
+            didactic_feedback['r'] = f'You have chosen to stop at {self.prev_x}.'
+            if success:
+                didactic_feedback['r'] += ' You have reached the minimum!'
+            else:
+                didactic_feedback['r'] += ' You have not reached the minimum!'
+            return None, float(self.callable_func(self.prev_x)), True, {'success': success,
+                                                                'feedback': didactic_feedback}
 
         loss = self.callable_func(x)
 
@@ -140,7 +150,7 @@ class LossLandscapeBase(gym.Env):
             # r_pos
             didactic_feedback['r'] = 'You have reached the minimum!'
             return "Function outputs y: {}\nYou have reached the minimum!".format(self.min_y), -self.min_y, True, {
-                'feedback': 'You have reached the minimum!', 'didactic_feedback_dict': didactic_feedback,
+                'original_feedback': 'You have reached the minimum!', 'feedback': didactic_feedback,
                 "success": True}
 
         # r_neg
@@ -213,7 +223,7 @@ class LossLandscapeBase(gym.Env):
 
         self.prev_x = x
         self.left_attempts -= 1
-        return obs, -loss, False, {'feedback': didactic_feedback, 'original_feedback': feedback, "success": False}
+        return obs, float(-loss), False, {'feedback': didactic_feedback, 'original_feedback': feedback, "success": False}
 
 
 # now we wrap all loss functions by inheriting this class

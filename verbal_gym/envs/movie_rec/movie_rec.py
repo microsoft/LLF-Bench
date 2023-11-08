@@ -1,6 +1,7 @@
 import gym
 import sys
 import json
+import string
 
 import random
 from collections import Counter
@@ -776,7 +777,8 @@ class MovieRec(gym.Env):
                                                              "original_feedback": "You didn't recommend anything to me.",
                                                              'feedback': {"no_rec": Feedback(
                                                                  r="You didn't recommend anything to me.")},
-                                                             "item_errors": {}}
+                                                             "item_errors": {},
+                                                             'success': False}
 
         # 0-th order: just say whichever ones didn't satisfy the profile
         # 0.5-th order: explain why it didn't satisfy the criteria
@@ -788,7 +790,8 @@ class MovieRec(gym.Env):
             initial_feedback = "Thank you! I like all of these recommendations."
             return self.generate_request_query(), reward, False, {"raw_action": a, "original_feedback": initial_feedback,
                                                                   'feedback': didactic_feedbacks,
-                                                                  "item_errors": title_to_num_rules_violation}
+                                                                  "item_errors": title_to_num_rules_violation,
+                                                                  'success': True}
 
         initial_feedback = "These recommendations are not what I wanted. Can you give me some new recommendations?\n"
 
@@ -796,13 +799,15 @@ class MovieRec(gym.Env):
             return self.generate_request_query(), reward, False, {"raw_action": a,
                                                                   "original_feedback": initial_feedback,
                                                                   'feedback': didactic_feedbacks,
-                                                                  "item_errors": title_to_num_rules_violation}
+                                                                  "item_errors": title_to_num_rules_violation,
+                                                                  'success': False}
         else:
             initial_feedback += "\n".join(feedbacks)
             return self.generate_request_query(), reward, False, {"raw_action": a,
                                                                   "original_feedback": initial_feedback,
                                                                   'feedback': didactic_feedbacks,
-                                                                  "item_errors": title_to_num_rules_violation}
+                                                                  "item_errors": title_to_num_rules_violation,
+                                                                  'success': False}
 
 
 def test_generate_query():
