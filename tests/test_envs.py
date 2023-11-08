@@ -2,6 +2,7 @@ import gymnasium as gym
 import verbal_gym
 import numpy as np
 import random
+from tqdm import tqdm
 from verbal_gym.utils.utils import generate_combinations_dict
 from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
 
@@ -98,7 +99,7 @@ def test_benchmark(benchmark_prefix):
         if benchmark_prefix in env_name:
             all_envs.append(env_name)
     print(f'Number of {benchmark_prefix} environments: ', len(all_envs))
-    for env_name in all_envs:
+    for env_name in tqdm(all_envs):
         test_env(env_name)
 
 
