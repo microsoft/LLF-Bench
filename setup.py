@@ -11,7 +11,7 @@ setup(
     description='A gym environment for learning with verbal feedback.',
     long_description=open('README.md').read(),
     install_requires=[
-        # "gym==0.25.2",
+        "gym>=0.25.2,<0.26.0",
         "gymnasium==0.29.1",
         "parse==1.19.1",
         # "Cython==0.29.36",
