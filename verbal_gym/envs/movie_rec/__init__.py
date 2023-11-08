@@ -23,7 +23,7 @@ configs = generate_combinations_dict(
 
 for config in configs:
     register(
-        id=f"verbal-rec-{config['env_name']}-{config['instruction_type']}-{config['feedback_type']}-v0",
+        id=f"verbal-rec-{config['env_name']}-v0",
         entry_point='verbal_gym.envs.movie_rec:make_env',
         kwargs=config,
     )
