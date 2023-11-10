@@ -20,16 +20,16 @@ class GridworldWrapper(VerbalGymWrapper):
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
-        self.gridworld_env.instruction_type = instruction_type
-        self.gridworld_env.feedback_type = feedback_type
+        self.env.instruction_type = instruction_type
+        self.env.feedback_type = feedback_type
 
     def _reset(self, *, seed: int = None, options: Dict[str, Any] = None)\
             -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Implement this in the subclass. """
 
         # Reset the instruction and feedback type of the base environment based on the settings in the wrapper
-        self.gridworld_env.instruction_type = self.instruction_type
-        self.gridworld_env.feedback_type = self._feedback_type
+        self.env.instruction_type = self.instruction_type
+        self.env.feedback_type = self._feedback_type
         return self.env.reset(seed=seed, options=options)
 
     def _step(self, action: Any) -> Tuple[Dict[str, Any], float, bool, bool,  Dict[str, Any]]:
@@ -38,10 +38,6 @@ class GridworldWrapper(VerbalGymWrapper):
         """
 
         # Reset the instruction and feedback type of the base environment based on the settings in the wrapper
-        self.gridworld_env.instruction_type = self.instruction_type
-        self.gridworld_env.feedback_type = self._feedback_type
+        self.env.instruction_type = self.instruction_type
+        self.env.feedback_type = self._feedback_type
         return self.env.step(action)
-
-    @property
-    def gridworld_env(self):
-        return self.env.env
