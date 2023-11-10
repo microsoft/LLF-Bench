@@ -236,7 +236,7 @@ class Gridworld(gym.Env):
         terminated = False
         truncated = self.current_timestep == self.horizon
 
-        feedback = self.generate_feedback(old_gold_action, new_room)
+        feedback = self.generate_feedback(reward, old_gold_action, new_room)
 
         info = {
             "feedback": feedback,
@@ -249,7 +249,7 @@ class Gridworld(gym.Env):
 
         return next_packed_obs, reward, terminated, truncated, info
 
-    def generate_feedback(self, old_gold_action, new_room, feedback_type=None):
+    def generate_feedback(self, reward, old_gold_action, new_room, feedback_type=None):
 
         if feedback_type is None:
             feedback_type = self.feedback_type
