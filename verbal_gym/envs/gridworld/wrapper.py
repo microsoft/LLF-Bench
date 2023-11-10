@@ -20,7 +20,6 @@ class GridworldWrapper(VerbalGymWrapper):
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
-        self.env = EnvCompatibility(self.env)
         self.gridworld_env.instruction_type = instruction_type
         self.gridworld_env.feedback_type = feedback_type
 

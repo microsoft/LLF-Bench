@@ -1,8 +1,8 @@
 import pdb
-import gym
 import sys
 import random
 import string
+import gymnasium as gym
 
 from collections import deque
 from verbal_gym.envs.gridworld.room import Room
@@ -141,7 +141,10 @@ class Gridworld(gym.Env):
         obs = room.describe_room() + self.current_scene.get_room_doors_description(room)
         return obs
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
+
+        if seed is not None:
+            self.seed(seed)
 
         # Counters that may have to be reset
         self.current_timestep = 0.0
@@ -156,7 +159,7 @@ class Gridworld(gym.Env):
 
         return dict(instruction=self.docstring,
                     observation=obs,
-                    feedback=None)
+                    feedback=None), {"success": False}
 
     def generate_docstring(self):
 
@@ -230,19 +233,21 @@ class Gridworld(gym.Env):
 
         # Update the counter and compute done
         self.current_timestep += 1
-        done = self.current_timestep == self.horizon
+        terminated = False
+        truncated = self.current_timestep == self.horizon
 
         feedback = self.generate_feedback(old_gold_action, new_room)
 
         info = {
-            "feedback": feedback
+            "feedback": feedback,
+            "success": self.current_room == self.current_scene.goal_room
         }
 
         next_packed_obs = dict(instruction=self.docstring,
                                observation=next_obs,
                                feedback=feedback)
 
-        return next_packed_obs, reward, done, info
+        return next_packed_obs, reward, terminated, truncated, info
 
     def generate_feedback(self, old_gold_action, new_room, feedback_type=None):
 
