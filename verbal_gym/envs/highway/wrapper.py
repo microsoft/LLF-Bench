@@ -29,7 +29,8 @@ class HighwayWrapper(VerbalGymWrapper):
         return dict(instruction=instruction, observation=observation, feedback=None), info
 
     def _step(self, action):
-        observation, reward, terminated, truncated, info = self.env.step(action)
+        processed_action = self.extract_action(action)
+        observation, reward, terminated, truncated, info = self.env.step(processed_action)
         reward = float(reward)
         feedback = Feedback()
         feedback_type = self._feedback_type
@@ -54,3 +55,11 @@ class HighwayWrapper(VerbalGymWrapper):
         text_observation += '\nAchieved goal:' + np.array2string(observation['achieved_goal'], precision=3)
         text_observation += '\nObservation:' + np.array2string(observation['observation'], precision=3)
         return text_observation
+    
+    def extract_action(self, action):
+        processed_action = action.strip()
+        assert processed_action[0] == '[' and processed_action[-1] == ']'
+        processed_action = processed_action[1:-1]
+        processed_action = processed_action.split(',')
+        processed_action = [float(item) for item in processed_action]
+        return processed_action
