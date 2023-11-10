@@ -16,14 +16,8 @@ def make_env(env_name,
     env = MovieCls(**kwargs)  # `feedback` doesn't matter here, as we will override it.
     return MovieRecGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 
-configs = generate_combinations_dict(
-                dict(env_name=environments,
-                     feedback_type=MovieRecGymWrapper.FEEDBACK_TYPES,
-                     instruction_type=MovieRecGymWrapper.INSTRUCTION_TYPES))
-
-for config in configs:
-    register(
-        id=f"verbal-rec-{config['env_name']}-{config['instruction_type']}-{config['feedback_type']}-v0",
-        entry_point='verbal_gym.envs.movie_rec:make_env',
-        kwargs=config,
-    )
+register(
+    id=f"verbal-rec-{environments[0]}-v0",
+    entry_point='verbal_gym.envs.movie_rec:make_env',
+    kwargs=dict(env_name=environments[0], feedback_type='a', instruction_type='b')
+)
