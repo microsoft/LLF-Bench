@@ -243,7 +243,7 @@ class Gridworld(gym.Env):
             "success": self.current_room == self.current_scene.goal_room
         }
 
-        next_packed_obs = dict(instruction=self.docstring,
+        next_packed_obs = dict(instruction=None,
                                observation=next_obs,
                                feedback=feedback)
 

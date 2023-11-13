@@ -176,7 +176,7 @@ class Alfworld:
 
         self.last_infos = infos
 
-        next_packed_obs = dict(instruction=self.docstring,
+        next_packed_obs = dict(instruction=None,
                                observation=obs_command,
                                feedback=feedback)
 

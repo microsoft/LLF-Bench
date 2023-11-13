@@ -1,6 +1,6 @@
 from gymnasium.envs.registration import register
 
-from verbal_gym.envs.alfworld.core import Alfworld
+from verbal_gym.envs.alfworld.alfworld import Alfworld
 from verbal_gym.envs.alfworld.wrapper import AlfworldWrapper
 from verbal_gym.utils import generate_combinations_dict
 
