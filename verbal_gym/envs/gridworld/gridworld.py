@@ -15,14 +15,12 @@ class Gridworld(gym.Env):
     INSTRUCTION_TYPES = ('b', 'p', 'c')
 
     # Feedback type:
-    # n: none
-    # m: mixed
     # r: reward
     # hn: hindsight negative
     # hp: hindsight positive
     # fn: future negative
     # fp: future positive
-    FEEDBACK_TYPES = ('n', 'm', 'r', 'hn', 'hp', 'fn', 'fp')
+    FEEDBACK_TYPES = ('r', 'hn', 'hp', 'fn', 'fp')
 
     # feedback_level="gold"
     def __init__(self, num_rooms=20, horizon=20, fixed=True, instruction_type="c", feedback_type="hp", min_goal_dist=4):
@@ -32,6 +30,7 @@ class Gridworld(gym.Env):
         self.num_actions = 4
         self.action_space = gym.spaces.Discrete(self.num_actions)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.reward_range = (0, 1.0)
 
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
@@ -45,11 +44,12 @@ class Gridworld(gym.Env):
 
         # Docstring
         self.base_docstring = "You are in a house with multiple rooms. Each room can have objects that will " \
-                              "be visible to you if you are in that room. Each room can have a door along the " \
+                              "be visible to you only if you are in that room. Each room can have a door along the " \
                               "North, South, East and West direction. You can follow a direction to go from one room " \
                               "to another. If there is no door along that direction, then you will remain in the " \
                               "room. You will start in a room. Your goal is to navigate to another room which has " \
-                              "the treasure. You have an action space of size 4. Action 0 leads to going North. " \
+                              "the treasure. There is only one such room which contains treasure. " \
+                              "You have an action space of size 4. Action 0 leads to going North. " \
                               "Action 1 leads to going East. Action 2 leads going west. Action 3 leads to going South."
 
         # Counters that may have to be reset
