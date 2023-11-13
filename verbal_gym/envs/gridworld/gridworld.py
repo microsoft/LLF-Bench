@@ -1,4 +1,3 @@
-import pdb
 import sys
 import random
 import string
@@ -236,7 +235,9 @@ class Gridworld(gym.Env):
         terminated = False
         truncated = self.current_timestep == self.horizon
 
-        feedback = self.generate_feedback(reward, old_gold_action, new_room)
+        feedback = self.generate_feedback(action=action,
+                                          reward=reward,
+                                          old_gold_action=old_gold_action)
 
         info = {
             "feedback": feedback,
@@ -249,27 +250,21 @@ class Gridworld(gym.Env):
 
         return next_packed_obs, reward, terminated, truncated, info
 
-    def generate_feedback(self, reward, old_gold_action, new_room, feedback_type=None):
+    def generate_feedback(self, action, reward, old_gold_action, feedback_type=None):
+
+        gold_action = self.current_scene.get_gold_action(self.current_room)
+
+        if reward != 1.0 and not self.goal_prev_visited:
+            assert old_gold_action is not None, "can only be none if you reach the goal"
+            assert gold_action is not None, "can only be none if you reach the goal"
 
         if feedback_type is None:
             feedback_type = self.feedback_type
+
         feedback = Feedback()
 
         if "r" in feedback_type:      # Reward described in text
             feedback.r = f"You got a reward of {reward}."
-            # if reward == 1.0:
-            #     feedback = f"You got a reward of 1.0"
-            # elif self.goal_prev_visited:
-            #     feedback = f"You have already reached the treasure. Good job."
-            # else:
-            #     feedback = f"You didn't succeed. Trying visiting more rooms."
-
-        # elif feedback_type == "m":      # Mixed feedback type
-
-        #     sampled_feedback_type = random.choice(["n", "r", "hp", "hn", "fn", "fp"])
-        #     feedback = self.generate_feedback(old_gold_action=old_gold_action,
-        #                                       new_room=new_room,
-        #                                       feedback_type=sampled_feedback_type)
 
         if "hn" in feedback_type:     # Hindsight negative
 
@@ -281,21 +276,15 @@ class Gridworld(gym.Env):
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
-                # Provide feedback as follows:
-                #       Case 1: If the agent takes an action that resulted in no transition
-                #       Case 2: If the agent takes the wrong transition
-                #       Case 3: If the agent takes the right transition
-
-                if old_gold_action is None:
-                    pdb.set_trace()
-                assert old_gold_action is not None, "can only be none if you reach the goal"
+                # Sample a bad action at previous time step, and provide feedback as follows:
+                #       Case 1: If the agent avoided taking the bad action, then say good job
+                #       Case 2: If the agent takes the bad action, then tell it to avoid
 
                 all_wrong_directions = list(Scene.DIRECTIONS)
                 all_wrong_directions.remove(old_gold_action)
                 avoid_action = random.choice(all_wrong_directions)
 
                 if avoid_action != Scene.DIRECTIONS[action]:
-                    # Case 1: If the agent takes an action that resulted in no transition
                     feedback.hn = f"You did correct thing by not following the {avoid_action} direction in the old room."
                 else:
                     feedback.hn = f"You made a mistake by following the {avoid_action} direction in the old room."
@@ -310,13 +299,9 @@ class Gridworld(gym.Env):
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
-                # Provide feedback as follows:
-                #       Case 1: If the agent takes an action that resulted in no transition
-                #       Case 2: If the agent takes the wrong transition
-
-                if old_gold_action is None:
-                    pdb.set_trace()
-                assert old_gold_action is not None, "can only be none if you reach the goal"
+                # Compute the gold action at previous time step, and provide feedback as follows:
+                #       Case 1: If the agent took the good action, then say good job
+                #       Case 2: If the agent didnt take the good action, then inform it to take the good action
 
                 if old_gold_action != Scene.DIRECTIONS[action]:
                     # Case 1: If the agent takes an action that resulted in no transition
@@ -333,7 +318,8 @@ class Gridworld(gym.Env):
                 feedback.fn = f"You have already reached the treasure. Good job."
 
             else:
-                # Describe a samopled action the agent should not take
+                # This implies we have not reached the goal neither before or nor in this stage
+                # Sample a bad action at this time step, and tell the agent not to take it
 
                 gold_action = self.current_scene.get_gold_action(self.current_room)
                 all_directions = list(Scene.DIRECTIONS)
@@ -341,14 +327,8 @@ class Gridworld(gym.Env):
 
                 avoid_action = random.choice(all_directions)
 
-                if gold_action is None or old_gold_action is None:
-                    pdb.set_trace()
-
-                assert old_gold_action is not None, "can only be none if you reach the goal"
-                assert gold_action is not None, "can only be none if you reach the goal"
-
                 feedback.fn = f"You should avoid taking the action {avoid_action} in this new room " \
-                           f"{self.current_room.get_name()}."
+                              f"{self.current_room.get_name()}."
 
         if "fp" in feedback_type:      # Future positive
 
@@ -359,31 +339,12 @@ class Gridworld(gym.Env):
                 feedback.fp = f"You have already reached the treasure. Good job."
 
             else:
-                # Describe the action the agent should take
+                # This implies we have not reached the goal neither before or nor in this stage
+                # Compute the gold action at this time step, and tell the agent not to take it
+
                 gold_action = self.current_scene.get_gold_action(self.current_room)
 
-                if gold_action is None or old_gold_action is None:
-                    pdb.set_trace()
-
-                assert old_gold_action is not None, "can only be none if you reach the goal"
-                assert gold_action is not None, "can only be none if you reach the goal"
-
                 feedback.fp = f"You should go towards the {gold_action} direction from this " \
-                           f"new room {self.current_room.get_name()}."
+                              f"new room {self.current_room.get_name()}."
 
         return feedback
-
-
-if __name__ == "__main__":
-    env = Gridworld(num_rooms=10)
-    obs = env.reset()
-    print(obs)
-    # pdb.set_trace()
-
-    while True:
-        action = input("Action is ")
-        action = int(action)
-        new_obs, reward, done, info = env.step(action)
-        print(f"New observation {new_obs}\n, Took action {action}\n, got reward {reward}\n, done {done}\n "
-              f"You got feedback is: \n {info['feedback']}.")
-        pdb.set_trace()
