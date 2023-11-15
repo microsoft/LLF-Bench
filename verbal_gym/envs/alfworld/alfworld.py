@@ -11,14 +11,12 @@ class Alfworld:
     INSTRUCTION_TYPES = ('b', 'p', 'c')
 
     # Feedback type:
-    # n: none
-    # m: mixed
     # r: reward
     # hn: hindsight negative
     # hp: hindsight positive
     # fn: future negative
     # fp: future positive
-    FEEDBACK_TYPES = ('n', 'm', 'r', 'hn', 'hp', 'fn', 'fp')
+    FEEDBACK_TYPES = ('r', 'hn', 'hp', 'fn', 'fp')
 
     def __init__(self, instruction_type, feedback_type):
 
@@ -176,7 +174,7 @@ class Alfworld:
 
         self.last_infos = infos
 
-        next_packed_obs = dict(instruction=self.docstring,
+        next_packed_obs = dict(instruction=None,
                                observation=obs_command,
                                feedback=feedback)
 

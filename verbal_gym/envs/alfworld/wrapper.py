@@ -16,7 +16,7 @@ class AlfworldWrapper(VerbalGymWrapper):
     # hp: hindsight positive
     # fn: future negative
     # fp: future positive
-    FEEDBACK_TYPES = ('n', 'm', 'r', 'hn', 'hp', 'fn', 'fp')
+    FEEDBACK_TYPES = ('r', 'hn', 'hp', 'fn', 'fp')
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
