@@ -25,6 +25,8 @@ setup(
         "jaxlib",
         # highway
         "highway-env",
+        # movie
+        'requests==2.31.0'
     ],
     extras_require={
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
