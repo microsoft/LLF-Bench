@@ -13,7 +13,10 @@ env = gym.make('verbal-metaworld-hand-insert',
              episode_length=horizon)
 
 # This tests the wrapper.
-obs = env.reset()
+obs, _ = env.reset()
+for k, v in obs.items():
+        print(k, v)
+        print()
 for i in range(horizon):
     action = env.expert_action
     obs, reward, done, timeout, info = env.step(action)
