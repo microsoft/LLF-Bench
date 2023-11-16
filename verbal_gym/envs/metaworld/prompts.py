@@ -125,24 +125,24 @@ hp_feedback = (
 
 hn_feedback = (
     "You moved in the wrong direction. You're now further away from the goal than before.",
-    "You've gone in the incorrect direction. You're currently more distant from the target than previously."
-    "You've shifted in the inappropriate path. You're now farther from the objective than earlier."
-    "You've proceeded in the wrong way. You're presently further from the aim than before."
-    "You've traveled in the incorrect route. You're now more remote from the goal than previously."
-    "You've wandered in the wrong direction. You're currently farther from the endpoint than earlier."
-    "You've strayed in the inappropriate direction. You're now more distanced from the target than before."
-    "You've veered in the wrong path. You're presently further from the objective than previously."
-    "You've drifted in the incorrect direction. You're now farther from the aim than earlier."
-    "You've deviated in the wrong way. You're currently more removed from the goal than before."
-     "You've turned in the inappropriate direction. You're now further from the target than previously."
-     "You've headed in the wrong path. You're presently farther from the objective than earlier."
-     "You've steered in the incorrect direction. You're now more separated from the aim than before."
-     "You've navigated in the wrong way. You're currently further from the goal than previously."
-     "You've journeyed in the inappropriate direction. You're now farther from the target than earlier."
-     "You've treaded in the wrong path. You're presently more distant from the objective than before."
-     "You've meandered in the incorrect direction. You're now further from the aim than previously."
-     "You've roamed in the wrong way. You're currently farther from the goal than earlier."
-     "You've ambled in the inappropriate direction. You're now more far-off from the target than before."
-     "You've sauntered in the wrong path. You're presently further from the objective than previously."
-     "You've perambulated in the incorrect direction. You're now farther from the aim than earlier."
+    "You've gone in the incorrect direction. You're currently more distant from the target than previously.",
+    "You've shifted in the inappropriate path. You're now farther from the objective than earlier.",
+    "You've proceeded in the wrong way. You're presently further from the aim than before.",
+    "You've traveled in the incorrect route. You're now more remote from the goal than previously.",
+    "You've wandered in the wrong direction. You're currently farther from the endpoint than earlier.",
+    "You've strayed in the inappropriate direction. You're now more distanced from the target than before.",
+    "You've veered in the wrong path. You're presently further from the objective than previously.",
+    "You've drifted in the incorrect direction. You're now farther from the aim than earlier.",
+    "You've deviated in the wrong way. You're currently more removed from the goal than before.",
+     "You've turned in the inappropriate direction. You're now further from the target than previously.",
+     "You've headed in the wrong path. You're presently farther from the objective than earlier.",
+     "You've steered in the incorrect direction. You're now more separated from the aim than before.",
+     "You've navigated in the wrong way. You're currently further from the goal than previously.",
+     "You've journeyed in the inappropriate direction. You're now farther from the target than earlier.",
+     "You've treaded in the wrong path. You're presently more distant from the objective than before.",
+     "You've meandered in the incorrect direction. You're now further from the aim than previously.",
+     "You've roamed in the wrong way. You're currently farther from the goal than earlier.",
+     "You've ambled in the inappropriate direction. You're now more far-off from the target than before.",
+     "You've sauntered in the wrong path. You're presently further from the objective than previously.",
+     "You've perambulated in the incorrect direction. You're now farther from the aim than earlier.",
 )
