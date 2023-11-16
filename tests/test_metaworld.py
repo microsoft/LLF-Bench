@@ -6,13 +6,15 @@ import numpy as np
 
 print(metaworld.MT1.ENV_NAMES)
 
-
-env = gym.make('verbal-metaworld-hand-insert-b-hn-v2')
-# env = gym.make('verbal-metaworld-reach-b-hn-v2')
+horizon = 1000
+env = gym.make('verbal-metaworld-hand-insert',
+             instruction_type='b',
+             feedback_type='hn',
+             episode_length=horizon)
 
 # This tests the wrapper.
 obs = env.reset()
-for i in range(1000):
+for i in range(horizon):
     action = env.expert_action
     obs, reward, done, timeout, info = env.step(action)
     for k, v in obs.items():
@@ -29,7 +31,7 @@ for i in range(1000):
 mw_env = env.mw_env
 mw_policy = env.mw_policy
 obs, _  = mw_env.reset()
-for i in range(1000):
+for i in range(horizon):
     action = mw_policy.get_action(obs)
     obs, reward, done, timeout, info = mw_env.step(action)
     print('success', info['success'])
