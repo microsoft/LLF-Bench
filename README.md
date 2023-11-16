@@ -55,6 +55,16 @@ Some valid options:
 
 For example, to use metaworld, install the repo by `pip install -e.[metaworld]`.
 
+Note that the `alfworld` option requires building/compiling from source files. Please ensure that your development environment has the appropriate utilities for C/C++ development (cmake, C compiler, etc.). On Linux or WSL, this can be accomplished by
+
+    sudo apt-get update
+    sudo apt-get install cmake build-essential
+
+
+For `metaworld` option, it requires libGL, which can be installed by
+
+    sudo apt-get install ffmpeg libsm6 libxext6
+
 ## Examples
 
 TODO
