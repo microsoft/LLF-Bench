@@ -41,12 +41,6 @@ def make_env(env_name,
     return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=episode_length)
 
 
-configs = generate_combinations_dict(
-                dict(env_name=ENVIRONMENTS,
-                     feedback_type=MetaworldWrapper.FEEDBACK_TYPES,
-                     instruction_type=MetaworldWrapper.INSTRUCTION_TYPES))
-
-
 for env_name in ENVIRONMENTS:
     # default version (backward compatibility)
     register(
