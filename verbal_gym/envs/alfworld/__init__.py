@@ -1,9 +1,19 @@
+import os
 from gymnasium.envs.registration import register
 
 from verbal_gym.envs.alfworld.alfworld import Alfworld
 from verbal_gym.envs.alfworld.wrapper import AlfworldWrapper
+from verbal_gym.envs.alfworld.alfworld_download import main
 
 # TODO download PPDL and other data necessary to run Alfworld
+os.environ["ALFWORLD_DATA"] = "alfworld_data"
+
+if not os.path.exists(os.environ["ALFWORLD_DATA"]):
+    print(f"Downloading Alfworld data to {os.environ['ALFWORLD_DATA']}.")
+    main()
+else:
+    print(f"Alfworld data already exists in {os.environ['ALFWORLD_DATA']}. "
+          f"If this is old or stale, then delete it and run the code again.")
 
 ENVIRONMENTS = (
     'Alfworld-v0',
