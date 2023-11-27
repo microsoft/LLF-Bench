@@ -4,6 +4,8 @@ import string
 import gymnasium as gym
 
 from collections import deque
+
+from verbal_gym.envs.gridworld import prompts
 from verbal_gym.envs.gridworld.room import Room
 from verbal_gym.envs.gridworld.scene import Scene
 from verbal_gym.envs.verbal_gym_env import Feedback
@@ -32,6 +34,7 @@ class Gridworld(gym.Env):
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.reward_range = (0, 1.0)
 
+        self.format = None
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
 
@@ -213,6 +216,7 @@ class Gridworld(gym.Env):
             raise AssertionError("Horizon exhausted.")
 
         old_gold_action = self.current_scene.get_gold_action(self.current_room)
+        old_room = self.current_room.get_name()
 
         if 0 <= action < 4:
             new_room = self.current_scene.check_room_door(self.current_room, Scene.DIRECTIONS[action])
@@ -237,7 +241,8 @@ class Gridworld(gym.Env):
 
         feedback = self.generate_feedback(action=action,
                                           reward=reward,
-                                          old_gold_action=old_gold_action)
+                                          old_gold_action=old_gold_action,
+                                          old_room=old_room)
 
         info = {
             "feedback": feedback,
@@ -250,7 +255,7 @@ class Gridworld(gym.Env):
 
         return next_packed_obs, reward, terminated, truncated, info
 
-    def generate_feedback(self, action, reward, old_gold_action, feedback_type=None):
+    def generate_feedback(self, action, reward, old_gold_action, old_room, feedback_type=None):
 
         gold_action = self.current_scene.get_gold_action(self.current_room)
 
@@ -264,15 +269,15 @@ class Gridworld(gym.Env):
         feedback = Feedback()
 
         if "r" in feedback_type:      # Reward described in text
-            feedback.r = f"You got a reward of {reward}."
+            feedback.r = self.format(prompts.reward_descp, reward=reward)
 
         if "hn" in feedback_type:     # Hindsight negative
 
             if reward == 1.0:
-                feedback.hn = f"You succeeded! Congratulations."
+                feedback.hn = self.format(prompts.success_descp)
 
             elif self.goal_prev_visited:
-                feedback.hn = f"You have already reached the treasure. Good job."
+                feedback.hn = self.format(prompts.treasure_reached_descp)
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
@@ -285,17 +290,17 @@ class Gridworld(gym.Env):
                 avoid_action = random.choice(all_wrong_directions)
 
                 if avoid_action != Scene.DIRECTIONS[action]:
-                    feedback.hn = f"You did correct thing by not following the {avoid_action} direction in the old room."
+                    feedback.hn = self.format(prompts.hn_success_descp, avoid_action=avoid_action)
                 else:
-                    feedback.hn = f"You made a mistake by following the {avoid_action} direction in the old room."
+                    feedback.hn = self.format(prompts.hn_fail_descp, avoid_action=avoid_action)
 
         if "hp" in feedback_type:     # Hindsight positive
 
             if reward == 1.0:
-                feedback.hp = f"You succeeded! Congratulations."
+                feedback.hp = self.format(prompts.success_descp)
 
             elif self.goal_prev_visited:
-                feedback.hp = f"You have already reached the treasure. Good job."
+                feedback.hp = self.format(prompts.treasure_reached_descp)
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
@@ -305,17 +310,17 @@ class Gridworld(gym.Env):
 
                 if old_gold_action != Scene.DIRECTIONS[action]:
                     # Case 1: If the agent takes an action that resulted in no transition
-                    feedback.hp = f"You should have taken the {old_gold_action} direction in the old room."
+                    feedback.hp = self.format(prompts.hp_fail_descp, old_gold_action=old_gold_action, room=old_room)
                 else:
-                    feedback.hp = f"Good job. You followed the right direction {old_gold_action} in the old room."
+                    feedback.hp = self.format(prompts.hp_succ_descp, old_gold_action=old_gold_action, room=old_room)
 
         if "fn" in feedback_type:      # Future negative
 
             if reward == 1.0:
-                feedback.fn = f"You succeeded! Congratulations."
+                feedback.fn = self.format(prompts.success_descp)
 
             elif self.goal_prev_visited:
-                feedback.fn = f"You have already reached the treasure. Good job."
+                feedback.fn = self.format(prompts.treasure_reached_descp)
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
@@ -327,16 +332,15 @@ class Gridworld(gym.Env):
 
                 avoid_action = random.choice(all_directions)
 
-                feedback.fn = f"You should avoid taking the action {avoid_action} in this new room " \
-                              f"{self.current_room.get_name()}."
+                feedback.fn = self.format(prompts.fn, avoid_action=avoid_action, new_room=self.current_room.get_name())
 
         if "fp" in feedback_type:      # Future positive
 
             if reward == 1.0:
-                feedback.fp = f"You succeeded! Congratulations."
+                feedback.fp = self.format(prompts.success_descp)
 
             elif self.goal_prev_visited:
-                feedback.fp = f"You have already reached the treasure. Good job."
+                feedback.fp = self.format(prompts.treasure_reached_descp)
 
             else:
                 # This implies we have not reached the goal neither before or nor in this stage
@@ -344,7 +348,6 @@ class Gridworld(gym.Env):
 
                 gold_action = self.current_scene.get_gold_action(self.current_room)
 
-                feedback.fp = f"You should go towards the {gold_action} direction from this " \
-                              f"new room {self.current_room.get_name()}."
+                feedback.fp = self.format(prompts.fp, gold_action=gold_action, new_room=self.current_room.get_name())
 
         return feedback
