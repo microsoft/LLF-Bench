@@ -18,8 +18,6 @@ from os.path import join as pjoin
 from tqdm import tqdm
 
 from alfworld.utils import mkdirs
-from alfworld.info import ALFWORLD_DATA
-from alfworld.info import ALFRED_PDDL_PATH, ALFRED_TWL2_PATH
 
 
 JSON_FILES_URL = "https://github.com/alfworld/alfworld/releases/download/0.2.2/json_2.1.1_json.zip"
@@ -122,48 +120,54 @@ def build_argparser():
     return parser
 
 
-def main():
-    parser = build_argparser()
-    args = parser.parse_args()
+def main(data_dir=None, extra=False, force=False, force_download=False):
 
-    zipped_filename = download(JSON_FILES_URL, dst=args.data_dir,
-                               force=args.force_download)
-    unzip(zipped_filename, dst=args.data_dir, force=args.force)
+    from alfworld.info import ALFWORLD_DATA
+    from alfworld.info import ALFRED_PDDL_PATH, ALFRED_TWL2_PATH
+
+    if data_dir is None:
+        data_dir = ALFWORLD_DATA
+    print(f"Data directory where we will download ALFWORLD data is {data_dir}")
+
+    # parser = build_argparser()
+    # args = parser.parse_args()
+
+    zipped_filename = download(JSON_FILES_URL, dst=data_dir,
+                               force=force_download)
+    unzip(zipped_filename, dst=data_dir, force=force)
     os.remove(zipped_filename)
 
-    zipped_filename = download(PDDL_FILES_URL, dst=args.data_dir,
-                               force=args.force_download)
-    unzip(zipped_filename, dst=args.data_dir, force=args.force)
+    zipped_filename = download(PDDL_FILES_URL, dst=data_dir,
+                               force=force_download)
+    unzip(zipped_filename, dst=data_dir, force=force)
     os.remove(zipped_filename)
 
-    zipped_filename = download(TW_PDDL_FILES_URL, dst=args.data_dir,
-                               force=args.force_download)
-    unzip(zipped_filename, dst=args.data_dir, force=args.force)
+    zipped_filename = download(TW_PDDL_FILES_URL, dst=data_dir,
+                               force=force_download)
+    unzip(zipped_filename, dst=data_dir, force=force)
     os.remove(zipped_filename)
 
-    download(MRCNN_URL, dst=pjoin(args.data_dir, "detectors"), force=args.force_download)
+    download(MRCNN_URL, dst=pjoin(data_dir, "detectors"), force=force_download)
 
-    if args.extra:
-        zipped_filename = download(CHECKPOINTS_URL, dst=args.data_dir,
-                                force=args.force_download)
-        unzip(zipped_filename, dst=pjoin(args.data_dir, "agents"), force=args.force)
+    if extra:
+        zipped_filename = download(CHECKPOINTS_URL, dst=data_dir, force=force_download)
+        unzip(zipped_filename, dst=pjoin(data_dir, "agents"), force=force)
         os.remove(zipped_filename)
 
-        zipped_filename = download(SEQ2SEQ_DATA_URL, dst=args.data_dir,
-                                force=args.force_download)
-        unzip(zipped_filename, dst=args.data_dir, force=args.force)
+        zipped_filename = download(SEQ2SEQ_DATA_URL, dst=data_dir, force=force_download)
+        unzip(zipped_filename, dst=data_dir, force=force)
         os.remove(zipped_filename)
 
     # Get a copy of the PDDL and TW logic files.
-    logic_dir = mkdirs(pjoin(args.data_dir, "logic"))
+    logic_dir = mkdirs(pjoin(data_dir, "logic"))
     alfred_pddl_path = pjoin(logic_dir, "alfred.pddl")
-    if not os.path.isfile(alfred_pddl_path) or args.force:
+    if not os.path.isfile(alfred_pddl_path) or force:
         shutil.copy(ALFRED_PDDL_PATH, alfred_pddl_path)
     else:
         print(f"{alfred_pddl_path} already exists (use -f to overwrite).")
 
     alfred_twl2_path = pjoin(logic_dir, "alfred.twl2")
-    if not os.path.isfile(alfred_twl2_path) or args.force:
+    if not os.path.isfile(alfred_twl2_path) or force:
         shutil.copy(ALFRED_TWL2_PATH, alfred_twl2_path)
     else:
         print(f"{alfred_twl2_path} already exists (use -f to overwrite).")
