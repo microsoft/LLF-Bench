@@ -1,6 +1,4 @@
 import random
-import alfworld.agents.environment as environment
-import alfworld.agents.modules.generic as generic
 
 from verbal_gym.envs.verbal_gym_env import Feedback
 
@@ -19,6 +17,9 @@ class Alfworld:
     FEEDBACK_TYPES = ('r', 'hn', 'hp', 'fn', 'fp')
 
     def __init__(self, instruction_type, feedback_type):
+
+        import alfworld.agents.environment as environment
+        import alfworld.agents.modules.generic as generic
 
         # load config
         self.config = generic.load_config()
