@@ -67,7 +67,47 @@ For `metaworld` option, it requires libGL, which can be installed by
 
 ## Examples
 
-TODO
+This sample code creates an environment implemented in LLF-Bench, and creates an agent that interacts with it. The agent simply prints each observation to the console and takes console input as actions to be relayed to the environment.
+
+```
+import llfbench as gym
+
+# Environments in the benchmark are registered following 
+# the naming convention of llf-*
+
+env = gym.make('llf-Gridworld-v0')
+
+done = False
+cumulative_reward = 0.0
+
+# First observation is acquired by resetting the environment
+
+observation = env.reset()
+
+while not done:
+    # Observation is dict having 'observation', 'instruction', 'feedback'
+    # Here we print the observation and ask the user for an action
+    
+    action = input( observation['observation'] + '\n' + 
+                    observation['instruction'] + '\n' + 
+                    observation['feedback'] + '\n' + 
+                    'Action: ' )
+
+    # Gridworld has a text action space, so TextWrapper is not needed 
+    # to parse a valid action from the input string
+    
+    observation, reward, terminated, truncated, info = env.step(action)
+
+    # reward is never revealed to the agent; only used for evaluation
+    
+    cumulative_reward += reward
+
+    # terminated and truncated follow the same semantics as in Gymnasium
+    
+    done = terminated or truncated
+
+print(f'Episode reward: {cumulative_reward}')
+```
 
 
 
