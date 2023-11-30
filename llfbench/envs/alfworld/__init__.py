@@ -8,6 +8,8 @@ from llfbench.envs.alfworld.alfworld_download import download_alfworld_data
 # TODO download PPDL and other data necessary to run Alfworld
 os.environ["ALFWORLD_DATA"] = "alfworld_data"
 
+import pdb
+pdb.set_trace()
 if not os.path.exists(os.environ["ALFWORLD_DATA"]) or len(os.environ["ALFWORLD_DATA"]) == 0:
     print(f"Downloading Alfworld data to {os.environ['ALFWORLD_DATA']}")
     download_alfworld_data()
