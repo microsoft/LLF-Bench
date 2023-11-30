@@ -43,8 +43,8 @@ class Alfworld(gym.Env):
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
 
-        # self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
-        # self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         # TODO find the best way to set the horizon for alfworld. Currently, setting it to a guess value.
         self.horizon = 100
