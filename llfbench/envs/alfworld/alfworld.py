@@ -7,7 +7,7 @@ import gym
 from llfbench.envs.llf_env import Feedback
 
 
-class Alfworld:
+class Alfworld(gym.Env):
 
     # Basic (b), partial (p), and complete (c)
     INSTRUCTION_TYPES = ('b', 'p', 'c')
