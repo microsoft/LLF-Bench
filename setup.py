@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='llfbench',
     version='0.1.0',
-    author='Verbal-feedback Team',
+    author='LLF-Bench Team',
     author_email='chinganc@microsoft.com',
     packages=['llfbench'],
     url='https://github.com/microsoft/LLF-Bench',
