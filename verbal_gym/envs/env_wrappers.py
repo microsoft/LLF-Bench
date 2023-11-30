@@ -63,11 +63,11 @@ class TextWrapper(gym.Wrapper):
     def _parse_action(self, action):
         # parse action from string to internal action space
         # TODO
-        if self.env.action_space == gym.spaces.Discrete:
+        if isinstance(self.env.action_space, gym.spaces.Discrete):
             action = int(action)
-        elif self.env.action_space == gym.spaces.Box:
+        elif isinstance(self.env.action_space, gym.spaces.Box):
             exec("action = np.array({})".format(action))
-        elif self.env.action_space == gym.spaces.Text:
+        elif isinstance(self.env.action_space, gym.spaces.Text):
             pass
         else:
             raise NotImplementedError
