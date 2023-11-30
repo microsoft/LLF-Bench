@@ -6,7 +6,7 @@ from llfbench.envs.alfworld.wrapper import AlfworldWrapper
 from llfbench.envs.alfworld.alfworld_download import main
 
 # TODO download PPDL and other data necessary to run Alfworld
-# os.environ["ALFWORLD_DATA"] = "alfworld_data"
+os.environ["ALFWORLD_DATA"] = "alfworld_data"
 
 if not os.path.exists(os.environ["ALFWORLD_DATA"]):
     print(f"Downloading Alfworld data to {os.environ['ALFWORLD_DATA']}")
