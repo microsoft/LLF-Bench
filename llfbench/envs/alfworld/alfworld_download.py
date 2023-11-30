@@ -120,7 +120,7 @@ def build_argparser():
     return parser
 
 
-def main(data_dir=None, extra=False, force=False, force_download=False):
+def download_alfworld_data(data_dir=None, extra=False, force=False, force_download=False):
 
     from alfworld.info import ALFWORLD_DATA
     from alfworld.info import ALFRED_PDDL_PATH, ALFRED_TWL2_PATH
