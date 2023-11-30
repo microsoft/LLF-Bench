@@ -25,7 +25,7 @@ class Alfworld(gym.Env):
         config_file = "llfbench/envs/alfworld/base_config.yaml"
 
         sys_argv = list(sys.argv)
-        print(f"sys.argv {sys_argv}")
+        print(f"Reading file {config_file}")
         sys_argv.append(config_file)
         sys.argv = sys_argv
 
@@ -57,6 +57,9 @@ class Alfworld(gym.Env):
         self.docstring = None
         self.last_infos = None
 
+    def seed(self, seed):
+        self.env.seed(seed)
+
     def _generate_docstring(self, reset_obs):
 
         # Separate task and use it as docstring
@@ -77,7 +80,11 @@ class Alfworld(gym.Env):
             obs_command += " Congratulations on solving the task!"
         return obs_command
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
+
+        if seed is not None:
+            self.seed(seed)
+
         # Obs is text and info is a dict with the following keys:
         #   'won', 'extra.gamefile', 'expert_type', 'admissible_commands', 'expert_plan'
         obs, infos = self.env.reset()
