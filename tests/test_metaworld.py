@@ -1,4 +1,4 @@
-import verbal_gym
+import llfbench
 import gymnasium as gym
 import metaworld
 

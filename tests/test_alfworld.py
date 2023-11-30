@@ -1,6 +1,6 @@
-import verbal_gym
+import llfbench
 
-env = verbal_gym.make('verbal-Alfworld-v0')
+env = llfbench.make('verbal-Alfworld-v0')
 
 obs = env.reset()
 for _ in range(5):

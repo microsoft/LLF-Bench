@@ -1,5 +1,5 @@
 import gymnasium as gym
-import verbal_gym
+import llfbench
 
 # env = gym.make('verbal-PickBestSummary-v0')
 

@@ -1,5 +1,5 @@
 import gymnasium as gym
-import verbal_gym
+import llfbench
 
 action = a = """[
   {"title": "John Wick", "year": "2014", "platform": "Netflix", "genre": "action"},

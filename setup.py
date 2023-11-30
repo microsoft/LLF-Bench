@@ -1,12 +1,12 @@
 from distutils.core import setup
 
 setup(
-    name='verbal_gym',
+    name='llfbench',
     version='0.1.0',
     author='Verbal-feedback Team',
     author_email='chinganc@microsoft.com',
-    packages=['verbal_gym'],
-    url='https://github.com/microsoft/verbal-gym',
+    packages=['llfbench'],
+    url='https://github.com/microsoft/LLF-Bench',
     license='MIT LICENSE',
     description='A gym environment for learning with verbal feedback.',
     long_description=open('README.md').read(),

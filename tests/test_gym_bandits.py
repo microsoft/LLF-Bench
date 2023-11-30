@@ -1,4 +1,4 @@
-import verbal_gym
+import llfbench
 import gymnasium as gym
 
 env = gym.make('verbal-BanditTenArmedRandomRandom-b-fp-v0')
