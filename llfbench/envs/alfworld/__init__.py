@@ -10,7 +10,7 @@ os.environ["ALFWORLD_DATA"] = "alfworld_data"
 
 import pdb
 pdb.set_trace()
-if not os.path.exists(os.environ["ALFWORLD_DATA"]) or len(os.environ["ALFWORLD_DATA"]) == 0:
+if not os.path.exists(os.environ["ALFWORLD_DATA"]) or len(os.listdir(os.environ["ALFWORLD_DATA"])) == 0:
     print(f"Downloading Alfworld data to {os.environ['ALFWORLD_DATA']}")
     download_alfworld_data()
 else:
