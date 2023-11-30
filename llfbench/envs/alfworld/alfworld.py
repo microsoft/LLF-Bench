@@ -21,6 +21,13 @@ class Alfworld:
 
     def __init__(self, instruction_type, feedback_type):
 
+        config_file = "llfbench/envs/alfworld/base_config.yaml"
+
+        sys_argv = list(sys.argv)
+        print(f"sys.argv {sys_argv}")
+        sys_argv.append(config_file)
+        sys.argv = sys_argv
+
         import alfworld.agents.environment as environment
         import alfworld.agents.modules.generic as generic
 
