@@ -8,7 +8,7 @@ import sys
 import string
 
 from llfbench.utils.parser_utils import SimpleGuidanceParser
-from llfbench.envs.verbal_gym_env import Feedback
+from llfbench.envs.llf_env import Feedback
 
 class PoemUtil:
     # designed as a Mixin class

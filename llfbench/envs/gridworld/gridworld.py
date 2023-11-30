@@ -8,7 +8,7 @@ from collections import deque
 from llfbench.envs.gridworld import prompts
 from llfbench.envs.gridworld.room import Room
 from llfbench.envs.gridworld.scene import Scene
-from llfbench.envs.verbal_gym_env import Feedback
+from llfbench.envs.llf_env import Feedback
 
 
 class Gridworld(gym.Env):

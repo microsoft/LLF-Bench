@@ -1,6 +1,6 @@
 import numpy as np
 import json
-from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
+from llfbench.envs.llf_env import LLFWrapper, Feedback
 from llfbench.envs.highway.prompts import *
 
 

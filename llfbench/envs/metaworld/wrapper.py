@@ -1,6 +1,6 @@
 from typing import Dict, SupportsFloat, Union
 import numpy as np
-from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
+from llfbench.envs.llf_env import LLFWrapper, Feedback
 from llfbench.envs.metaworld.prompts import *
 from llfbench.envs.metaworld.gains import P_GAINS
 import metaworld

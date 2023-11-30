@@ -1,5 +1,5 @@
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
-from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
+from llfbench.envs.llf_env import LLFWrapper, Feedback
 # from llfbench.envs.loss_landscape.loss_descent import
 from llfbench.envs.optimization.prompts import *
 

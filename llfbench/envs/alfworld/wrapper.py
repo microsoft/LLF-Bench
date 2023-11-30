@@ -1,5 +1,5 @@
 from typing import Dict, Any, Tuple, Union
-from llfbench.envs.verbal_gym_env import LLFWrapper
+from llfbench.envs.llf_env import LLFWrapper
 from llfbench.envs.env_wrappers import EnvCompatibility
 
 

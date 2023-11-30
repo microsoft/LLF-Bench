@@ -12,7 +12,7 @@ import requests
 from textwrap import dedent, indent
 
 from llfbench.utils.parser_utils import SimpleGuidanceParser
-from llfbench.envs.verbal_gym_env import Feedback
+from llfbench.envs.llf_env import Feedback
 
 api_key = "4ace3dfa"
 

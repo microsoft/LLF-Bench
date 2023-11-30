@@ -7,7 +7,7 @@ import numpy as np
 from textwrap import dedent, indent
 
 from gym.utils import seeding
-from llfbench.envs.verbal_gym_env import Feedback
+from llfbench.envs.llf_env import Feedback
 import string
 
 class LossLandscapeBase(gym.Env):

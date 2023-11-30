@@ -1,6 +1,6 @@
 import random
 
-from llfbench.envs.verbal_gym_env import Feedback
+from llfbench.envs.llf_env import Feedback
 
 
 class Alfworld:

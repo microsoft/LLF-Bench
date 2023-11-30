@@ -1,6 +1,6 @@
 from typing import SupportsFloat
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
-from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
+from llfbench.envs.llf_env import LLFWrapper, Feedback
 from llfbench.envs.poem.formal_poems import Haiku, Tanka, LineSyllableConstrainedPoem, SyllableConstrainedPoem
 from llfbench.envs.poem.prompts import *
 
