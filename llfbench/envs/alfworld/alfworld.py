@@ -1,7 +1,8 @@
 import sys
 import random
 import string
-import gymnasium as gym
+import gym
+# import gymnasium as gym
 
 from llfbench.envs.llf_env import Feedback
 
