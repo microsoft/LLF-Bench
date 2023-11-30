@@ -174,4 +174,4 @@ def download_alfworld_data(data_dir=None, extra=False, force=False, force_downlo
 
 
 if __name__ == "__main__":
-    main()
+    download_alfworld_data()
