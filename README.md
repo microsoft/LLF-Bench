@@ -1,4 +1,4 @@
-# LLF-Bench: A benchmark for evaluating learning agents based on language feedback
+# LLF-Bench: Benchmark for Interactive Learning from Language Feedback
 
 This repository provides a collection of benchmarks for evaluating agents that learn from language feedback.
 
