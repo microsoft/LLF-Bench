@@ -1,6 +1,5 @@
 from typing import Dict, Any, Tuple, Union
 from llfbench.envs.llf_env import LLFWrapper
-from llfbench.envs.env_wrappers import EnvCompatibility
 
 
 class AlfworldWrapper(LLFWrapper):
@@ -20,7 +19,6 @@ class AlfworldWrapper(LLFWrapper):
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
-        self.env = EnvCompatibility(self.env)
         self.alfworld_env.instruction_type = instruction_type
         self.alfworld_env.feedback_type = feedback_type
 

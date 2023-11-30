@@ -4,7 +4,6 @@ import string
 import gymnasium as gym
 
 from collections import deque
-
 from llfbench.envs.gridworld import prompts
 from llfbench.envs.gridworld.room import Room
 from llfbench.envs.gridworld.scene import Scene

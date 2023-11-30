@@ -1,4 +1,7 @@
+import sys
 import random
+import string
+import gymnasium as gym
 
 from llfbench.envs.llf_env import Feedback
 
@@ -31,6 +34,13 @@ class Alfworld:
 
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
+
+        self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+        self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
+
+        # TODO find the best way to set the horizon for alfworld. Currently, setting it to a guess value.
+        self.horizon = 100
+        self.timestep = 0
 
         # Markers
         self.param_docstring = "You are in a house with a variety of objects. {task} You have to take a sequence of " \
@@ -67,6 +77,7 @@ class Alfworld:
         # Extract single item from batch
         obs = obs[0]
         won = bool(infos["won"][0])
+        self.timestep = 0
 
         self.last_infos = infos
         self.docstring = self._generate_docstring(reset_obs=obs)
@@ -79,7 +90,7 @@ class Alfworld:
 
         return dict(instruction=self.docstring,
                     observation=obs_command,
-                    feedback=None)
+                    feedback=None), {"success": False}
 
     def _generate_feedback(self, action, reward, info, past_info, feedback_type=None):
 
@@ -151,11 +162,16 @@ class Alfworld:
         # step
         obs, rewards, dones, infos = self.env.step([action])
 
+        self.timestep += 1
+
         # Extract single item from batch
         obs = obs[0]
         reward = rewards[0]
         done = dones[0]
         won = bool(infos["won"][0])
+
+        terminated = False
+        truncated = self.timestep == self.horizon
 
         # Create observation by combining current obs with admissible commands
         admissible_commands = infos["admissible_commands"][0]
@@ -170,7 +186,8 @@ class Alfworld:
                                            past_info=infos)
 
         info = {
-            "feedback": feedback
+            "feedback": feedback,
+            "success": won
         }
 
         self.last_infos = infos
@@ -179,4 +196,4 @@ class Alfworld:
                                observation=obs_command,
                                feedback=feedback)
 
-        return next_packed_obs, reward, done, info
+        return next_packed_obs, reward, terminated, truncated, info
