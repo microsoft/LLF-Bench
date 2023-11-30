@@ -13,7 +13,7 @@ def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
              **kwargs):
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     import importlib
     LossCls = getattr(importlib.import_module("llfbench.envs.optimization.loss_descent"), env_name)
     env = LossCls(**kwargs)  # `feedback` doesn't matter here, as we will override it.

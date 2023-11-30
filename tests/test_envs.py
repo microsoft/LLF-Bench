@@ -4,7 +4,7 @@ import numpy as np
 import random
 from tqdm import tqdm
 from llfbench.utils.utils import generate_combinations_dict
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper
+from llfbench.envs.verbal_gym_env import LLFWrapper
 
 
 def obs_space_contains_obs(obs, obs_space):
@@ -76,7 +76,7 @@ def check_equivalence(nested1, nested2, name=None):
             assert nested1 == nested2, (name, nested1, nested2)
 
 def test_wrapper(env):
-    if isinstance(env,VerbalGymWrapper):
+    if isinstance(env,LLFWrapper):
         return True
     elif hasattr(env, 'env'):
         return test_wrapper(env.env)
@@ -90,7 +90,7 @@ def test_env(env_name, seed=0):
     configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
     for config in configs:
         env = llfbench.make(env_name, **config)  # test llfbench.make
-        assert test_wrapper(env) # test VerbalGymWrapper is used
+        assert test_wrapper(env) # test LLFWrapper is used
         ouputs1 = step_env(env_name, seed, config=config)
         ouputs2 = step_env(env_name, seed, config=config)
         check_equivalence(ouputs1, ouputs2)

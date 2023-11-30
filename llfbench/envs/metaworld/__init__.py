@@ -18,7 +18,7 @@ def make_env(env_name,
              feedback_type='r',
              episode_length=20,
              ):
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     benchmark = BENCHMARK(env_name)
     env = benchmark.train_classes[env_name]()
     class Wrapper(gym.Wrapper):

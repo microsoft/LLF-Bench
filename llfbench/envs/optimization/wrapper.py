@@ -1,5 +1,5 @@
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper, Feedback
+from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
 # from llfbench.envs.loss_landscape.loss_descent import
 from llfbench.envs.optimization.prompts import *
 
@@ -12,7 +12,7 @@ This wrapper will only produce didactic feedback
 """
 
 
-class LossLandscapeGymWrapper(VerbalGymWrapper):
+class LossLandscapeGymWrapper(LLFWrapper):
     INSTRUCTION_TYPES = ('b')
     FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 

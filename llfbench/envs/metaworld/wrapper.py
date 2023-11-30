@@ -1,6 +1,6 @@
 from typing import Dict, SupportsFloat, Union
 import numpy as np
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper, Feedback
+from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
 from llfbench.envs.metaworld.prompts import *
 from llfbench.envs.metaworld.gains import P_GAINS
 import metaworld
@@ -11,7 +11,7 @@ from metaworld.policies.policy import move
 from metaworld.policies.action import Action
 from metaworld.policies import SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy, SawyerReachV2Policy
 
-class MetaworldWrapper(VerbalGymWrapper):
+class MetaworldWrapper(LLFWrapper):
 
     """ This is wrapper for gym_bandits. """
 

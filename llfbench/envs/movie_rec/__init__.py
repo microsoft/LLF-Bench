@@ -10,7 +10,7 @@ def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
              **kwargs):
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     import importlib
     MovieCls = getattr(importlib.import_module("llfbench.envs.movie_rec.movie_rec"), env_name)
     env = MovieCls(**kwargs)  # `feedback` doesn't matter here, as we will override it.

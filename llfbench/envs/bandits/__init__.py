@@ -22,7 +22,7 @@ def make_env(env_name,
              instruction_type='b',
              feedback_type='a',
              ):
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     env = old_gym.make(env_name)  # env_name is the original env name of gym_bandits
     # we don't pass arguments here, because _reset in BanditGymWrapper calls __init__ of the env without arguments.
     return BanditGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)

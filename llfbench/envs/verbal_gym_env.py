@@ -64,7 +64,7 @@ class Feedback:
     def __contains__(self, item):
         return item in self.__dict__
 
-class VerbalGymWrapper(gym.Wrapper):
+class LLFWrapper(gym.Wrapper):
     """
         This is the wrapper that turns a gym environment into a verbal gym
         environment.

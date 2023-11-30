@@ -2,11 +2,11 @@ from typing import SupportsFloat
 import gym as old_gym
 import numpy as np
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, RandomActionOrderWrapper, EnvCompatibility
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper, Feedback
+from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
 from llfbench.envs.bandits.prompts import *
 
 
-class BanditGymWrapper(VerbalGymWrapper):
+class BanditGymWrapper(LLFWrapper):
 
     """ This is a wrapper for gym_bandits. """
 

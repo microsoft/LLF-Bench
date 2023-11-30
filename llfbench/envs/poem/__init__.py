@@ -15,7 +15,7 @@ def make_env(env_name,
              feedback_type='r',
              **kwargs
                   ):
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     import importlib
     PoemCls = getattr(importlib.import_module("llfbench.envs.poem.formal_poems"), env_name)
     env = PoemCls(**kwargs)  # `feedback` doesn't matter here, as we will override it.

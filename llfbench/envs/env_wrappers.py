@@ -57,7 +57,7 @@ class EnvCompatibility(gym.wrappers.EnvCompatibility):
 
 
 class TextWrapper(gym.Wrapper):
-    # This is a wrapper that can be applied on top of VerbalGymWrapper to turn into a text-based env.
+    # This is a wrapper that can be applied on top of LLFWrapper to turn into a text-based env.
     RMIN = 0.0  # TODO maybe get this from the env
 
     def _parse_action(self, action):

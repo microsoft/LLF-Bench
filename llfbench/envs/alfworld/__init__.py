@@ -25,7 +25,7 @@ def make_env(env_name,
              feedback_type='r',
              ):
 
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     assert env_name.startswith("Alfworld"), f"Alfworld environment {env_name} must start with Alfworld"
     env = Alfworld(instruction_type=instruction_type, feedback_type=feedback_type)
     # we don't pass arguments here, because _reset in BanditGymWrapper calls __init__ of the env without arguments.

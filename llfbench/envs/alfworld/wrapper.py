@@ -1,9 +1,9 @@
 from typing import Dict, Any, Tuple, Union
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper
+from llfbench.envs.verbal_gym_env import LLFWrapper
 from llfbench.envs.env_wrappers import EnvCompatibility
 
 
-class AlfworldWrapper(VerbalGymWrapper):
+class AlfworldWrapper(LLFWrapper):
 
     # Basic (b), partial (p), and complete (c)
     INSTRUCTION_TYPES = ('b', 'p', 'c')

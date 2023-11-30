@@ -12,7 +12,7 @@ def make_env(env_name,
              instruction_type='b',
              feedback_type='a',
              ):
-    """ Make the original env and wrap it with the VerbalGymWrapper. """
+    """ Make the original env and wrap it with the LLFWrapper. """
     env = gym.make(env_name)
     return HighwayWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 

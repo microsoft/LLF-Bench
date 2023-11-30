@@ -1,10 +1,10 @@
 from typing import SupportsFloat
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper, Feedback
+from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
 from llfbench.envs.poem.formal_poems import Haiku, Tanka, LineSyllableConstrainedPoem, SyllableConstrainedPoem
 from llfbench.envs.poem.prompts import *
 
-class PoemGymWrapper(VerbalGymWrapper):
+class PoemGymWrapper(LLFWrapper):
 
     INSTRUCTION_TYPES = ('b') #, 'p', 'c')
     FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')

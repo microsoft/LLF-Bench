@@ -1,10 +1,10 @@
 import numpy as np
 import json
-from llfbench.envs.verbal_gym_env import VerbalGymWrapper, Feedback
+from llfbench.envs.verbal_gym_env import LLFWrapper, Feedback
 from llfbench.envs.highway.prompts import *
 
 
-class HighwayWrapper(VerbalGymWrapper):
+class HighwayWrapper(LLFWrapper):
 
     """ This is a wrapper for highway-env. """
 
