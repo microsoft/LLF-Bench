@@ -14,7 +14,7 @@ action = a = """[
   {"title": "The Old Guard", "year": "2020", "platform": "Netflix", "genre": "action"}
 ]"""
 
-movie_env = gym.make('verbal-MovieRec-b-hp-v0')
+movie_env = gym.make('llf-MovieRec-b-hp-v0')
 
 assignment = movie_env.reset()
 observation, reward, done, truncated, info = movie_env.step(action)

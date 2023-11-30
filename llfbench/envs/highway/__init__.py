@@ -19,7 +19,7 @@ def make_env(env_name,
 for env_name in ENVIRONMENTS:
     # default version (backwards compatibility)
     register(
-        id=f"verbal-highway-{env_name}",
+        id=f"llf-highway-{env_name}",
         entry_point='llfbench.envs.highway:make_env',
         kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
     )

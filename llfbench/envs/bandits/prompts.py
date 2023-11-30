@@ -1,5 +1,5 @@
 
-# This file contains the prompts for the verbal instructions and feedback.
+# This file contains the prompts for the language instructions and feedback.
 
 b_instruction = (
     "Find the best action as fast as possible. Your action is an integer between {low} and {high}.",

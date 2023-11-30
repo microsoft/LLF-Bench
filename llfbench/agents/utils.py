@@ -84,7 +84,7 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
 
     observation = env.reset(seed=seed)
 
-    default_docstring = 'This is an interactive decision making problem with verbal feedback.'
+    default_docstring = 'This is an interactive decision making problem with language feedback.'
 
     # in case the environment does not have docstring
     docstring = getattr(env, 'docstring', observation if isinstance(observation, str) else default_docstring)

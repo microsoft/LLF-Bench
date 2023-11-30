@@ -1,5 +1,5 @@
 
-# This file contains the prompts for the verbal instructions and feedback.
+# This file contains the prompts for the language instructions and feedback.
 
 loss_b_instruction_template = "You are trying to minimize the output (y) of a function by choosing input (x). The goal is to choose x such that y is as small as possible."
 loss_b_instruction = (

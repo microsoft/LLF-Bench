@@ -31,7 +31,7 @@ def make_env(env_name,
 for env_name in ENVIRONMENTS:
     # default version (backwards compatibility)
     register(
-        id=f"verbal-bandits-{env_name}",
+        id=f"llf-bandits-{env_name}",
         entry_point='llfbench.envs.bandits:make_env',
         kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
     )

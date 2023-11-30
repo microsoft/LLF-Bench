@@ -1,5 +1,5 @@
 class Agent:
-    """ An agent that interacts with an environment with verbal feedback. """
+    """ An agent that interacts with an environment with language feedback. """
 
     NAME = "AbstractAgent"
 

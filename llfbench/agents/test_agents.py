@@ -17,7 +17,7 @@ def main(args):
 
     all_envs = []
     for env_name in gymnasium.envs.registry:
-        if ((args.env_name == 'all') and env_name.startswith('verbal-')) or env_name.startswith(args.env_name):
+        if ((args.env_name == 'all') and env_name.startswith('llf-')) or env_name.startswith(args.env_name):
             all_envs.append(env_name)
     print("Evaluating on the following environments:", all_envs)
     for env_name in all_envs:

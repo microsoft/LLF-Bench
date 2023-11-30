@@ -4,7 +4,7 @@ import numpy as np
 import random
 from tqdm import tqdm
 from llfbench.utils.utils import generate_combinations_dict
-from llfbench.envs.verbal_gym_env import LLFWrapper
+from llfbench.envs.llf_env import LLFWrapper
 
 
 def obs_space_contains_obs(obs, obs_space):
@@ -24,9 +24,9 @@ def step_env(env_name, seed, config):
 
     if isinstance(env.action_space , gym.spaces.Text):
         action = 'test action'
-        if 'verbal-optimization' in env_name:
+        if 'llf-optimization' in env_name:
             action = 'x = [1.0, 2.0]'
-        elif 'verbal-rec-MovieRec' in env_name:
+        elif 'llf-rec-MovieRec' in env_name:
             action = """[{"title": "John Wick"}]"""
     else:
         env.action_space.seed(seed)
@@ -108,5 +108,5 @@ def test_benchmark(benchmark_prefix):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('benchmark_prefix', type=str, default='verbal-bandits')
+    parser.add_argument('benchmark_prefix', type=str, default='llf-bandits')
     test_benchmark(**vars(parser.parse_args()))

@@ -1,6 +1,6 @@
 import llfbench
 
-env = llfbench.make('verbal-Gridworld-v0')
+env = llfbench.make('llf-Gridworld-v0')
 
 obs = env.reset()
 for _ in range(5):

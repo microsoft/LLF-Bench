@@ -66,10 +66,10 @@ class Feedback:
 
 class LLFWrapper(gym.Wrapper):
     """
-        This is the wrapper that turns a gym environment into a verbal gym
+        This is the wrapper that turns a gym environment into a LLF-Bench
         environment.
 
-        In verbal-gym, the environment's reward is not provided to the agent.
+        In llf-gym, the environment's reward is not provided to the agent.
         Instead the agent learns from info of instructions, observations, and
         their feedback.
 

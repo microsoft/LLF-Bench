@@ -1,7 +1,7 @@
 import llfbench
 import gymnasium as gym
 
-env = gym.make('verbal-BanditTenArmedRandomRandom-b-fp-v0')
+env = gym.make('llf-BanditTenArmedRandomRandom-b-fp-v0')
 
 obs = env.reset()
 for _ in range(5):

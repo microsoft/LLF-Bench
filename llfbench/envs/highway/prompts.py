@@ -1,5 +1,5 @@
 
-# This file contains the prompts for the verbal instructions and feedback.
+# This file contains the prompts for the language instructions and feedback.
 
 highway_instruction = (
     "Your goal is to control a vehicle to park in a desired location, while ensuring that it does not collide with any obstacles or other vehicles. "+

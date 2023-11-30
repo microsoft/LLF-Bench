@@ -21,7 +21,7 @@ def make_env(env_name,
 
 for env_name in ENVIRONMENTS:
     register(
-        id=f"verbal-optimization-{env_name}-v0",
+        id=f"llf-optimization-{env_name}-v0",
         entry_point='llfbench.envs.optimization:make_env',
         kwargs={'env_name': env_name, 'instruction_type': 'b', 'feedback_type': 'a'},
     )

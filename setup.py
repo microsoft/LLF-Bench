@@ -8,7 +8,7 @@ setup(
     packages=['llfbench'],
     url='https://github.com/microsoft/LLF-Bench',
     license='MIT LICENSE',
-    description='A gym environment for learning with verbal feedback.',
+    description='A gym environment for learning with language feedback.',
     long_description=open('README.md').read(),
     install_requires=[
         "tqdm",

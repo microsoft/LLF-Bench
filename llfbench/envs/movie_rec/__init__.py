@@ -17,7 +17,7 @@ def make_env(env_name,
     return MovieRecGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 
 register(
-    id=f"verbal-rec-{environments[0]}-v0",
+    id=f"llf-rec-{environments[0]}-v0",
     entry_point='llfbench.envs.movie_rec:make_env',
     kwargs=dict(env_name=environments[0], feedback_type='a', instruction_type='b')
 )

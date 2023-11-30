@@ -25,7 +25,7 @@ def make_env(env_name,
 for env_name in ENVIRONMENTS:
     # default version (backwards compatibility)
     register(
-        id=f"verbal-poem-{env_name}-v0",
+        id=f"llf-poem-{env_name}-v0",
         entry_point='llfbench.envs.poem:make_env',
         kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
     )
