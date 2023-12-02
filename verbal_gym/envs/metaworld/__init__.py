@@ -16,7 +16,6 @@ ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
 def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
-             episode_length=20,
              ):
     """ Make the original env and wrap it with the VerbalGymWrapper. """
     benchmark = BENCHMARK(env_name)
@@ -38,7 +37,7 @@ def make_env(env_name,
             self.env.set_task(task)
             return self.env.reset(seed=seed, options=options)
     env = Wrapper(env)
-    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=episode_length)
+    return MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 
 
 for env_name in ENVIRONMENTS:
