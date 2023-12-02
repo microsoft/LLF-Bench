@@ -9,7 +9,7 @@ from typing import Any, Optional
 from gymnasium.wrappers.compatibility import LegacyEnv
 
 
-def space_compatability(old_space: old_gym.Space) -> gym.Space:
+def space_compatibility(old_space: old_gym.Space) -> gym.Space:
     """Converts a gym space to a gymnasium space.
 
     Args:
@@ -27,9 +27,9 @@ def space_compatability(old_space: old_gym.Space) -> gym.Space:
     elif isinstance(old_space, old_gym.spaces.MultiDiscrete):
         return gym.spaces.MultiDiscrete(nvec=old_space.nvec)
     elif isinstance(old_space, old_gym.spaces.Tuple):
-        return gym.spaces.Tuple(tuple(space_compatability(s) for s in old_space.spaces))
+        return gym.spaces.Tuple(tuple(space_compatibility(s) for s in old_space.spaces))
     elif isinstance(old_space, old_gym.spaces.Dict):
-        return gym.spaces.Dict({k: space_compatability(v) for k, v in old_space.spaces.items()})
+        return gym.spaces.Dict({k: space_compatibility(v) for k, v in old_space.spaces.items()})
     elif isinstance(old_space, old_gym.spaces.Text):
         if hasattr(old_space, 'charset'):
             charset = old_space.charset
@@ -49,8 +49,8 @@ class EnvCompatibility(gym.wrappers.EnvCompatibility):
     """
     def __init__(self, old_env: LegacyEnv, render_mode: Optional[str] = None):
         super().__init__(old_env, render_mode)
-        self.observation_space = space_compatability(self.observation_space)
-        self.action_space = space_compatability(self.action_space)
+        self.observation_space = space_compatibility(self.observation_space)
+        self.action_space = space_compatibility(self.action_space)
 
     def __getattr__(self, name: str) -> Any:  # The wrapped env should behave like the original env.
         return getattr(self.env, name)
