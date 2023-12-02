@@ -1,9 +1,9 @@
 import gymnasium as gym
-import verbal_gym
+import llfbench
 
-# env = gym.make('verbal-PickBestSummary-v0')
+# env = gym.make('llf-PickBestSummary-v0')
 
-loss_env = gym.make('verbal-Booth-v0', feedback=1)
+loss_env = gym.make('llf-Booth-v0', feedback=1)
 
 action = """
 x = [-4.0, 5.0]
@@ -18,7 +18,7 @@ print('Assignment: ', assignment, '\n', \
       'Done: ', done, '\n', \
       'Info: ', info)
 
-loss_env = gym.make('verbal-Booth-b-hp-v0')
+loss_env = gym.make('llf-Booth-b-hp-v0')
 
 action = """
 x = [-4.0, 5.0]

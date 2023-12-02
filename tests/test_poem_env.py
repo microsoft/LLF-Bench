@@ -1,9 +1,9 @@
 import gymnasium as gym
-import verbal_gym
+import llfbench
 
-# env = gym.make('verbal-PickBestSummary-v0')
+# env = gym.make('llf-PickBestSummary-v0')
 
-poem_env = gym.make('verbal-poem-Haiku-v0', feedback=1)
+poem_env = gym.make('llf-poem-Haiku-v0', feedback=1)
 
 
 poem = """
@@ -24,7 +24,7 @@ print('Assignment: ', assignment, '\n', \
       'Done: ', done, '\n', \
       'Info: ', info)
 
-poem_env = gym.make('verbal-poem-SyllableConstrainedPoem-v0', feedback=1)
+poem_env = gym.make('llf-poem-SyllableConstrainedPoem-v0', feedback=1)
 assignment = poem_env.reset()
 observation, reward, terminated, truncated, info = poem_env.step(poem)
 done = terminated or truncated

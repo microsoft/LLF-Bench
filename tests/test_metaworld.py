@@ -1,4 +1,4 @@
-import verbal_gym
+import llfbench
 import gymnasium as gym
 import metaworld
 
@@ -7,7 +7,7 @@ import numpy as np
 print(metaworld.MT1.ENV_NAMES)
 
 horizon = 1000
-env = gym.make('verbal-metaworld-hand-insert',
+env = gym.make('llf-metaworld-hand-insert',
              instruction_type='b',
              feedback_type='hn',
              episode_length=horizon)
