@@ -181,7 +181,9 @@ class MetaworldWrapper(LLFWrapper):
 
     def textualize_expert_action(self, action):
         """ Parse action into text. """
-        # return f"delta x: {action[0]:.2f}, delta y:{action[1]:.2f}, delta z:{action[2]:.2f}, gripper state:{action[3]:.1f}"
+        # The idea is to return something like
+        # f"delta x: {action[0]:.2f}, delta y:{action[1]:.2f}, delta z:{action[2]:.2f}, gripper state:{action[3]:.1f}"
+        # or another action text format if the action isn't a delta.
         # TODO should not be the raw action
         return np.array2string(action, precision=2)
 

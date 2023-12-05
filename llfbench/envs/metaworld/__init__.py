@@ -15,7 +15,7 @@ ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
 
 def make_env(env_name,
              instruction_type='b',
-             feedback_type='r',
+             feedback_type='a',
              ):
     """ Make the original env and wrap it with the LLFWrapper. """
     benchmark = BENCHMARK(env_name)

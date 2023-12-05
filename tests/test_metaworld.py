@@ -9,8 +9,7 @@ print(metaworld.MT1.ENV_NAMES)
 horizon = 1000
 env = gym.make('llf-metaworld-hand-insert',
              instruction_type='b',
-             feedback_type='hn',
-             episode_length=horizon)
+             feedback_type=['fp', 'r']) # can also be a single string, like 'hn'
 
 # This tests the wrapper.
 obs, _ = env.reset()
@@ -19,7 +18,9 @@ for k, v in obs.items():
         print()
 for i in range(horizon):
     action = env.expert_action
+    print(action)
     obs, reward, done, timeout, info = env.step(action)
+    print(env.textualize_observation(obs))
     for k, v in obs.items():
         print(k, v)
         print()
