@@ -47,4 +47,4 @@ class AlfworldWrapper(LLFWrapper):
 
     @property
     def alfworld_env(self):
-        return self.env.env
+        return self.env
