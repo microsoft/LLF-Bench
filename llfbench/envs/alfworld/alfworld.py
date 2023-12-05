@@ -23,10 +23,9 @@ class Alfworld(gym.Env):
 
         config_file = "llfbench/envs/alfworld/base_config.yaml"
 
-        sys_argv = list(sys.argv)
+        old_sys_argv = list(sys.argv)
         print(f"Reading file {config_file}")
-        sys_argv.append(config_file)
-        sys.argv = sys_argv
+        sys.argv = [config_file]
 
         import alfworld.agents.environment as environment
         import alfworld.agents.modules.generic as generic
@@ -55,6 +54,8 @@ class Alfworld(gym.Env):
                                "and you must pick only one of those actions."
         self.docstring = None
         self.last_infos = None
+
+        sys.argv = old_sys_argv
 
     def seed(self, seed):
         self.env.seed(seed)
