@@ -25,7 +25,7 @@ class Alfworld(gym.Env):
 
         old_sys_argv = list(sys.argv)
         print(f"Reading file {config_file}")
-        sys.argv = [config_file]
+        sys.argv = [old_sys_argv[0], config_file]
 
         import alfworld.agents.environment as environment
         import alfworld.agents.modules.generic as generic
