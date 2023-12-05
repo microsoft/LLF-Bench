@@ -3,6 +3,7 @@ import random
 import string
 import gymnasium as gym
 
+from llfbench.envs.alfworld.prompts import *
 from llfbench.envs.llf_env import Feedback
 
 
@@ -38,6 +39,7 @@ class Alfworld(gym.Env):
         self.env = getattr(environment, self.env_type)(self.config, train_eval='train')
         self.env = self.env.init_env(batch_size=1)
 
+        self.format = None
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
 
@@ -115,7 +117,7 @@ class Alfworld(gym.Env):
         feedback = Feedback()
 
         if "r" in feedback_type:
-            feedback.r = f"You received a reward of {reward}."
+            feedback.r = self.format(reward_descp, reward=reward)
 
         if "hn" in feedback_type:
 
@@ -128,18 +130,18 @@ class Alfworld(gym.Env):
             avoid_action = random.choice(bad_actions)
 
             if action == avoid_action:
-                feedback.hn = f"You made a mistake by taking the bad action {avoid_action}."
+                feedback.hn = self.format(mistake_bad_action_descp, avoid_action=avoid_action)
             else:
-                feedback.hn = f"You were correct in not taking the bad action {avoid_action}."
+                feedback.hn = self.format(correct_bad_action_descp, avoid_action=avoid_action)
 
         if "hp" in feedback_type:
 
             past_opt_action = past_info["expert_plan"][0][0].lower().strip()
 
             if past_opt_action == action.lower().strip():
-                feedback.hp = f"You did the right thing by taking the {past_opt_action} action."
+                feedback.hp = self.format(correct_good_action_descp, past_opt_action=past_opt_action)
             else:
-                feedback.hp = f"You should have taken the {past_opt_action} action."
+                feedback.hp = self.format(mistake_good_action_descp, past_opt_action=past_opt_action)
 
         if "fn" in feedback_type:
 
@@ -151,12 +153,12 @@ class Alfworld(gym.Env):
 
             avoid_action = random.choice(bad_actions)
 
-            feedback.fn = f"You should not take the action {avoid_action} in this current step."
+            feedback.fn = self.format(avoid_bad_action_descp, avoid_action=avoid_action)
 
         if "fp" in feedback_type:
 
             opt_action = info["expert_plan"][0][0].lower().strip()
-            feedback.fp = f"You should now take the {opt_action} action."
+            feedback.fp = self.format(follow_opt_action_descp, opt_action=opt_action)
 
         return feedback
 

@@ -19,6 +19,8 @@ class AlfworldWrapper(LLFWrapper):
 
     def __init__(self, env, instruction_type, feedback_type):
         super().__init__(env, instruction_type, feedback_type)
+
+        self.alfworld_env.format = self.format
         self.alfworld_env.instruction_type = instruction_type
         self.alfworld_env.feedback_type = feedback_type
 
@@ -27,6 +29,7 @@ class AlfworldWrapper(LLFWrapper):
         """ Implement this in the subclass. """
 
         # Reset the instruction and feedback type of the base environment based on the settings in the wrapper
+        self.alfworld_env.format = self.format
         self.alfworld_env.instruction_type = self.instruction_type
         self.alfworld_env.feedback_type = self._feedback_type
         return self.env.reset(seed=seed, options=options)
@@ -37,6 +40,7 @@ class AlfworldWrapper(LLFWrapper):
         """
 
         # Reset the instruction and feedback type of the base environment based on the settings in the wrapper
+        self.alfworld_env.format = self.format
         self.alfworld_env.instruction_type = self.instruction_type
         self.alfworld_env.feedback_type = self._feedback_type
         return self.env.step(action)
