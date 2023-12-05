@@ -66,7 +66,9 @@ class TextWrapper(gym.Wrapper):
         if isinstance(self.env.action_space, gym.spaces.Discrete):
             action = int(action)
         elif isinstance(self.env.action_space, gym.spaces.Box):
-            exec("action = np.array({})".format(action))
+            locals_dict = {}
+            exec("action = np.array({})".format(action), globals(), locals_dict)
+            action = locals_dict['action']
         elif isinstance(self.env.action_space, gym.spaces.Text):
             pass
         else:
