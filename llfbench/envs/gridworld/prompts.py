@@ -1,3 +1,34 @@
+docstrings = [
+    "You are in a house with multiple rooms. Each room can have objects that will "
+    "be visible to you only if you are in that room. Each room can have a door along the "
+    "North, South, East and West direction. You can follow a direction to go from one room to another. "
+    "If there is no door along that direction, then you will remain in the room. You will start in a room. "
+    "Your goal is to navigate to another room which has the treasure. There is only one such room which "
+    "contains treasure. You have an action space of size 4. Action 0 leads to going North. "
+    "Action 1 leads to going East. Action 2 leads going west. Action 3 leads to going South.",
+
+    "You are in a house that has multiple rooms. When you are in a room, you can see all the objects "
+    "that this room contains but cannot see objects in different room. At a given time, you can only be in one room. "
+    "Each room can have a door along the North, South, East and West direction. Different rooms can different number of"
+    "doors. You can follow a direction to go from one room to another, provided there is a door in that direction. "
+    "If there is no door along that direction, then you will remain where you are. You will start in a room. "
+    "Your goal is to navigate to the unique room which has the treasure. You have an action space of size 4. "
+    "Action 0 leads to going North. Action 1 leads to going East. Action 2 leads going west. "
+    "Action 3 leads to going South.",
+
+    "You are in a house that has multiple rooms and your goal is to reach the unique room which contains the treasure "
+    "starting from a given starting room. Each room has objects that will only be visible to you if you are in "
+    "that room. You cannot be in two rooms at once. Each room can have a door along the 4 directions: "
+    "North, South, East and West. Two different rooms need not have the same number of doors. If there is a door "
+    "between room A and room B then you can use it to travel from both room A to room B, and vice versa. "
+    "However, if you follow the West direction to go from room A to room B, then you must follow the East direction "
+    "to go from Room B to room A via the same door. Similarly, if you follow the North direction to go from room A to "
+    "room B, then you must follow the South direction to go from Room B to room A via the same door. You can follow a "
+    "direction to go from one room to another, provided there is a door in that direction. If there is no door in "
+    "that direction, then you will remain where you are.You have an action space of size 4. Action 0 leads to going "
+    "North. Action 1 leads to going East. Action 2 leads going west. Action 3 leads to going South.",
+]
+
 reward_descp = [
     "You got a reward of {reward}.",
     "You receive a reward of {reward}.",
