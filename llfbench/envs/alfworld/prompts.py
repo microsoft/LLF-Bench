@@ -1,3 +1,30 @@
+docstrings = [
+    "You are in a house with a variety of objects. {task} You have to take a sequence of "
+    "actions to full fill it. When you take an action, you can change the world. You will be told at each step, "
+    "what actions are allowed and you must pick only one of those actions.",
+
+    "You are in a house which contains many different types of objects with which you can interact. "
+    "You are given a task. The task description is: {task} . You will generate a sequence of "
+    "actions to full fill the task. At each step, you will be told what actions are allowed "
+    "and you should only pick from this action set.",
+
+    "You are spawned in a house. The house contains many different types of objects. "
+    "You can interact with these objects. You are given the following task: {task} . "
+    "You will generate a sequence of actions to full fill this task. At each step, you will be told what actions "
+    "are allowed. You should only select an action that is allowed, otherwise, nothing will happen.",
+
+    "You are in a house which contains many different types of objects with which you can interact. "
+    "You are given a task. The task description is: {task} . You will generate a sequence of "
+    "actions to full fill the task. At each step, you will be told what actions are allowed "
+    "and you should only pick from this action set.",
+
+    "You start in a house that contains many different objects and locations. "
+    "You can interact with these objects. You are given the following task: {task} . "
+    "You have to fulfill this task which will require you to take a sequence of actions. Taking an action can change"
+    "the world so keep that in mind when taking actions. At each step of this sequence, you will be told what actions "
+    "are allowed. You should only select an action that is allowed.",
+]
+
 reward_descp = [
     "You got a reward of {reward}.",
     "You receive a reward of {reward}.",

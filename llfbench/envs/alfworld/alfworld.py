@@ -10,7 +10,7 @@ from llfbench.envs.llf_env import Feedback
 class Alfworld(gym.Env):
 
     # Basic (b), partial (p), and complete (c)
-    INSTRUCTION_TYPES = ('b', 'p', 'c')
+    INSTRUCTION_TYPES = ('b')        # ('b', 'p', 'c')
 
     # Feedback type:
     # r: reward
@@ -51,9 +51,6 @@ class Alfworld(gym.Env):
         self.timestep = 0
 
         # Markers
-        self.param_docstring = "You are in a house with a variety of objects. {task} You have to take a sequence of " \
-                               "actions to full fill it. You will be told at each step, what actions are allowed " \
-                               "and you must pick only one of those actions."
         self.docstring = None
         self.last_infos = None
 
@@ -69,7 +66,7 @@ class Alfworld(gym.Env):
         if not task.endswith("."):
             task = task + "."
 
-        docstring = self.param_docstring.replace("{task}", task)
+        docstring = self.format(docstrings, task=task)
 
         return docstring
 
