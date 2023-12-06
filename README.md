@@ -59,11 +59,16 @@ Note that the `alfworld` option requires building/compiling from source files. P
 
     sudo apt-get update
     sudo apt-get install cmake build-essential
+In addition, `alfworld` currently requires an older gym version. After installing llfbench, please downgrade the gym version to 0.15.4 by running
+
+    pip install gym==0.15.4
+
 
 
 For `metaworld` option, it requires libGL, which can be installed by
 
     sudo apt-get install ffmpeg libsm6 libxext6
+
 
 ## Examples
 
@@ -72,7 +77,7 @@ This sample code creates an environment implemented in LLF-Bench, and creates an
 ```
 import llfbench as gym
 
-# Environments in the benchmark are registered following 
+# Environments in the benchmark are registered following
 # the naming convention of llf-*
 
 env = gym.make('llf-Gridworld-v0')
@@ -87,23 +92,23 @@ observation = env.reset()
 while not done:
     # Observation is dict having 'observation', 'instruction', 'feedback'
     # Here we print the observation and ask the user for an action
-    
-    action = input( observation['observation'] + '\n' + 
-                    observation['instruction'] + '\n' + 
-                    observation['feedback'] + '\n' + 
+
+    action = input( observation['observation'] + '\n' +
+                    observation['instruction'] + '\n' +
+                    observation['feedback'] + '\n' +
                     'Action: ' )
 
-    # Gridworld has a text action space, so TextWrapper is not needed 
+    # Gridworld has a text action space, so TextWrapper is not needed
     # to parse a valid action from the input string
-    
+
     observation, reward, terminated, truncated, info = env.step(action)
 
     # reward is never revealed to the agent; only used for evaluation
-    
+
     cumulative_reward += reward
 
     # terminated and truncated follow the same semantics as in Gymnasium
-    
+
     done = terminated or truncated
 
 print(f'Episode reward: {cumulative_reward}')
