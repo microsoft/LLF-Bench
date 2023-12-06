@@ -203,9 +203,6 @@ class Gridworld(gym.Env):
 
     def step(self, action):
 
-        if self.current_timestep > self.horizon:
-            raise AssertionError("Horizon exhausted.")
-
         old_gold_action = self.current_scene.get_gold_action(self.current_room)
         old_room = self.current_room.get_name()
 
@@ -228,7 +225,7 @@ class Gridworld(gym.Env):
         # Update the counter and compute done
         self.current_timestep += 1
         terminated = False
-        truncated = self.current_timestep == self.horizon
+        truncated = self.current_timestep >= self.horizon
 
         feedback = self.generate_feedback(action=action,
                                           reward=reward,
