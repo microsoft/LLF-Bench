@@ -41,7 +41,6 @@ success_descp = [
     "You succeeded! Congratulations.",
     "You have successfully completed the task.",
     "You have completed the task successfully! Great job",
-    "You have completed the task successfully! Great job",
     "You have succeeded at solving the task."
 ]
 
@@ -94,4 +93,3 @@ fn = [
     "Now that you are in {new_room}, dont go in the direction of {avoid_action}",
     "You are now in {new_room} and must not go in the direction of {avoid_action} while you are here.",
 ]
-

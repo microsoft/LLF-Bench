@@ -4,7 +4,7 @@ from llfbench.envs.gridworld.wrapper import GridworldWrapper
 
 
 ENVIRONMENTS = (
-    'Gridworld-v0',
+    'gridworld-v0',
 )
 
 

@@ -113,7 +113,7 @@ class Gridworld(gym.Env):
         goal_room.add_goal()
         scene.get_add_goal_room(goal_room=goal_room)
 
-        # Do DFS
+        # Do BFS
         scene.start_bfs(goal_room)
 
         # Add key in a room at least k steps away
@@ -264,26 +264,19 @@ class Gridworld(gym.Env):
 
         if "hn" in feedback_type:     # Hindsight negative
 
-            if reward == 1.0:
-                feedback.hn = self.format(prompts.success_descp)
+            # This implies we have not reached the goal neither before or nor in this stage
+            # Sample a bad action at previous time step, and provide feedback as follows:
+            #       Case 1: If the agent avoided taking the bad action, then say good job
+            #       Case 2: If the agent takes the bad action, then tell it to avoid
 
-            elif self.goal_prev_visited:
-                feedback.hn = self.format(prompts.treasure_reached_descp)
+            all_wrong_directions = list(Scene.DIRECTIONS)
+            all_wrong_directions.remove(old_gold_action)
+            avoid_action = random.choice(all_wrong_directions)
 
+            if avoid_action != Scene.DIRECTIONS[action]:
+                feedback.hn = self.format(prompts.hn_success_descp, avoid_action=avoid_action)
             else:
-                # This implies we have not reached the goal neither before or nor in this stage
-                # Sample a bad action at previous time step, and provide feedback as follows:
-                #       Case 1: If the agent avoided taking the bad action, then say good job
-                #       Case 2: If the agent takes the bad action, then tell it to avoid
-
-                all_wrong_directions = list(Scene.DIRECTIONS)
-                all_wrong_directions.remove(old_gold_action)
-                avoid_action = random.choice(all_wrong_directions)
-
-                if avoid_action != Scene.DIRECTIONS[action]:
-                    feedback.hn = self.format(prompts.hn_success_descp, avoid_action=avoid_action)
-                else:
-                    feedback.hn = self.format(prompts.hn_fail_descp, avoid_action=avoid_action)
+                feedback.hn = self.format(prompts.hn_fail_descp, avoid_action=avoid_action)
 
         if "hp" in feedback_type:     # Hindsight positive
 
@@ -307,38 +300,26 @@ class Gridworld(gym.Env):
 
         if "fn" in feedback_type:      # Future negative
 
-            if reward == 1.0:
-                feedback.fn = self.format(prompts.success_descp)
 
-            elif self.goal_prev_visited:
-                feedback.fn = self.format(prompts.treasure_reached_descp)
+            # This implies we have not reached the goal neither before or nor in this stage
+            # Sample a bad action at this time step, and tell the agent not to take it
 
-            else:
-                # This implies we have not reached the goal neither before or nor in this stage
-                # Sample a bad action at this time step, and tell the agent not to take it
+            gold_action = self.current_scene.get_gold_action(self.current_room)
+            all_directions = list(Scene.DIRECTIONS)
+            all_directions.remove(gold_action)
 
-                gold_action = self.current_scene.get_gold_action(self.current_room)
-                all_directions = list(Scene.DIRECTIONS)
-                all_directions.remove(gold_action)
+            avoid_action = random.choice(all_directions)
 
-                avoid_action = random.choice(all_directions)
-
-                feedback.fn = self.format(prompts.fn, avoid_action=avoid_action, new_room=self.current_room.get_name())
+            feedback.fn = self.format(prompts.fn, avoid_action=avoid_action, new_room=self.current_room.get_name())
 
         if "fp" in feedback_type:      # Future positive
 
-            if reward == 1.0:
-                feedback.fp = self.format(prompts.success_descp)
 
-            elif self.goal_prev_visited:
-                feedback.fp = self.format(prompts.treasure_reached_descp)
+            # This implies we have not reached the goal neither before or nor in this stage
+            # Compute the gold action at this time step, and tell the agent not to take it
 
-            else:
-                # This implies we have not reached the goal neither before or nor in this stage
-                # Compute the gold action at this time step, and tell the agent not to take it
+            gold_action = self.current_scene.get_gold_action(self.current_room)
 
-                gold_action = self.current_scene.get_gold_action(self.current_room)
-
-                feedback.fp = self.format(prompts.fp, gold_action=gold_action, new_room=self.current_room.get_name())
+            feedback.fp = self.format(prompts.fp, gold_action=gold_action, new_room=self.current_room.get_name())
 
         return feedback
