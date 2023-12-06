@@ -4,8 +4,8 @@ import pickle
 import argparse
 import logging
 
-from user_agent import UserAgent
-from utils import set_seed, evaluate_agent, print_color
+from llfbench.agents.user_agent import UserAgent
+from llfbench.agents.utils import set_seed, evaluate_agent, print_color
 
 import llfbench as gym
 import gymnasium

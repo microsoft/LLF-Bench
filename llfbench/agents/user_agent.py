@@ -1,7 +1,7 @@
 from textwrap import dedent, indent
 
-from abstract_agent import Agent
-from utils import extract_action, ReplayBuffer, print_color
+from llfbench.agents.abstract_agent import Agent
+from llfbench.agents.utils import extract_action, ReplayBuffer, print_color
 
 
 class UserAgent(Agent):
