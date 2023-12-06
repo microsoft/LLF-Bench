@@ -8,7 +8,7 @@ class HighwayWrapper(LLFWrapper):
 
     """ This is a wrapper for highway-env. """
 
-    INSTRUCTION_TYPES = ('b', 'p')
+    INSTRUCTION_TYPES = ('b')
     FEEDBACK_TYPES = ('r', 'hp', 'hn')
 
     def __init__(self, env, instruction_type, feedback_type):
