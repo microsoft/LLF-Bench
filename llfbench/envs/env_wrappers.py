@@ -93,7 +93,7 @@ class TextWrapper(gym.Wrapper):
             reward = self.RMIN
             done = False
             tuncated = False
-            info = {}
+            info = {'success':False}
         return self._parse_observation(observation), reward, done, tuncated, info
 
 
