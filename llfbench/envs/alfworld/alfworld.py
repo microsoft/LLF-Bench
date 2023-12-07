@@ -196,8 +196,8 @@ class Alfworld(gym.Env):
         # Feedback
         feedback = self._generate_feedback(action=action,
                                            reward=reward,
-                                           info=self.last_infos,
-                                           past_info=infos)
+                                           info=infos,
+                                           past_info=self.last_infos)
 
         info = {
             "feedback": feedback,
