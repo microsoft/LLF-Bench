@@ -102,9 +102,14 @@ class Alfworld(gym.Env):
                                                  admissible_commands=admissible_commands,
                                                  won=won)
 
+        info = {
+            "success": False,
+            "expert_action": infos["expert_plan"][0][0]
+        }
+
         return dict(instruction=self.docstring,
                     observation=obs_command,
-                    feedback=None), {"success": False}
+                    feedback=None), info
 
     def _generate_feedback(self, action, reward, info, past_info, feedback_type=None):
 
@@ -201,7 +206,8 @@ class Alfworld(gym.Env):
 
         info = {
             "feedback": feedback,
-            "success": won
+            "success": won,
+            "expert_action": infos["expert_plan"][0][0]
         }
 
         self.last_infos = infos
