@@ -86,7 +86,7 @@ def test_env(env_name, num_eps=1, seed=0):
               f"Min return {np.min(all_returns):.3f}")
 
 
-def test_benchmark(benchmark_prefix):
+def test_benchmark(benchmark_prefix, num_eps):
 
     all_envs = []
     for env_name in gym.envs.registry:
@@ -96,7 +96,7 @@ def test_benchmark(benchmark_prefix):
     print(f'Number of {benchmark_prefix} environments: ', len(all_envs))
 
     for env_name in tqdm(all_envs):
-        test_env(env_name)
+        test_env(env_name, num_eps)
 
 
 if __name__ == '__main__':
