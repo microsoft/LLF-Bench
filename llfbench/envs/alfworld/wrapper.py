@@ -5,7 +5,7 @@ from llfbench.envs.llf_env import LLFWrapper
 class AlfworldWrapper(LLFWrapper):
 
     # Basic (b), partial (p), and complete (c)
-    INSTRUCTION_TYPES = ('b', 'p', 'c')
+    INSTRUCTION_TYPES = ('b')        # ('b', 'p', 'c')
 
     # Feedback type:
     # n: none
