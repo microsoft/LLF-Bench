@@ -1,4 +1,4 @@
-docstrings = [
+instructions = [
     "You are in a house with multiple rooms. Each room can have objects that will "
     "be visible to you only if you are in that room. Each room can have a door along the "
     "North, South, East and West direction. You can follow a direction to go from one room to another. "
@@ -27,6 +27,26 @@ docstrings = [
     "direction to go from one room to another, provided there is a door in that direction. If there is no door in "
     "that direction, then you will remain where you are.You have an action space of size 4. Action 0 leads to going "
     "North. Action 1 leads to going East. Action 2 leads going west. Action 3 leads to going South.",
+]
+
+hp_no_op = [
+    "As you have completed the task, all actions are equally good at this point.",
+    "As you have completed the task, you can take any valid action you want."
+]
+
+hn_no_op = [
+    "As you have completed the task, all actions are equally good at this point.",
+    "As you have completed the task, you can take any valid action you want."
+]
+
+fp_no_op = [
+    "You have completed the task so there are no actions to take.",
+    "As you have completed the task, there are no further actions to take."
+]
+
+fn_no_op = [
+    "You have completed the task so there are no actions to avoid.",
+    "Since you have completed the task, there are no further actions to avoid."
 ]
 
 reward_descp = [
