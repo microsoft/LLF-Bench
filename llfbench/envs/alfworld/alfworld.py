@@ -104,7 +104,8 @@ class Alfworld(gym.Env):
 
         info = {
             "success": False,
-            "expert_action": infos["expert_plan"][0][0]
+            "expert_action": infos["expert_plan"][0][0],
+            "admissible_commands": admissible_commands
         }
 
         return dict(instruction=self.docstring,
@@ -207,7 +208,8 @@ class Alfworld(gym.Env):
         info = {
             "feedback": feedback,
             "success": won,
-            "expert_action": infos["expert_plan"][0][0]
+            "expert_action": infos["expert_plan"][0][0],
+            "admissible_commands": admissible_commands
         }
 
         self.last_infos = infos
