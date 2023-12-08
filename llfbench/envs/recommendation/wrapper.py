@@ -1,7 +1,7 @@
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
 from llfbench.envs.llf_env import LLFWrapper, Feedback
-from llfbench.envs.movie_rec.prompts import *
-from llfbench.envs.movie_rec.movie_rec import MovieRec
+from llfbench.envs.recommendation.prompts import *
+from llfbench.envs.recommendation.movie_rec import MovieRec
 
 """
 The original env produces support for both
@@ -34,7 +34,7 @@ class MovieRecGymWrapper(LLFWrapper):
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
         didactic_feedback = info['feedback']
-        del info['original_feedback']
+        # del info['original_feedback']
         del info['feedback']
 
         attribute_list = ["hallucination", "type", "genre", "year", "child_friendly"]
