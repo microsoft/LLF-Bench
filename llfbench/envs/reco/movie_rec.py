@@ -312,6 +312,8 @@ class MovieRec(gym.Env):
 
         self.docstring = dedent("""
         You are a helpful assistant trying to recommend movies to your users according to what they want.
+        
+        Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]
         """)
 
     def initialize_text_extractor(self, content_extractor: RecContentExtractor):
@@ -778,10 +780,13 @@ class MovieRec(gym.Env):
                 didactic_feedback.fp = didactic_feedback.r + """ Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]"""
                 return None, 0, True, {'success': False, 'feedback': didactic_feedback, "original_feedback": didactic_feedback.fp}
 
-        if type(a) == list:
-            rec_movies = a
-        else:
-            rec_movies = self.extract_with_retry(a)
+        if type(a) != list and 'title' not in a[0]:
+            didactic_feedback = Feedback()
+            didactic_feedback.r = f'You entered an action with invalid format: {a}'
+            didactic_feedback.fp = didactic_feedback.r + """ Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]"""
+            return None, 0, True, {'success': False, 'feedback': didactic_feedback,
+                                   "original_feedback": didactic_feedback.fp}
+        rec_movies = a
 
         if rec_movies is None:
             # there's no difference between observation and feedback?
