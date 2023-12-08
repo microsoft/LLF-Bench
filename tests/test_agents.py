@@ -36,8 +36,8 @@ def main(args):
                                 env=env,
                                 horizon=horizon,
                                 n_episodes=n_episodes,
-                                n_workers=1,
-                                seed=args.seed)
+                                n_workers=1)
+                                #seed=args.seed)
 
         print_color('Agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()),
                     color='red')
