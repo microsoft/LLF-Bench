@@ -1,3 +1,4 @@
+import os
 import gym
 import sys
 import json
@@ -14,8 +15,6 @@ from textwrap import dedent, indent
 from llfbench.utils.parser_utils import SimpleGuidanceParser
 from llfbench.envs.llf_env import Feedback
 
-api_key = "4ace3dfa"
-
 """
 Issue:
 The fp/fn are not super good here -- fp/fn and hp/hn are too similar right now.
@@ -30,6 +29,17 @@ The fp/fn are not super good here -- fp/fn and hp/hn are too similar right now.
 
 def get_details_via_omdb(title, verbose=False):
     url = "http://www.omdbapi.com/"
+
+    try:
+        api_key = os.environ['OMDB_API_KEY']
+    except KeyError:
+        api_key = input("Please enter your OMDB_API_KEY (follow README to register): ")
+        if api_key.strip() == "":
+            raise ValueError("Please provide a valid OMDB_API_KEY.")
+        print("We have automatically set the OMDB_API_KEY environment variable for you.")
+
+        os.environ['OMDB_API_KEY'] = api_key
+
     params = {
         "t": title,
         "apikey": api_key
