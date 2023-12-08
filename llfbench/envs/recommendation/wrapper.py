@@ -34,7 +34,7 @@ class MovieRecGymWrapper(LLFWrapper):
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
         didactic_feedback = info['feedback']
-        # del info['original_feedback']
+        del info['original_feedback']
         del info['feedback']
 
         attribute_list = ["hallucination", "type", "genre", "year", "child_friendly"]
