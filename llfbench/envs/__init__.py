@@ -2,7 +2,7 @@ import importlib
 from llfbench.envs import gridworld
 from llfbench.envs import bandits
 from llfbench.envs import optimization
-from llfbench.envs import movie_rec
+from llfbench.envs import reco
 from llfbench.envs import poem
 from llfbench.envs import highway
 
