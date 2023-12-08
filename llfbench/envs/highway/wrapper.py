@@ -52,6 +52,6 @@ class HighwayWrapper(LLFWrapper):
 
     def textualize_observation(self, observation):
         text_observation = 'Desired goal:' + np.array2string(observation['desired_goal'], precision=3)
-        text_observation += '\nAchieved goal:' + np.array2string(observation['achieved_goal'], precision=3)
+        #text_observation += '\nAchieved goal:' + np.array2string(observation['achieved_goal'], precision=3)
         text_observation += '\nObservation:' + np.array2string(observation['observation'], precision=3)
         return text_observation
