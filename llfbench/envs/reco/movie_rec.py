@@ -780,7 +780,7 @@ class MovieRec(gym.Env):
                 didactic_feedback.fp = didactic_feedback.r + """ Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]"""
                 return None, 0, True, {'success': False, 'feedback': didactic_feedback, "original_feedback": didactic_feedback.fp}
 
-        if type(a) != list and 'title' not in a[0]:
+        if type(a) != list or 'title' not in a[0]:
             didactic_feedback = Feedback()
             didactic_feedback.r = f'You entered an action with invalid format: {a}'
             didactic_feedback.fp = didactic_feedback.r + """ Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]"""
