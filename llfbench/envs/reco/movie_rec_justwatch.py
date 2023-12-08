@@ -12,10 +12,8 @@ import requests
 
 from dataclasses import dataclass, asdict
 
-from llfbench.agents.parser_util import SimpleGuidanceParser
+from llfbench.utils.parser_utils import SimpleGuidanceParser
 import string
-
-api_key = "4ace3dfa"
 
 """
 Issue:
