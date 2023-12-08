@@ -1,7 +1,7 @@
 from llfbench.envs.env_wrappers import TerminalFreeWrapper, EnvCompatibility
 from llfbench.envs.llf_env import LLFWrapper, Feedback
-from llfbench.envs.recommendation.prompts import *
-from llfbench.envs.recommendation.movie_rec import MovieRec
+from llfbench.envs.reco.prompts import *
+from llfbench.envs.reco.movie_rec import MovieRec
 
 """
 The original env produces support for both
