@@ -55,6 +55,8 @@ def get_return(env_name, seed, config):
         assert type(info) == dict and type(next_info) == dict
         assert env.reward_range[0] <= reward <= env.reward_range[1]
 
+        info = next_info
+
     return total_return
 
 
