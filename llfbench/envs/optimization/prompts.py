@@ -109,7 +109,7 @@ fp_feedback_dim1 = (
     "Your pick was {x}. Minimize y by issuing a {smaller} number than the first element of {x2}.",
     "You've opted for {x}. To ensure y is minimized, aim to produce a {smaller} number than the starting value of {x2}.",
     "Your choice fell on {x}. Now, to bring y down, provide a {smaller} number than the first in the list {x2}.",
-    "You picked {x}. In order to minimize y, you should output a {smaller} number than the first one in your chosen set.",
+    "You picked {x}. In order to minimize y, you should output a {smaller} number than the first number in your chosen set.",
     "Your selection was {x}, and to minimize y, you need to output a {smaller} number than the first value from {x2}."
 )
 
@@ -123,7 +123,7 @@ fp_feedback_dim2 = (
     "Your pick was {x}. Minimize y by issuing a {smaller} number than the second element of {x2}.",
     "You've opted for {x}. To ensure y is minimized, aim to produce a {smaller} number than the starting value of {x2}.",
     "Your choice fell on {x}. Now, to bring y down, provide a {smaller} number than the second in the list {x2}.",
-    "You picked {x}. In order to minimize y, you should output a {smaller} number than the second one in your chosen set.",
+    "You picked {x}. In order to minimize y, you should output a {smaller} number than the second number in your chosen set.",
     "Your selection was {x}, and to minimize y, you need to output a {smaller} number than the second value from {x2}."
 )
 
