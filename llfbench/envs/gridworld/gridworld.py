@@ -149,9 +149,11 @@ class Gridworld(gym.Env):
         self.instruction = self.generate_instruction()
 
         gold_action = None if self.goal_prev_visited else self.current_scene.get_gold_action(self.current_room)
+        gold_action_ix = None if gold_action is None else Scene.DIRECTIONS.index(gold_action)
+        
         info = {
             "success": self.goal_prev_visited,
-            "expert_action": Scene.DIRECTIONS.index(gold_action)
+            "expert_action": gold_action_ix
         }
 
         return dict(instruction=self.instruction,
@@ -241,11 +243,12 @@ class Gridworld(gym.Env):
         truncated = self.current_timestep >= self.horizon
 
         gold_action = None if self.goal_prev_visited else self.current_scene.get_gold_action(self.current_room)
+        gold_action_ix = None if gold_action is None else Scene.DIRECTIONS.index(gold_action)
 
         info = {
             "feedback": feedback,
             "success": self.goal_prev_visited,
-            "expert_action": Scene.DIRECTIONS.index(gold_action)
+            "expert_action": gold_action_ix
         }
 
         next_packed_obs = dict(instruction=None,
