@@ -1,8 +1,17 @@
 from textwrap import dedent, indent
+import sys
 
 from llfbench.agents.abstract_agent import Agent
 from llfbench.agents.utils import extract_action, ReplayBuffer, print_color
 
+def get_multiline_input(prompt="Enter text (press Enter twice to finish):\n"):
+    lines = []
+    while True:
+        line = input(prompt)
+        if not line:
+            break  # Break the loop if the user enters an empty line
+        lines.append(line)
+    return '\n'.join(lines)
 
 class UserAgent(Agent):
 
@@ -105,7 +114,9 @@ class UserAgent(Agent):
         else:
             user_prompt = self.prompt_template.format(self.docstring, world_info, observation)
 
-        response = input(user_prompt)
+        print(user_prompt)
+        response = get_multiline_input()
+        #response = input(user_prompt)
 
         action = response.split('Action:')[-1]
         #if self.n_actions is not None:
