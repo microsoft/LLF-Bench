@@ -143,14 +143,20 @@ class Gridworld(gym.Env):
         self.current_scene = self.make_scene()
 
         self.current_room = self.current_scene.get_start_room()
-        self.goal_prev_visited = False
+        self.goal_prev_visited = (self.current_room == self.current_scene.goal_room)
 
         obs = self.make_room_obs(self.current_room)
         self.instruction = self.generate_instruction()
 
+        gold_action = None if self.goal_prev_visited else self.current_scene.get_gold_action(self.current_room)
+        info = {
+            "success": self.goal_prev_visited,
+            "expert_action": gold_action
+        }
+
         return dict(instruction=self.instruction,
                     observation=obs,
-                    feedback=None), {"success": False}
+                    feedback=None), info
 
     def generate_instruction(self):
 
@@ -220,6 +226,13 @@ class Gridworld(gym.Env):
 
         # Compute the reward
         reward = 1.0 if self.current_room == self.current_scene.goal_room and not self.goal_prev_visited else 0.0
+
+        feedback = self.generate_feedback(action=action,
+                                          reward=reward,
+                                          old_gold_action=old_gold_action,
+                                          old_room=old_room)
+
+        # Update the goal revisited
         self.goal_prev_visited = self.goal_prev_visited or (self.current_room == self.current_scene.goal_room)
 
         # Update the counter and compute done
@@ -227,14 +240,12 @@ class Gridworld(gym.Env):
         terminated = False
         truncated = self.current_timestep >= self.horizon
 
-        feedback = self.generate_feedback(action=action,
-                                          reward=reward,
-                                          old_gold_action=old_gold_action,
-                                          old_room=old_room)
+        gold_action = None if self.goal_prev_visited else self.current_scene.get_gold_action(self.current_room)
 
         info = {
             "feedback": feedback,
-            "success": self.current_room == self.current_scene.goal_room
+            "success": self.goal_prev_visited,
+            "expert_action": gold_action
         }
 
         next_packed_obs = dict(instruction=None,
