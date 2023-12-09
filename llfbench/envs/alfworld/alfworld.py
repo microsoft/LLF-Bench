@@ -1,3 +1,4 @@
+import os
 import sys
 import random
 import string
@@ -5,6 +6,7 @@ import gymnasium as gym
 
 from llfbench.envs.alfworld.prompts import *
 from llfbench.envs.llf_env import Feedback
+from llfbench.envs.alfworld.alfworld_download import download_alfworld_data
 
 
 class Alfworld(gym.Env):
@@ -23,6 +25,16 @@ class Alfworld(gym.Env):
     def __init__(self, instruction_type, feedback_type):
 
         config_file = "llfbench/envs/alfworld/base_config.yaml"
+
+        # Read AI2Thor data
+        os.environ["ALFWORLD_DATA"] = "alfworld_data"
+
+        if not os.path.exists(os.environ["ALFWORLD_DATA"]) or len(os.listdir(os.environ["ALFWORLD_DATA"])) == 0:
+            print(f"Downloading Alfworld data to {os.environ['ALFWORLD_DATA']}")
+            download_alfworld_data(data_dir=os.environ['ALFWORLD_DATA'])
+        else:
+            print(f"Alfworld data already exists in {os.environ['ALFWORLD_DATA']} "
+                  f"If this is old or stale, then delete it and run the code again.")
 
         old_sys_argv = list(sys.argv)
         print(f"Reading file {config_file}")
