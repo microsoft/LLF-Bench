@@ -74,7 +74,7 @@ class Alfworld(gym.Env):
     def _generate_instruction(self, reset_obs):
 
         # Separate task and use it as instruction
-        task = reset_obs.split("\n\n")[-1]
+        task = reset_obs.split("\n\n")[-1].strip()
         if not task.endswith("."):
             task = task + "."
 
