@@ -48,12 +48,13 @@ def get_details_via_omdb(title, verbose=False):
     response = requests.get(url, params=params)
     data = response.json()
     non_exist = True
+    reviews = {}
 
     if "Error" in data:
         if verbose:
             print(data["Error"])
             print(title)
-        return title, None, None, "PG", None, None, None, non_exist
+        return title, reviews, None, "PG", None, None, None, non_exist
 
     title = data.get("Title", title)
     genres = data.get("Genre", None)
@@ -68,7 +69,7 @@ def get_details_via_omdb(title, verbose=False):
     if show_type == "series":
         show_type = "show"
 
-    reviews = {}
+
     if 'imdbRating' in data:
         reviews['imdbRating'] = data['imdbRating']
     if 'Ratings' in data:
@@ -533,14 +534,16 @@ class MovieRec(gym.Env):
         error_items, success_items = [], []
         for title, factual_info in factual_movie_data.items():
             if self.map_type(factual_info['type']) != profile_type:
-                error_items.append(title)
+                error_items.append((title, self.map_type(factual_info['type'])))
+            else:
+                success_items.append((title, self.map_type(factual_info['type'])))
 
         if len(error_items) == 0:
             didactic_feedback = Feedback(
                 r=f"What you recommended are {self.profile['type_']}s, nice!")
             return True, None, didactic_feedback, {'unsatisfied': []}
         else:
-            feedback = self._list_to_string(error_items, last_separator=' and ')
+            feedback = self._list_to_string([e[0] for e in error_items], last_separator=' and ')
             feedback += self.plural_wrap(profile_type, len(error_items)) + '.'
 
             if first_order:
@@ -558,7 +561,7 @@ class MovieRec(gym.Env):
             if len(error_items) > 0:
                 hn = f"These items are not all {profile_type}s:"
                 for item in error_items:
-                    hn += f" {item[0]} is {self._list_to_string(item[1])},"
+                    hn += f" {item[0]} is {item[1]},"
                 didactic_feedback.hn = hn
 
             fp = f"Recommend {profile_type}s, like"
@@ -616,18 +619,18 @@ class MovieRec(gym.Env):
             if len(success_items) > 0:
                 hp = f"These {self.profile['type_']}s are indeed {profile_age_restriction}:"
                 for item in success_items:
-                    hp += f" {item[0]},"
+                    hp += f" {item},"
                 didactic_feedback.hp = hp
 
             if len(error_items) > 0:
                 hn = f"These {self.profile['type_']}s are not {profile_age_restriction}:"
                 for item in error_items:
-                    hn += f" {item[0]},"
+                    hn += f" {item},"
                 didactic_feedback.hn = hn
 
             fp = f"Recommend {self.profile['type_']}s that are {profile_age_restriction}, like"
             for item in success_items:
-                fp += f" {item[0]},"
+                fp += f" {item},"
             fp += '.'
             didactic_feedback.fp = fp
 
@@ -644,6 +647,9 @@ class MovieRec(gym.Env):
         for title, factual_info in factual_movie_data.items():
             if factual_info['non_exist'] is True:
                 error_items.append(title)
+            else:
+                success_items.append(title)
+
         if len(error_items) == 0:
             didactic_feedback = Feedback(r=f"I can find all the recommended {self.profile['type_']}s, nice!")
             return True, None, didactic_feedback, {'unsatisfied': []}
@@ -660,24 +666,24 @@ class MovieRec(gym.Env):
             if len(success_items) > 0:
                 hp = f"I can find these {self.profile['type_']}s on the internet:"
                 for item in success_items:
-                    hp += f" {item[0]},"
+                    hp += f" {item},"
                 didactic_feedback.hp = hp
 
             if len(error_items) > 0:
                 hn = f"I can't find these {self.profile['type_']}s on the internet:"
                 for item in error_items:
-                    hn += f" {item[0]},"
+                    hn += f" {item},"
                 didactic_feedback.hn = hn
 
             fp = f"Recommend {self.profile['type_']}s that I can find online, like:"
             for item in success_items:
-                fp += f" {item[0]},"
+                fp += f" {item},"
             fp += '.'
             didactic_feedback.fp = fp
 
             fn = f"Do not recommend {self.profile['type_']}s that I can't find online, like:"
             for item in error_items:
-                fn += f" {item[0]},"
+                fn += f" {item},"
             fn += '.'
             didactic_feedback.fn = fn
 
