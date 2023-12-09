@@ -43,12 +43,7 @@ def obs_space_contains_obs(obs, obs_space):
         return obs_space[k].contains(obs[k]) or (obs[k] is None)
 
 
-def get_return(env_name, agent, seed, config):
-
-    random.seed(seed)
-    np.random.seed(seed)
-
-    env = llfbench.make(env_name, **config)
+def get_return(env, env_name, agent):
 
     assert len(env.reward_range) == 2
 
@@ -104,9 +99,13 @@ def test_env(env_name, agent, num_eps=1, seed=0):
 
     for config in configs:
 
+        random.seed(seed)
+        np.random.seed(seed)
+
         env = llfbench.make(env_name, **config)  # test llfbench.make
         assert test_wrapper(env)                 # test LLFWrapper is used
-        all_returns = [get_return(env_name=env_name, agent=agent, seed=seed, config=config) for _ in range(num_eps)]
+
+        all_returns = [get_return(env=env, env_name=env_name, agent=agent) for _ in range(num_eps)]
 
         print(f"Environment: {env_name}, Config {config}, Number of episodes {num_eps}, "
               f"Mean return {np.mean(all_returns):.3f}, "

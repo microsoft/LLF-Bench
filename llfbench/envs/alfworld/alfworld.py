@@ -95,8 +95,7 @@ class Alfworld(gym.Env):
     @staticmethod
     def _get_expert_action(infos):
 
-        if "expert_plan" in infos["expert_plan"] and \
-                len(infos["expert_plan"]) == 1 and len(infos["expert_plan"][0]) == 1:
+        if "expert_plan" in infos and len(infos["expert_plan"]) == 1 and len(infos["expert_plan"][0]) == 1:
             return infos["expert_plan"][0][0]
         else:
             return None
