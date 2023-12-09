@@ -234,6 +234,10 @@ class Alfworld(gym.Env):
         done = dones[0]
         won = bool(infos["won"][0])
 
+        if self.already_won:
+            # This is done so that the agent cannot cheat by taking actions even after winning
+            reward = 0
+
         terminated = done or won
         truncated = self.timestep == self.horizon
         self.already_won = self.already_won or won
