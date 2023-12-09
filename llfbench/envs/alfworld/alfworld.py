@@ -59,7 +59,7 @@ class Alfworld(gym.Env):
         self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
-        self.horizon = 100
+        self.horizon = config["rl"]["training"]["max_nb_steps_per_episode"]
         self.timestep = 0
 
         # Markers
@@ -217,13 +217,10 @@ class Alfworld(gym.Env):
         if type(action) != str:
             raise TypeError(f"Expected action of type string but found {type(action)}.")
 
-        # TODO: Parse the action later for strict parsing
+        action = action.lower().strip()
+
+        # TODO: Parse the action to find the closest admissible_command
         # admissible_commands = list(self.last_infos['admissible_commands'][0])
-
-        # get random actions from admissible 'valid' commands (not available for AlfredThorEnv)
-        # note: BUTLER generates commands word-by-word without using admissible_commands
-
-        # step
         obs, rewards, dones, infos = self.env.step([action])
 
         self.timestep += 1
