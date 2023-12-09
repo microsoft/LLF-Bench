@@ -236,7 +236,7 @@ class Alfworld(gym.Env):
             reward = 0
 
         terminated = done or won
-        truncated = self.timestep == self.horizon
+        truncated = self.timestep >= self.horizon
         self.already_won = self.already_won or won
 
         # Create observation by combining current obs with admissible commands
