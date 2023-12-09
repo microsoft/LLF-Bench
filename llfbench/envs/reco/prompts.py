@@ -363,7 +363,7 @@ child_friendly_fp = (
     "Highlight {movie}s that are rated as {child_friendly}, such as"
 )
 
-child_friendly_fn_template = ""
+child_friendly_fn_template = "Do not recommend {movie}s that are not {child_friendly}, like"
 child_friendly_fn = (
     "Avoid suggesting {movie}s which lack a {child_friendly} designation, such as",
     "Refrain from recommending {movie}s that don’t meet the {child_friendly} standard, like",
