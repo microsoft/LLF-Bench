@@ -54,16 +54,16 @@ class Alfworld(gym.Env):
         self.format = None
         self.instruction_type = instruction_type
         self.feedback_type = feedback_type
+        self.already_won = False
 
         self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
-        # TODO find the best way to set the horizon for alfworld. Currently, setting it to a guess value.
         self.horizon = 100
         self.timestep = 0
 
         # Markers
-        self.docstring = None
+        self.instruction = None
         self.last_infos = None
 
         sys.argv = old_sys_argv
@@ -71,18 +71,19 @@ class Alfworld(gym.Env):
     def seed(self, seed):
         self.env.seed(seed)
 
-    def _generate_docstring(self, reset_obs):
+    def _generate_instruction(self, reset_obs):
 
-        # Separate task and use it as docstring
+        # Separate task and use it as instruction
         task = reset_obs.split("\n\n")[-1]
         if not task.endswith("."):
             task = task + "."
 
-        docstring = self.format(docstrings, task=task)
+        instruction = self.format(instructions, task=task)
 
-        return docstring
+        return instruction
 
-    def _generate_observation(self, obs, admissible_commands, won):
+    @staticmethod
+    def _generate_observation(obs, admissible_commands, won):
 
         actions = ", ".join(admissible_commands)
         obs_command = f"{obs}. You are allowed to take the following actions: {actions}."
@@ -90,6 +91,15 @@ class Alfworld(gym.Env):
         if won:
             obs_command += " Congratulations on solving the task!"
         return obs_command
+
+    @staticmethod
+    def _get_expert_action(infos):
+
+        if "expert_plan" in infos["expert_plan"] and \
+                len(infos["expert_plan"]) == 1 and len(infos["expert_plan"][0]) == 1:
+            return infos["expert_plan"][0][0]
+        else:
+            return None
 
     def reset(self, *, seed=None, options=None):
 
@@ -106,7 +116,8 @@ class Alfworld(gym.Env):
         self.timestep = 0
 
         self.last_infos = infos
-        self.docstring = self._generate_docstring(reset_obs=obs)
+        self.instruction = self._generate_instruction(reset_obs=obs)
+        self.already_won = won
 
         # Create observation by combining current obs with admissible commands
         admissible_commands = infos["admissible_commands"][0]
@@ -115,12 +126,12 @@ class Alfworld(gym.Env):
                                                  won=won)
 
         info = {
-            "success": False,
-            "expert_action": infos["expert_plan"][0][0],
+            "success": won,
+            "expert_action": self._get_expert_action(infos),
             "admissible_commands": admissible_commands
         }
 
-        return dict(instruction=self.docstring,
+        return dict(instruction=self.instruction,
                     observation=obs_command,
                     feedback=None), info
 
@@ -137,43 +148,64 @@ class Alfworld(gym.Env):
         if "hn" in feedback_type:
 
             past_admissible_actions = past_info["admissible_commands"][0]
-            past_opt_action = past_info["expert_plan"][0][0]
+            past_opt_action = self._get_expert_action(past_info)
 
-            bad_actions = list(past_admissible_actions)
-            bad_actions.remove(past_opt_action)
-
-            avoid_action = random.choice(bad_actions)
-
-            if action == avoid_action:
-                feedback.hn = self.format(mistake_bad_action_descp, avoid_action=avoid_action)
+            if self.already_won:
+                feedback.hn = self.format(hn_no_op)
+            elif past_opt_action is None:
+                feedback.hn = self.format(no_feedback)
             else:
-                feedback.hn = self.format(correct_bad_action_descp, avoid_action=avoid_action)
+                bad_actions = list(past_admissible_actions)
+                bad_actions.remove(past_opt_action)
+
+                avoid_action = random.choice(bad_actions)
+
+                if action == avoid_action:
+                    feedback.hn = self.format(mistake_bad_action_descp, avoid_action=avoid_action)
+                else:
+                    feedback.hn = self.format(correct_bad_action_descp, avoid_action=avoid_action)
 
         if "hp" in feedback_type:
 
-            past_opt_action = past_info["expert_plan"][0][0].lower().strip()
+            past_opt_action = self._get_expert_action(past_info)
 
-            if past_opt_action == action.lower().strip():
-                feedback.hp = self.format(correct_good_action_descp, past_opt_action=past_opt_action)
+            if self.already_won:
+                feedback.hp = self.format(hp_no_op)
+            elif past_opt_action is None:
+                feedback.hp = self.format(no_feedback)
             else:
-                feedback.hp = self.format(mistake_good_action_descp, past_opt_action=past_opt_action)
+                if past_opt_action == action.lower().strip():
+                    feedback.hp = self.format(correct_good_action_descp, past_opt_action=past_opt_action)
+                else:
+                    feedback.hp = self.format(mistake_good_action_descp, past_opt_action=past_opt_action)
 
         if "fn" in feedback_type:
 
             admissible_actions = info["admissible_commands"][0]
-            opt_action = info["expert_plan"][0][0]
+            opt_action = self._get_expert_action(info)
 
-            bad_actions = list(admissible_actions)
-            bad_actions.remove(opt_action)
+            if self.already_won:
+                feedback.fn = self.format(fn_no_op)
+            elif opt_action is None:
+                feedback.fn = self.format(no_feedback)
+            else:
+                bad_actions = list(admissible_actions)
+                bad_actions.remove(opt_action)
 
-            avoid_action = random.choice(bad_actions)
+                avoid_action = random.choice(bad_actions)
 
-            feedback.fn = self.format(avoid_bad_action_descp, avoid_action=avoid_action)
+                feedback.fn = self.format(avoid_bad_action_descp, avoid_action=avoid_action)
 
         if "fp" in feedback_type:
 
-            opt_action = info["expert_plan"][0][0].lower().strip()
-            feedback.fp = self.format(follow_opt_action_descp, opt_action=opt_action)
+            opt_action = self._get_expert_action(info)
+
+            if self.already_won:
+                feedback.fp = self.format(fp_no_op)
+            elif opt_action is None:
+                feedback.fp = self.format(no_feedback)
+            else:
+                feedback.fp = self.format(follow_opt_action_descp, opt_action=opt_action)
 
         return feedback
 
@@ -202,8 +234,9 @@ class Alfworld(gym.Env):
         done = dones[0]
         won = bool(infos["won"][0])
 
-        terminated = False
+        terminated = done or won
         truncated = self.timestep == self.horizon
+        self.already_won = self.already_won or won
 
         # Create observation by combining current obs with admissible commands
         admissible_commands = infos["admissible_commands"][0]
@@ -220,8 +253,8 @@ class Alfworld(gym.Env):
         info = {
             "feedback": feedback,
             "success": won,
-            "expert_action": infos["expert_plan"][0][0],
-            "admissible_commands": admissible_commands
+            "expert_action": self._get_expert_action(infos),
+            "admissible_commands": admissible_commands,
         }
 
         self.last_infos = infos

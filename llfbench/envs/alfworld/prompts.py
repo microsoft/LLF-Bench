@@ -1,4 +1,4 @@
-docstrings = [
+instructions = [
     "You are in a house with a variety of objects. {task} You have to take a sequence of "
     "actions to full fill it. When you take an action, you can change the world. You will be told at each step, "
     "what actions are allowed and you must pick only one of those actions.",
@@ -23,6 +23,30 @@ docstrings = [
     "You have to fulfill this task which will require you to take a sequence of actions. Taking an action can change"
     "the world so keep that in mind when taking actions. At each step of this sequence, you will be told what actions "
     "are allowed. You should only select an action that is allowed.",
+]
+
+no_feedback = [
+    "There is no feedback to provide."
+]
+
+hp_no_op = [
+    "As you have completed the task, all actions are equally good at this point.",
+    "As you have completed the task, you can take any valid action you want."
+]
+
+hn_no_op = [
+    "As you have completed the task, all actions are equally good at this point.",
+    "As you have completed the task, you can take any valid action you want."
+]
+
+fp_no_op = [
+    "You have completed the task so there are no actions to take.",
+    "As you have completed the task, there are no further actions to take."
+]
+
+fn_no_op = [
+    "You have completed the task so there are no actions to avoid.",
+    "Since you have completed the task, there are no further actions to avoid."
 ]
 
 reward_descp = [
