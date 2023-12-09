@@ -163,16 +163,16 @@ type_fn = (
     "Omit items that aren't {movie}s from recommendations, such as"
 )
 
-genre_r_pos_template = "The recommended {movie}s are all {action_comedy_movies}, nice!"
+genre_r_pos_template = "The recommended {movie}s are all {action_comedy_movie}, nice!"
 genre_r_pos = (
-"All of the suggested {movie}s are {action_comedy_movies}, great!",
+    "All of the suggested {movie}s are {action_comedy_movie}, great!",
     "Every one of the recommended {movie}s is an {action_comedy_movie}, which is awesome!",
-    "The {movie}s you've recommended are exclusively {action_comedy_movies}, nice one!",
-    "It's cool that the recommended {movie}s are all {action_comedy_movies}!",
+    "The {movie}s you've recommended are exclusively {action_comedy_movie}, nice one!",
+    "It's cool that the recommended {movie}s are all {action_comedy_movie}!",
     "Nice to see that each recommended {movie} is a {action_comedy_movie}!",
-    "All the {movie}s on the recommendation list are {action_comedy_movies}, wonderful!",
+    "All the {movie}s on the recommendation list are {action_comedy_movie}, wonderful!",
     "Delighted that the recommended {movie}s are all in the {action_comedy_movie} genre, excellent!",
-    "The entire list of recommended {movie}s consists of {action_comedy_movies}, which is fantastic!"
+    "The entire list of recommended {movie}s consists of {action_comedy_movie}, which is fantastic!"
 )
 
 genre_r_neg_template = "The recommendations are not all {action_comedy_movie}s."

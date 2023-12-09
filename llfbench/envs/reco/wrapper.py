@@ -44,7 +44,11 @@ class MovieRecGymWrapper(LLFWrapper):
         for attribute in attribute_list:
             if attribute not in didactic_feedback:
                 continue
+
             for feedback_type in self._feedback_type:
+                if didactic_feedback[attribute][feedback_type] is None:
+                    continue
+
                 if feedback_type == 'r':
                     r_pos_temp = eval(f"{attribute}_r_pos_template")
                     r_pos = eval(f"{attribute}_r_pos")
@@ -56,7 +60,7 @@ class MovieRecGymWrapper(LLFWrapper):
 
                     paraphrased_feedback.r += feedback + '\n'
 
-                elif didactic_feedback[attribute][feedback_type] is not None:
+                else:
                     # design issue:
                     # if LLM suggestion is correct on the attribute, some feedback might not show up
                     # like, r is filled, but not hn
