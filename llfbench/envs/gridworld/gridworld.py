@@ -151,7 +151,7 @@ class Gridworld(gym.Env):
         gold_action = None if self.goal_prev_visited else self.current_scene.get_gold_action(self.current_room)
         info = {
             "success": self.goal_prev_visited,
-            "expert_action": gold_action
+            "expert_action": Scene.DIRECTIONS.index(gold_action)
         }
 
         return dict(instruction=self.instruction,
@@ -245,7 +245,7 @@ class Gridworld(gym.Env):
         info = {
             "feedback": feedback,
             "success": self.goal_prev_visited,
-            "expert_action": gold_action
+            "expert_action": Scene.DIRECTIONS.index(gold_action)
         }
 
         next_packed_obs = dict(instruction=None,
