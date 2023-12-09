@@ -11,8 +11,3 @@ Then, you can set the environment variable `OMDB_API_KEY` to your key:
 ```bash
 export OMDB_API_KEY=your_key
 ```
-
-An old version of the environment relied on `justwatch` API, which was used to retrieve platform-specific movie information.
-However, around September 2023, `justwatch` turned off their public unofficial API access.
-
-The original code is still available at `movie_rec_justwatch.py`.
