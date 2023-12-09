@@ -115,6 +115,7 @@ def rollout(agent, env, *, horizon, return_full_information=False, log_data=Fals
         sum_of_rewards += reward
 
         if terminated or truncated or info['success']:
+            print("EPISODE DONE! Terminated: {}, truncated: {}, success: {}".format(terminated, truncated, info['success']))
             break
 
     return sum_of_rewards, data
