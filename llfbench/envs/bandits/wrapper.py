@@ -49,8 +49,9 @@ class BanditGymWrapper(LLFWrapper):
         if 'hn' in feedback_type:  # hindsight negative: explaination on why something is incorrect
             if action != self._best_arm:
                 feedback.hn = self.format(hn_feedback)
+        assert feedback.hn is None or feedback.hp is None, 'Cannot have both hp and hn feedback'
         if 'fp' in feedback_type:  # future positive: suggestion of things to do
-            feedback.fp = self.format(hp_feedback, best_arm=self._best_arm, reward=self._expected_reward(self._best_arm))
+            feedback.fp = self.format(fp_feedback, best_arm=self._best_arm, reward=self._expected_reward(self._best_arm))
         if 'fn' in feedback_type:  # future negative: suggestion of things to avoid
             bad_action = np.random.choice(np.delete(np.arange(self.env.action_space.n), self._best_arm))
             feedback.fn = self.format(fn_feedback, bad_action=bad_action, reward=self._expected_reward(bad_action))
