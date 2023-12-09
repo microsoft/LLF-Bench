@@ -59,7 +59,7 @@ class Alfworld(gym.Env):
         self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
-        self.horizon = config["rl"]["training"]["max_nb_steps_per_episode"]
+        self.horizon = self.config["rl"]["training"]["max_nb_steps_per_episode"]
         self.timestep = 0
 
         # Markers
