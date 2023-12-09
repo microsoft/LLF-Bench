@@ -118,7 +118,7 @@ dagger:
   unstick_by_beam_search: False                               # use beam-search for failed actions, set True during evaluation
 
   training:
-    max_nb_steps_per_episode: 50                              # terminate after this many steps
+    max_nb_steps_per_episode: 100                              # terminate after this many steps
 
   fraction_assist:
     fraction_assist_anneal_episodes: 50000
