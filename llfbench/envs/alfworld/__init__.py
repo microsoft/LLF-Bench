@@ -1,19 +1,8 @@
-import os
 from gymnasium.envs.registration import register
-
 from llfbench.envs.alfworld.alfworld import Alfworld
 from llfbench.envs.alfworld.wrapper import AlfworldWrapper
-from llfbench.envs.alfworld.alfworld_download import download_alfworld_data
 
-# TODO download PPDL and other data necessary to run Alfworld
-os.environ["ALFWORLD_DATA"] = "alfworld_data"
 
-if not os.path.exists(os.environ["ALFWORLD_DATA"]) or len(os.listdir(os.environ["ALFWORLD_DATA"])) == 0:
-    print(f"Downloading Alfworld data to {os.environ['ALFWORLD_DATA']}")
-    download_alfworld_data(data_dir=os.environ['ALFWORLD_DATA'])
-else:
-    print(f"Alfworld data already exists in {os.environ['ALFWORLD_DATA']} "
-          f"If this is old or stale, then delete it and run the code again.")
 
 ENVIRONMENTS = (
     'alfworld-v0',
