@@ -198,7 +198,6 @@ class LossLandscapeBase(gym.Env):
         prev_x1_direction = 'Increasing' if change_x1 > 0 else 'Decreasing'  # take the opposite of gradient
         prev_x2_direction = 'Increasing' if change_x2 > 0 else 'Decreasing'
 
-        # TODO: check this
         if np.sign(change_x1) == np.sign(-prev_dx1):
             didactic_feedback['hp'] += f"You chose {action} from {self.prev_x}. {prev_x1_direction} the first number {self.prev_x[0]} does minimize y.\n"
         else:
