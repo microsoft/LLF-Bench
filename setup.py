@@ -1,14 +1,14 @@
 from distutils.core import setup
 
 setup(
-    name='verbal_gym',
+    name='llfbench',
     version='0.1.0',
-    author='Verbal-feedback Team',
+    author='LLF-Bench Team',
     author_email='chinganc@microsoft.com',
-    packages=['verbal_gym'],
-    url='https://github.com/microsoft/verbal-gym',
+    packages=['llfbench'],
+    url='https://github.com/microsoft/LLF-Bench',
     license='MIT LICENSE',
-    description='A gym environment for learning with verbal feedback.',
+    description='A gym environment for learning with language feedback.',
     long_description=open('README.md').read(),
     install_requires=[
         "tqdm",
@@ -25,12 +25,17 @@ setup(
         "jaxlib",
         # highway
         "highway-env",
+        # movie
+        'requests==2.31.0'
     ],
     extras_require={
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
         'alfworld': [ 'fast-downward@https://github.com/MarcCote/downward/archive/faster_replan.zip',
                       'textworld@https://github.com/MarcCote/TextWorld/archive/handcoded_expert_integration.zip',
                       'alfworld@git+https://github.com/chinganc/alfworld.git@master#egg=alfworld',
+                      'werkzeug==2.2.2',
+                      'flask==2.0.2',
+                      'click==7.1.2',
         ]
     }
 )

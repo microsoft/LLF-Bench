@@ -1,10 +1,10 @@
 import gymnasium as gym
-import verbal_gym
+import llfbench
 import numpy as np
 import random
 from tqdm import tqdm
-from verbal_gym.utils.utils import generate_combinations_dict
-from verbal_gym.envs.verbal_gym_env import VerbalGymWrapper
+from llfbench.utils.utils import generate_combinations_dict
+from llfbench.envs.llf_env import LLFWrapper
 
 
 def obs_space_contains_obs(obs, obs_space):
@@ -18,15 +18,15 @@ def step_env(env_name, seed, config):
     random.seed(seed)
     np.random.seed(seed)
 
-    env = verbal_gym.make(env_name, **config)
+    env = llfbench.make(env_name, **config)
     assert len(env.reward_range)==2
     obs, info = env.reset(seed=seed)
 
     if isinstance(env.action_space , gym.spaces.Text):
         action = 'test action'
-        if 'verbal-optimization' in env_name:
+        if 'llf-optimization' in env_name:
             action = 'x = [1.0, 2.0]'
-        elif 'verbal-rec-MovieRec' in env_name:
+        elif 'llf-rec-MovieRec' in env_name:
             action = """[{"title": "John Wick"}]"""
     else:
         env.action_space.seed(seed)
@@ -76,7 +76,7 @@ def check_equivalence(nested1, nested2, name=None):
             assert nested1 == nested2, (name, nested1, nested2)
 
 def test_wrapper(env):
-    if isinstance(env,VerbalGymWrapper):
+    if isinstance(env,LLFWrapper):
         return True
     elif hasattr(env, 'env'):
         return test_wrapper(env.env)
@@ -85,12 +85,12 @@ def test_wrapper(env):
 
 def test_env(env_name, seed=0):
     print(env_name)
-    instruction_types, feedback_types = verbal_gym.supported_types(env_name)
+    instruction_types, feedback_types = llfbench.supported_types(env_name)
     feedback_types = list(feedback_types) + ['n', 'a', 'm']
     configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
     for config in configs:
-        env = verbal_gym.make(env_name, **config)  # test verbal_gym.make
-        assert test_wrapper(env) # test VerbalGymWrapper is used
+        env = llfbench.make(env_name, **config)  # test llfbench.make
+        assert test_wrapper(env) # test LLFWrapper is used
         ouputs1 = step_env(env_name, seed, config=config)
         ouputs2 = step_env(env_name, seed, config=config)
         check_equivalence(ouputs1, ouputs2)
@@ -108,5 +108,5 @@ def test_benchmark(benchmark_prefix):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('benchmark_prefix', type=str, default='verbal-bandits')
+    parser.add_argument('benchmark_prefix', type=str, default='llf-bandits')
     test_benchmark(**vars(parser.parse_args()))
