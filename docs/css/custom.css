@@ -6,3 +6,11 @@
 .thumbnail img {
     margin-top: 20px;
 }
+
+pre {
+    white-space: normal;
+    word-break: break-all;
+    font-family: IBMPlexMono,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    color: #212529;
+    font-weight: 400;
+}
