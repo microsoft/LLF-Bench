@@ -2,3 +2,7 @@
     text-align: center;
     font-weight: 600;
 }
+
+.thumbnail img {
+    margin-top: 20px;
+}
