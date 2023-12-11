@@ -1,7 +1,7 @@
----
-title: verbal-gym: 'benchmarking text-based AI agents' layout: default
----
+LLF-Bench : Benchmark for Interactive Learning from Language Feedback
 
-## Content goes here...
+Ching-An Cheng*, Andrey Kolobov*, Dipendra Misra*, Allen Nie*, Adith Swaminathan (alphabetic ordering)
 
-![Trololo](https://media.giphy.com/media/1NRbOQX4d6VSE/giphy.gif)
+# What is LLF Bench
+
+## Leaderboard
