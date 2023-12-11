@@ -155,38 +155,110 @@
 
                <div class="row">
                    <p style="text-align:left; margin-left: 16.66%; margin-top: 10px;">LLF-Bench includes the following 8 diverse set of problems:</p>
+
                    <ul class="list-group list-group-flush col-md-8" style="text-align:left; margin-left: 16.66%;">
-                       <li class="list-group-item"><b>LLF-bandit</b> is a verbalized version of the classic multi-armed bandit
-                           problem, which we implement based on
-                           <a href="https://github.com/JKCooper2/gym-bandits/tree/master" target="_blank">gym-bandits</a>
-                           LLF-bandit tests the agent's learning ability in an unknown environment with a finite number of actions.</li>
-                       <li class="list-group-item"><b>LLF-poem</b> consists of a set of poem writing tasks, where the
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/bandit.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                 <b>LLF-bandit</b> is a verbalized version of the classic multi-armed bandit problem, which we implement based on
+                                <a href="https://github.com/JKCooper2/gym-bandits/tree/master" target="_blank">gym-bandits</a>
+                                LLF-bandit tests the agent's learning ability in an unknown environment with a finite number of actions.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/poem.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                   <b>LLF-poem</b> consists of a set of poem writing tasks, where the
                            agent needs to write a poem satisfying certain syllable- and line-constraints. These problems
-                           tests the agent's learning ability to infer and solve constraint satisfication problems.</li>
-                       <li class="list-group-item"><b>LLF-reco-movie</b> simulates a classic recommendation scenario
-                           where a user wants movie or TV show recommendations based on some preferences. The user
-                           specifies their preferences in text, and any recommendation made by the agent is matched to
-                           a movie database for checking correct preference matching.</li>
-                       <li class="list-group-item"><b>LLF-optimization</b> consists of 8 loss functions
+                           tests the agent's learning ability to infer and solve constraint satisfication problems.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/movie.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                   <b>LLF-reco-movie</b> simulates a classic recommendation scenario
+                                   where a user wants movie or TV show recommendations based on some preferences. The user
+                                   specifies their preferences in text, and any recommendation made by the agent is matched to
+                                   a movie database for checking correct preference matching.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/optimization.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                    <b>LLF-optimization</b> consists of 8 loss functions
                            (Rosenbrock, Bohachevsky, etc.) and provides an interface to give verbal feedback for the
-                           task of optimization on any loss function.</li>
-                       <li class="list-group-item"><b>LLF-parking</b> extends the
-                           <a href="https://github.com/Farama-Foundation/HighwayEnv" target="_blank">Highway</a> gym
-                           environment, providing a long horizon goal-conditioned continuous control task. The agent
-                           must control an ego-vehicle to park in a given location without colliding with any obstacles
-                           in the environment.</li>
-                       <li class="list-group-item"><b>LLf-gridworld</b> evaluates the agent's ability to navigate in
+                           task of optimization on any loss function.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/parking.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                    <b>LLF-parking</b> extends the
+                                   <a href="https://github.com/Farama-Foundation/HighwayEnv" target="_blank">Highway</a> gym
+                                   environment, providing a long horizon goal-conditioned continuous control task. The agent
+                                   must control an ego-vehicle to park in a given location without colliding with any obstacles
+                                   in the environment.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/gridworld.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                    <b>LLf-gridworld</b> evaluates the agent's ability to navigate in
                            a graph-based environment. Each node of the graph is a room and the edges are doors
-                           connecting the rooms. The agent's goal is to navigate from the room it starts in to the room with treasure.</li>
-                       <li class="list-group-item"><b>LLF-alfworld</b> adds a wrapper on top of the
-                           <a href="https://github.com/alfworld/alfworld" target="_blank">Alfworld text-based environment</a>
-                           to provide language feedback instead of reward. In this environment, the agent is tasked to solve problems in a text-based house environment.
-                           The agent is tested for generalization as each episode can contain a new task in a new house environment.</li>
-                       <li class="list-group-item"><b>LLF-metaworld</b> is a low-dimensional state-based version of the
-                           existing <a href="https://arxiv.org/pdf/1910.10897.pdf" target="_blank">Meta-World v2 benchmark</a>.
-                           It comprises 50 simulated robotic manipulation tasks featuring a Sawyer arm and various
-                           objects that this arm needs to bring into desired configurations, such as opening doors,
-                           placing cubes in boxes, etc.</li>
+                           connecting the rooms. The agent's goal is to navigate from the room it starts in to the room with treasure.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/alfworld.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                    <b>LLF-alfworld</b> adds a wrapper on top of the
+                                   <a href="https://github.com/alfworld/alfworld" target="_blank">Alfworld text-based environment</a>
+                                   to provide language feedback instead of reward. In this environment, the agent is tasked to solve problems in a text-based house environment.
+                                   The agent is tested for generalization as each episode can contain a new task in a new house environment.
+                               </div>
+                           </div>
+                       </li>
+                       <li class="list-group-item">
+                           <div class="row">
+                               <div class="col-md-4">
+                                   <img src="images/metaworld.png" style="width:200px;"/>
+                               </div>
+                               <div class="col-md-8">
+                                    <b>LLF-metaworld</b> is a low-dimensional state-based version of the
+                                   existing <a href="https://arxiv.org/pdf/1910.10897.pdf" target="_blank">Meta-World v2 benchmark</a>.
+                                   It comprises 50 simulated robotic manipulation tasks featuring a Sawyer arm and various
+                                   objects that this arm needs to bring into desired configurations, such as opening doors,
+                                   placing cubes in boxes, etc.
+                               </div>
+                           </div>
+                       </li>
                    </ul>
                </div>
 
