@@ -64,12 +64,42 @@
             <div class="container">
         		<div class="row">
                      <div class="row" style="margin-top:10%; color:black; text-align:left; font-size:normal;">
-        				        <h3 style="text-transform:none;">LLF-Bench : Benchmark for Interactive Learning from Language Feedback</h3>
+        				        <h3 style="text-transform:none;"><img src="images/tiny_elf.png" class="img-fluid" style="max-width: 100px; height: auto"/>LLF-Bench : Benchmark for Interactive Learning from Language Feedback</h3>
 
-                                <p><b>What is LLF Bench?</b> LLF-Bench (Learning from Language Feedback Benchmark; pronounced as “elf-bench”), is a new benchmark
+                         <div class="list-group col-md-4">
+                              <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                               <p class="mb-1">A diverse collection of 8 learning problems.<br/><br/>
+                                <small class="text-muted">LLF-Bench includes diverse environments such as navigation,
+                                    user recommendation, robotic manipulation domain, and poem generation.</small></p>
+                              </a>
+                              <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                <!--<div class="d-flex w-100 justify-content-between">
+                                  <h5 class="mb-1">Suspectible to Prompt hacking</h5>
+                                  <small class="text-muted">3 days ago</small>
+                                </div>-->
+                                <p class="mb-1">Suspectible to Prompt hacking<br/><br/>
+                                <small class="text-muted">In LLF-Bench generates and randomizes verbalization making it hard for
+                                LLM-based agents to prompt hack to any given environment.</small></p>
+                              </a>
+                              <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                <p class="mb-1">Requires learning<br/><br/>
+                                <small class="text-muted">Some environments in LLF-Bench require learning no matter how smart the
+                                LLM, or any base foundation model is. This provides a way to evaluate learning in these agents.</small></p>
+                              </a>
+                        </div>
+
+                         <div class="col-md-8">
+
+                             <p><b>What is LLF Bench?</b> LLF-Bench (Learning from Language Feedback Benchmark; pronounced as “elf-bench”), is a new benchmark
                              to evaluate the ability of AI agents to interactively learn from
                              language feedback. The agent interacts with an environment in LLF-Bench, takes action, and get language feedback instead of
                                 rewards or action. LLF Bench consists of 8 diverse benchmarks</p>
+
+                             <div class="row rounded-pill" style="display: black; color: white; background-color: black; padding: 5px;">
+                                    git clone https://github.com/microsoft/LLF-Bench.git<br/>
+                                    conda create -n LLF-Bench python=3.8 -y<br/>
+                                    conda activate LLF-Bench<br/>
+                             </div>
 
                             <p><b>How is it different from RL?</b> Reinforcement learning (RL) is another commonly used
                              interactive learning setting. They key difference is that in RL, the agent is trained using
@@ -81,7 +111,8 @@
                                 language feedback can be more easily provided by non-expert humans. Secondly, language feedback is
                                 closer to how humans learn, and this makes it more natural for many settings.</p>
 
-                         <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main intensions.</p>
+                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main intensions.</p>
+                         </div>
                      </div>
         		</div>
             </div>
@@ -93,8 +124,7 @@
         <div class="row">
         	<h2>Leaderboard</h2>
             <div>
-            	<div style="text-align:left; margin-left:10%;">
-
+            	<div style="text-align:left; margin-left:auto;" class="col-md-6">
                     <b>LLF Bandit:</b>
                     <table class="table">
                       <thead>
