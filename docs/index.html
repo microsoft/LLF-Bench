@@ -64,9 +64,9 @@
             <div class="container">
         		<div class="row">
                      <div class="row" style="margin-top:10%; color:black; text-align:left; font-size:normal;">
-        				        <h3 style="text-transform:none;"><img src="images/tiny_elf.png" class="img-fluid" style="max-width: 100px; height: auto"/>LLF-Bench : Benchmark for Interactive Learning from Language Feedback</h3>
+        				        <h3 style="text-transform:none;"><img src="images/tiny_elf.png" class="img-fluid" style="max-width: 100px; height: auto"/> &nbsp; LLF-Bench : Benchmark for Interactive Learning from Language Feedback</h3>
 
-                         <div class="list-group col-md-4">
+                         <div class="list-group col-md-4 benchmark-highlights">
                               <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                                <p class="mb-1">A diverse collection of 8 learning problems.<br/><br/>
                                 <small class="text-muted">LLF-Bench includes diverse environments such as navigation,
@@ -95,11 +95,19 @@
                              language feedback. The agent interacts with an environment in LLF-Bench, takes action, and get language feedback instead of
                                 rewards or action. LLF Bench consists of 8 diverse benchmarks</p>
 
-                             <div class="row rounded-pill" style="display: black; color: white; background-color: black; padding: 5px;">
+                             <!-- <div class="row rounded-pill" style="display: black; color: white; background-color: black; padding: 5px;">
                                     git clone https://github.com/microsoft/LLF-Bench.git<br/>
                                     conda create -n LLF-Bench python=3.8 -y<br/>
                                     conda activate LLF-Bench<br/>
-                             </div>
+                             </div> -->
+
+                             <p>
+                              <pre>
+                                    git clone https://github.com/microsoft/LLF-Bench.git<br/>
+                                    conda create -n LLF-Bench python=3.8 -y<br/>
+                                    conda activate LLF-Bench<br/>
+                              </pre>
+                             </p>
 
                             <p><b>How is it different from RL?</b> Reinforcement learning (RL) is another commonly used
                              interactive learning setting. They key difference is that in RL, the agent is trained using
@@ -111,7 +119,7 @@
                                 language feedback can be more easily provided by non-expert humans. Secondly, language feedback is
                                 closer to how humans learn, and this makes it more natural for many settings.</p>
 
-                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main intensions.</p>
+                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main intensions -- to provide robust evaluation for LLM Agents.</p>
                          </div>
                      </div>
         		</div>
@@ -121,10 +129,10 @@
     </section>
 
     <section id="about" class="container content-section text-center" style="padding-top:50px; width:100%; padding-bottom:30px; border-bottom: 2px solid #888888;">
-        <div class="row">
+        <div class="row justify-content-center">
         	<h2>Leaderboard</h2>
-            <div>
-            	<div style="text-align:left; margin-left:auto;" class="col-md-6">
+            <div class="row justify-content-center">
+            	<div class="col-md-6">
                     <b>LLF Bandit:</b>
                     <table class="table">
                       <thead>
