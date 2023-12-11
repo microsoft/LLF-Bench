@@ -1,3 +1,3 @@
-# microsoft.github.io/verbal-gym
+# microsoft.github.io/llf-bench
 
-Github Page for verbal-gym
+Github Page for LLF-Bench
