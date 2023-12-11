@@ -19,3 +19,9 @@ pre {
     display: flex;
     justify-content: center;
   }
+
+  .benchmark-highlights a {
+    cursor: initial;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
