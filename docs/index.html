@@ -47,7 +47,7 @@
                         <a href="#page-top">Home</a>
                     </li>
                     <li class="page-scroll">
-                        <a href="#about">Leaderboard</a>
+                        <a href="#about">LLF Tasks</a>
                     </li>
                     <li class="page-scroll">
                         <a href="#posts">Team</a>
@@ -77,49 +77,70 @@
                                   <h5 class="mb-1">Suspectible to Prompt hacking</h5>
                                   <small class="text-muted">3 days ago</small>
                                 </div>-->
-                                <p class="mb-1">Suspectible to Prompt hacking<br/><br/>
+                                <p class="mb-1">Robust to Prompt hacking<br/><br/>
                                 <small class="text-muted">In LLF-Bench generates and randomizes verbalization making it hard for
                                 LLM-based agents to prompt hack to any given environment.</small></p>
                               </a>
                               <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                                 <p class="mb-1">Requires learning<br/><br/>
-                                <small class="text-muted">Some environments in LLF-Bench require learning no matter how smart the
-                                LLM, or any base foundation model is. This provides a way to evaluate learning in these agents.</small></p>
+                                <small class="text-muted">LLF-Bench includes environment that require learning no matter how smart the
+                                LLM, or any other foundation model is. This provides a way to evaluate learning in these agents.</small></p>
+                              </a>
+                             <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
+                                <p class="mb-1">Interactive learning<br/><br/>
+                                <small class="text-muted">LLF-Bench contains environments with which the agent can interact
+                                    enabling studying if agents can explore properly and learn from feedback. This is in contrast to offline
+                                    evaluation benchmarks for LLMs such as MMLU or Big Bench Hard.
+                                </small></p>
                               </a>
                         </div>
 
                          <div class="col-md-8">
 
                              <p><b>What is LLF Bench?</b> LLF-Bench (Learning from Language Feedback Benchmark; pronounced as “elf-bench”), is a new benchmark
-                             to evaluate the ability of AI agents to interactively learn from
+                             to evaluate the ability of AI agents to interactively learn from just
                              language feedback. The agent interacts with an environment in LLF-Bench, takes action, and get language feedback instead of
-                                rewards or action. LLF Bench consists of 8 diverse benchmarks</p>
+                                rewards or action. LLF Bench consists of 8 diverse benchmarks.</p>
 
-                             <!-- <div class="row rounded-pill" style="display: black; color: white; background-color: black; padding: 5px;">
-                                    git clone https://github.com/microsoft/LLF-Bench.git<br/>
-                                    conda create -n LLF-Bench python=3.8 -y<br/>
-                                    conda activate LLF-Bench<br/>
-                             </div> -->
+                             <div class="row">
+                                 <button type="button" class="btn btn-primary" style="margin-left: 20px; margin-right: 50px;"><a href="https://github.com/microsoft/LLF-Bench" style="color: white" target="_blank"><b>Github Page</b></a></button>
+                                 <button type="button" class="btn btn-success"><a href="llf_bench_paper.pdf" style="color: white" target="_blank"><b>LLF Paper</b></a></button>
+                             </div>
+
+                             <img src="images/llf-bench.png" style="margin-top: 10px; width:75%; height: auto; padding-left: 0px;"/>
+
 
                              <p>
-                              <pre>
-                                    git clone https://github.com/microsoft/LLF-Bench.git<br/>
-                                    conda create -n LLF-Bench python=3.8 -y<br/>
-                                    conda activate LLF-Bench<br/>
-                              </pre>
+                                  <pre>
+                                        # Clone the LLF-bench code
+                                        git clone https://github.com/microsoft/LLF-Bench.git<br/><br/>
+
+                                        # Optional but recommended: create a conda environment.<br/>
+                                        conda create -n LLF-Bench python=3.8 -y<br/>
+                                        conda activate LLF-Bench<br/><br/>
+
+                                        # Install LLF Bench<br/>
+                                        cd LLF-Bench<br/>
+                                        pip install -e .<br/><br/>
+
+                                        # To install Alfworld and Metaworld, we need some more resources. See Github for details.<br/>
+                                  </pre>
                              </p>
 
                             <p><b>How is it different from RL?</b> Reinforcement learning (RL) is another commonly used
                              interactive learning setting. They key difference is that in RL, the agent is trained using
                              rewards, whereas in LLF (the paradigm upon which LLF-Bench) is based, uses language feedback instead of rewards.</p>
 
-                             <p><b>Why language feedback?</b> Language feedback has two main advantages of rewards and expert actions - the two
+                             <p><b>Why language feedback?</b> Language feedback has two main advantages over rewards and expert actions - the two
                                  most commonly used feedbacks. Firstly, unlike rewards, language feedback is very expressive and
                                  consequently can pack a lot more information which can help the agent train faster, and unlike actions,
                                 language feedback can be more easily provided by non-expert humans. Secondly, language feedback is
                                 closer to how humans learn, and this makes it more natural for many settings.</p>
 
-                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main intensions -- to provide robust evaluation for LLM Agents.</p>
+                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main purpose behind LLF-Bench is to robust evaluation for LLM Agents.
+                            This is possible for two reasons: firstly, LLF-Bench provides a diverse set of environments where each environment provides sampled verbalization of the problem making it harder
+                            to prompt hack. Secondly, LLF-Bench includes environment that require learning, so no matter how good an LLM is, it cannot zero-shot
+                            solve LLF-Bench, and therefore, must show signs of learning a new task.</p>
                          </div>
                      </div>
         		</div>
@@ -129,141 +150,179 @@
     </section>
 
     <section id="about" class="container content-section text-center" style="padding-top:50px; width:100%; padding-bottom:30px; border-bottom: 2px solid #888888;">
-        <div class="row justify-content-center">
-        	<h2>Leaderboard</h2>
-            <div class="row justify-content-center">
-            	<div class="col-md-6">
-                    <b>LLF Bandit:</b>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Algorithm</th>
-                          <th scope="col">Mean Total Return</th>
-                          <th scope="col">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Random Walk</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>Optimal</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+        <div class="row">
+        	<h2>LLF Tasks</h2>
 
-                    <b>LLF Bandit:</b>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Algorithm</th>
-                          <th scope="col">Mean Total Return</th>
-                          <th scope="col">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Random Walk</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>Optimal</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+               <div class="row">
+                   <p style="text-align:left; margin-left: 16.66%; margin-top: 10px;">LLF-Bench includes the following 8 diverse set of problems:</p>
+                   <ul class="list-group list-group-flush col-md-8" style="text-align:left; margin-left: 16.66%;">
+                       <li class="list-group-item"><b>LLF-bandit</b> is a verbalized version of the classic multi-armed bandit
+                           problem, which we implement based on
+                           <a href="https://github.com/JKCooper2/gym-bandits/tree/master" target="_blank">gym-bandits</a>
+                           LLF-bandit tests the agent's learning ability in an unknown environment with a finite number of actions.</li>
+                       <li class="list-group-item"><b>LLF-poem</b> consists of a set of poem writing tasks, where the
+                           agent needs to write a poem satisfying certain syllable- and line-constraints. These problems
+                           tests the agent's learning ability to infer and solve constraint satisfication problems.</li>
+                       <li class="list-group-item"><b>LLF-reco-movie</b> simulates a classic recommendation scenario
+                           where a user wants movie or TV show recommendations based on some preferences. The user
+                           specifies their preferences in text, and any recommendation made by the agent is matched to
+                           a movie database for checking correct preference matching.</li>
+                       <li class="list-group-item"><b>LLF-optimization</b> consists of 8 loss functions
+                           (Rosenbrock, Bohachevsky, etc.) and provides an interface to give verbal feedback for the
+                           task of optimization on any loss function.</li>
+                       <li class="list-group-item"><b>LLF-parking</b> extends the
+                           <a href="https://github.com/Farama-Foundation/HighwayEnv" target="_blank">Highway</a> gym
+                           environment, providing a long horizon goal-conditioned continuous control task. The agent
+                           must control an ego-vehicle to park in a given location without colliding with any obstacles
+                           in the environment.</li>
+                       <li class="list-group-item"><b>LLf-gridworld</b> evaluates the agent's ability to navigate in
+                           a graph-based environment. Each node of the graph is a room and the edges are doors
+                           connecting the rooms. The agent's goal is to navigate from the room it starts in to the room with treasure.</li>
+                       <li class="list-group-item"><b>LLF-alfworld</b> adds a wrapper on top of the
+                           <a href="https://github.com/alfworld/alfworld" target="_blank">Alfworld text-based environment</a>
+                           to provide language feedback instead of reward. In this environment, the agent is tasked to solve problems in a text-based house environment.
+                           The agent is tested for generalization as each episode can contain a new task in a new house environment.</li>
+                       <li class="list-group-item"><b>LLF-metaworld</b> is a low-dimensional state-based version of the
+                           existing <a href="https://arxiv.org/pdf/1910.10897.pdf" target="_blank">Meta-World v2 benchmark</a>.
+                           It comprises 50 simulated robotic manipulation tasks featuring a Sawyer arm and various
+                           objects that this arm needs to bring into desired configurations, such as opening doors,
+                           placing cubes in boxes, etc.</li>
+                   </ul>
+               </div>
 
-                    <b>LLF Bandit:</b>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Algorithm</th>
-                          <th scope="col">Mean Total Return</th>
-                          <th scope="col">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Random Walk</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>Optimal</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+<!--            <div class="row justify-content-center">-->
+<!--            	<div class="col-md-6">-->
+<!--                    <b>LLF Bandit:</b>-->
+<!--                    <table class="table">-->
+<!--                      <thead>-->
+<!--                        <tr>-->
+<!--                          <th scope="col">#</th>-->
+<!--                          <th scope="col">Algorithm</th>-->
+<!--                          <th scope="col">Mean Total Return</th>-->
+<!--                          <th scope="col">Notes</th>-->
+<!--                        </tr>-->
+<!--                      </thead>-->
+<!--                      <tbody>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">1</th>-->
+<!--                          <td>Random Walk</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">2</th>-->
+<!--                          <td>Optimal</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                      </tbody>-->
+<!--                    </table>-->
 
-                    <b>LLF Bandit:</b>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Algorithm</th>
-                          <th scope="col">Mean Total Return</th>
-                          <th scope="col">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Random Walk</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>Optimal</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+<!--                    <b>LLF Bandit:</b>-->
+<!--                    <table class="table">-->
+<!--                      <thead>-->
+<!--                        <tr>-->
+<!--                          <th scope="col">#</th>-->
+<!--                          <th scope="col">Algorithm</th>-->
+<!--                          <th scope="col">Mean Total Return</th>-->
+<!--                          <th scope="col">Notes</th>-->
+<!--                        </tr>-->
+<!--                      </thead>-->
+<!--                      <tbody>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">1</th>-->
+<!--                          <td>Random Walk</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">2</th>-->
+<!--                          <td>Optimal</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                      </tbody>-->
+<!--                    </table>-->
 
-                    <b>LLF Bandit:</b>
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th scope="col">#</th>
-                          <th scope="col">Algorithm</th>
-                          <th scope="col">Mean Total Return</th>
-                          <th scope="col">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <th scope="row">1</th>
-                          <td>Random Walk</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                        <tr>
-                          <th scope="row">2</th>
-                          <td>Optimal</td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
-            	</div>
-            </div>
+<!--                    <b>LLF Bandit:</b>-->
+<!--                    <table class="table">-->
+<!--                      <thead>-->
+<!--                        <tr>-->
+<!--                          <th scope="col">#</th>-->
+<!--                          <th scope="col">Algorithm</th>-->
+<!--                          <th scope="col">Mean Total Return</th>-->
+<!--                          <th scope="col">Notes</th>-->
+<!--                        </tr>-->
+<!--                      </thead>-->
+<!--                      <tbody>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">1</th>-->
+<!--                          <td>Random Walk</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">2</th>-->
+<!--                          <td>Optimal</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                      </tbody>-->
+<!--                    </table>-->
+
+<!--                    <b>LLF Bandit:</b>-->
+<!--                    <table class="table">-->
+<!--                      <thead>-->
+<!--                        <tr>-->
+<!--                          <th scope="col">#</th>-->
+<!--                          <th scope="col">Algorithm</th>-->
+<!--                          <th scope="col">Mean Total Return</th>-->
+<!--                          <th scope="col">Notes</th>-->
+<!--                        </tr>-->
+<!--                      </thead>-->
+<!--                      <tbody>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">1</th>-->
+<!--                          <td>Random Walk</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">2</th>-->
+<!--                          <td>Optimal</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                      </tbody>-->
+<!--                    </table>-->
+
+<!--                    <b>LLF Bandit:</b>-->
+<!--                    <table class="table">-->
+<!--                      <thead>-->
+<!--                        <tr>-->
+<!--                          <th scope="col">#</th>-->
+<!--                          <th scope="col">Algorithm</th>-->
+<!--                          <th scope="col">Mean Total Return</th>-->
+<!--                          <th scope="col">Notes</th>-->
+<!--                        </tr>-->
+<!--                      </thead>-->
+<!--                      <tbody>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">1</th>-->
+<!--                          <td>Random Walk</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                        <tr>-->
+<!--                          <th scope="row">2</th>-->
+<!--                          <td>Optimal</td>-->
+<!--                          <td></td>-->
+<!--                          <td></td>-->
+<!--                        </tr>-->
+<!--                      </tbody>-->
+<!--                    </table>-->
+<!--            	</div>-->
+<!--            </div>-->
         </div>
     </section>
 
@@ -273,13 +332,17 @@
 
             <div class="container" id="bio" style="text-align:left;">
 
+                <p style="margin-top:20px;">LLF-Bench team includes the following people listed alphabetically. We are also thankful to various people
+                who provided feedback in the form of suggestions, Github issues, and reviews.</p>
+
+
                 <div class="row">
                   <div class="col-md-4">
                     <div class="thumbnail">
                       <a href="https://www.microsoft.com/en-us/research/people/chinganc/">
                         <img src="images/ching-an.jpg" alt="Lights" style="height:200px;">
                         <div class="caption">
-                          <p>Ching-An Cheng</p>
+                          <p>Ching-An Cheng<br/>Microsoft Research Redmond</p>
                         </div>
                       </a>
                     </div>
@@ -289,7 +352,7 @@
                       <a href="https://www.microsoft.com/en-us/research/people/akolobov/">
                         <img src="images/andrey.jpeg" alt="Nature" style="height:200px;">
                         <div class="caption">
-                          <p>Andrey Kolobov</p>
+                          <p>Andrey Kolobov<br/>Microsoft Research Redmond</p>
                         </div>
                       </a>
                     </div>
@@ -299,7 +362,7 @@
                       <a href="https://www.microsoft.com/en-us/research/people/dimisra/">
                         <img src="images/dipendra.jpeg" alt="Fjords" style="height:200px;">
                         <div class="caption">
-                          <p>Dipendra Misra</p>
+                          <p>Dipendra Misra<br/>Microsoft Research New York</p>
                         </div>
                       </a>
                     </div>
@@ -312,7 +375,7 @@
                       <a href="https://anie.me/about">
                         <img src="images/allen.jpeg" alt="Lights" style="height:200px">
                         <div class="caption">
-                          <p>Allen Nie</p>
+                          <p>Allen Nie<br/>Stanford University</p>
                         </div>
                       </a>
                     </div>
@@ -322,7 +385,7 @@
                       <a href="https://www.microsoft.com/en-us/research/people/adswamin/">
                         <img src="images/adith.jpg" alt="Nature" style="height:200px;">
                         <div class="caption">
-                          <p>Adith Swaminathan</p>
+                          <p>Adith Swaminathan<br/>Microsoft Research Redmond</p>
                         </div>
                       </a>
                     </div>
