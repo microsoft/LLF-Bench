@@ -119,8 +119,6 @@ class UserAgent(Agent):
         #response = input(user_prompt)
 
         action = response.split('Action:')[-1]
-        #if self.n_actions is not None:
-        #    action = extract_action(action, self.n_actions)
 
         if self.verbose:
             print_color(f'User:\n\n{user_prompt}\n', "blue")

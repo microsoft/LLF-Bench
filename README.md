@@ -1,6 +1,6 @@
 # LLF-Bench: Benchmark for Interactive Learning from Language Feedback
 
-This repository provides a collection of benchmarks for evaluating agents that learn from language feedback.
+This repository provides a collection of tasks for evaluating agents that learn from language feedback.
 
 Each benchmark environment here is *goal-oriented* and follows the gym api.
 
@@ -12,7 +12,7 @@ Each benchmark environment here is *goal-oriented* and follows the gym api.
 - 'observation': a (partial) observation of the environment's state
 - 'instruction': a natural language description of the task, including the objective and information about the action space, etc.
 - 'feedback':  a natural language feedback to help the agent to better learn to solve the task.
-When a field is missing, its value is represented as None. For example, 'instruction' is only given by `reset` whereas 'feedback' is only given by `step`.
+When a field is missing, its value is represented as None. For example, 'instruction' is typically only given by `reset` whereas 'feedback' is only given by `step`.
 
 `reward` is intended for evaluating an agent's performance. It should **not** be passed to the learning agent.
 
@@ -23,16 +23,13 @@ When a field is missing, its value is represented as None. For example, 'instruc
 
 ## Principle
 
-We design LLF-Bench as a benchmark to test the "learning" ability of interactive agents.
+We design LLF-Bench as a benchmark to test the **learning** ability of interactive agents.
 
-We design each environment in LLF-Bench such that, from 'observation' and 'instruction' in `observation_dict`, it is suffcient (for a human) to tell that the agent has reached the goal when the task is indeed solved. Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems.
+We design each environment in LLF-Bench such that, from 'observation' and 'instruction' in `observation_dict`, it is sufficient (for a human) to tell that the agent has reached the goal when the task is indeed solved. Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems.
 
-However, we also design these environments such that 'observation' and 'instruction' are not suffcient for designing or *efficiently* learning the goal-reaching policies. Each environment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, termination, so that the agent cannot figure out the optimal policy just based on 'instruction' without learning. In addition, since 'observation' and 'instruction' together only provides sparse informaiton about success, learning the optimal policy based on them can be exponentially hard.
+However, we also design these environments such that 'observation' and 'instruction' are not sufficient for designing or *efficiently* learning the goal-reaching policies. Each environment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, or termination, so that the agent cannot figure out the optimal policy just based on 'instruction' without learning. In addition, since 'observation' and 'instruction' together only provides sparse informaiton about success, learning the optimal policy based on them can be exponentially hard.
 
-These features are designed to test an agent's *learning* ability, especially, the ability to learn from language feedback. language feedback is a generalization of reward in reinforcement learning. It can provide information about reward/success, but it can also convey more expressive feedback such as explanations and suggestions. The language feedback is implemented as the field 'feedback' in `observation_dict`, which is an accelerator to help learning the policy faster.
-
-
-
+These features are designed to test an agent's *learning* ability, especially, the ability to learn from language feedback. We view language feedback as a generalization of reward in reinforcement learning. It can provide information about reward/success, but it can also convey more expressive feedback such as explanations and suggestions. The language feedback is implemented as the field 'feedback' in `observation_dict`, which is an accelerator to help learning the policy faster.
 
 
 ## Installation
@@ -59,10 +56,10 @@ Note that the `alfworld` option requires building/compiling from source files. P
 
     sudo apt-get update
     sudo apt-get install cmake build-essential
+
 In addition, `alfworld` currently requires an older gym version. After installing llfbench, please downgrade the gym version to 0.15.4 by running
 
     pip install gym==0.15.4
-
 
 
 For `metaworld` option, it requires libGL, which can be installed by
@@ -114,6 +111,13 @@ while not done:
 print(f'Episode reward: {cumulative_reward}')
 ```
 
+
+## Testing
+
+The `tests` folder in the repo contains a few helpful scripts for testing the functionality of LLF-Bench. 
+- *test_agents.py*: Creates a `UserAgent` that prints the 'observation' and 'feedback' produced by an LLF-Bench environment to the console, and reads user input from the console as an 'action'.
+- *test_basic_agents.py*: For a subset of LLF-Bench environments that support either a finite action space or admit a pre-built expert optimal policy, this script creates a `RandomActionAgent` and `ExpertActionAgent` to test supported LLF-Bench environments.
+- *test_envs.py*: Syntactically tests environments added to the LLF-Bench environment registry so as to be compatible with the expected semantics of LLF-Bench. This is a useful script to run on any new environments that are added or existing environments are customized in the benchmark.
 
 
 ## Contributing
