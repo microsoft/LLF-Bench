@@ -47,6 +47,9 @@ def get_details_via_omdb(title, verbose=False):
             print(title)
         return title, reviews, None, "PG", None, None, None, non_exist
 
+    if data.get("Title") != title:
+        return title, reviews, None, "PG", None, None, None, non_exist
+
     title = data.get("Title", title)
     genres = data.get("Genre", None)
     if genres is not None:
@@ -449,7 +452,7 @@ class MovieRec(gym.Env):
             else:
                 success_items.append((title, movie_genres))
 
-        if len(error_items) == 0:
+        if len(error_items) == 0 and len(success_items) > 0:
             didactic_feedback = Feedback(
                 r=f"The recommended {self.profile['type_']}s are all {self._list_to_string(profile_genres, last_separator=' and ')}, nice!")
             return True, None, didactic_feedback, {'unsatisfied': []}
@@ -513,9 +516,13 @@ class MovieRec(gym.Env):
             else:
                 success_items.append((title, self.map_type(factual_info['type'])))
 
-        if len(error_items) == 0:
+        if len(error_items) == 0 and len(success_items) > 0:
             didactic_feedback = Feedback(
                 r=f"What you recommended are {self.profile['type_']}s, nice!")
+            return True, None, didactic_feedback, {'unsatisfied': []}
+        elif  len(error_items) == 0 and len(success_items) == 0:
+            didactic_feedback = Feedback(
+                r=f"What you recommended are not {self.profile['type_']}s!")
             return True, None, didactic_feedback, {'unsatisfied': []}
         else:
             feedback = self._list_to_string([e[0] for e in error_items], last_separator=' and ')
@@ -689,6 +696,11 @@ class MovieRec(gym.Env):
         # remove bad_recs from factual_movie_data (we don't want to check them again)
         for bad_rec in bad_recs:
             del factual_movie_data[bad_rec]
+
+        if len(factual_movie_data) == 0:
+            # all hallucinations
+            title_to_num_rules_violation = Counter(bad_recs)
+            return 0, feedbacks, didactic_feedbacks, title_to_num_rules_violation
 
         # we do checks line by line
         # if it's a movie or tv show
