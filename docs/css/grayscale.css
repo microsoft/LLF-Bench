@@ -348,13 +348,13 @@ a:focus {
 
 ::-moz-selection {
     text-shadow: none;
-    background: #0000ff;
+    background: #ffffff;
     background: rgba(0, 0, 255, 0.8);
 }
 
 ::selection {
     text-shadow: none;
-    background: #0000ff;
+    background: #ffffff;
     background: rgba(0,0,255,0.8);
 }
 
