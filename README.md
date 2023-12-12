@@ -83,7 +83,7 @@ export OMDB_API_KEY=your_key
 
 This sample code creates an environment implemented in LLF-Bench, and creates an agent that interacts with it. The agent simply prints each observation to the console and takes console input as actions to be relayed to the environment.
 
-```
+```python
 import llfbench as gym
 
 # Environments in the benchmark are registered following
