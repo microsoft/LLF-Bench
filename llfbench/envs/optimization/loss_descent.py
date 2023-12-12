@@ -45,7 +45,6 @@ class LossLandscapeBase(gym.Env):
 
         self._seed = self.seed(seed)
 
-        # reward = -loss
         self.reward_range = (self.get_min_reward(), -self.min_y)
 
         # Note: currently we treat the first line as "instruction"
@@ -116,7 +115,6 @@ class LossLandscapeBase(gym.Env):
             if stop_word in text:
                 return None, True
 
-        # pattern = r'\[(-?\d+\.?\d*),\s*(-?\d+\.?\d*)\]'
         pattern = r'\[(-?\d+\.?\d*(?:e[-+]?\d+)?),\s*(-?\d+\.?\d*(?:e[-+]?\d+)?)\]'
         match = re.search(pattern, text)
         if match is None:

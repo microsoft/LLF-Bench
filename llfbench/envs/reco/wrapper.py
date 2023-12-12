@@ -3,15 +3,6 @@ from llfbench.envs.llf_env import LLFWrapper, Feedback
 from llfbench.envs.reco.prompts import *
 from llfbench.envs.reco.movie_rec import MovieRec
 
-"""
-The original env produces support for both
-- Directional feedback: 0,0.5,1
-- Didactic feedback: 'r', 'hp', 'hn', 'fp', 'fn'
-
-This wrapper will only produce didactic feedback
-"""
-
-
 class MovieRecGymWrapper(LLFWrapper):
     INSTRUCTION_TYPES = ('b')  # , 'p', 'c')
     FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')

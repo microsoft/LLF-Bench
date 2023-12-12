@@ -231,12 +231,10 @@ class Haiku(PoemUtil, gym.Env):
             feedback += ", but lines " if len(error_info) > 1 else ", but line "
             for tup in error_info:
                 i, line, count, diff = tup
-                # feedback +=  f'The line: "{line}" has {count} syllables. It should only have {self.syllable} syllables' + '\n'
                 feedback += f"{i + 1},"
             feedback = feedback[:-1]
             feedback += " do not." if len(error_info) > 1 else " does not."
         elif self.feedback == 1:
-            # we offer a directional suggestion (you should decrease the number of syllables in this line)
             feedback = f"The generated {self.form_name} is incorrect.\n"
             feedback += "Here are some suggestions to fix your error:\n"
             for tup in error_info:
@@ -257,9 +255,6 @@ class Haiku(PoemUtil, gym.Env):
         (Because it's meaningless to compare syllables)
 
         If the line number is correct, we provide feedback for the syllables.
-
-        This means at a given point, there is one DidacticFeedback
-        But since there are two types of errors, there can be two kinds of DidacticFeedbacks
         """
 
         if self.use_extractor:
@@ -435,8 +430,6 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
                 feedback += f"{i + 1},"
             feedback = feedback[:-1]
             feedback += " do not." if len(error_info) > 1 else " does not."
-        elif self.feedback == 1:
-            # we offer a directional suggestion (you should decrease the number of syllables in this line)
             feedback = "The generated poem is incorrect.\n"
             feedback += "Here are some suggestions to fix your error:\n"
             for tup in error_info:
