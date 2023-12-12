@@ -12,7 +12,6 @@ setup(
     long_description=open('README.md').read(),
     install_requires=[
         "tqdm",
-        "gym>=0.25.2,<0.26.0",
         "gymnasium==0.29.1",
         "parse==1.19.1",
         # "Cython==0.29.36",
@@ -30,12 +29,6 @@ setup(
     ],
     extras_require={
         'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
-        'alfworld': [ 'fast-downward@https://github.com/MarcCote/downward/archive/faster_replan.zip',
-                      'textworld@https://github.com/MarcCote/TextWorld/archive/handcoded_expert_integration.zip',
-                      'alfworld@git+https://github.com/chinganc/alfworld.git@master#egg=alfworld',
-                      'werkzeug==2.2.2',
-                      'flask==2.0.2',
-                      'click==7.1.2',
-        ]
+        'alfworld': [ 'alfworld>=0.3.0' ]
     }
 )
