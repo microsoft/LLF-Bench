@@ -347,15 +347,15 @@ a:focus {
 }
 
 ::-moz-selection {
-    text-shadow: none;
-    background: #ffffff;
-    background: rgba(0, 0, 255, 0.8);
+    text-shadow: #0000ff;
+    background: #0000ff;
+    background: rgba(0, 0, 255, 1);
 }
 
 ::selection {
-    text-shadow: none;
-    background: #ffffff;
-    background: rgba(0,0,255,0.8);
+    text-shadow: #0000ff;
+    background: #0000ff;
+    background: rgba(0,0,255,1);
 }
 
 img::selection {
