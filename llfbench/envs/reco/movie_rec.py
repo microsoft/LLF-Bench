@@ -131,18 +131,22 @@ class RecommendationQueryGenerator:
               'Sport', 'Superhero', 'Thriller', 'War', 'Western']
     AGE_RESTRICTED = ["child-friendly", "R-rated", "family-friendly"]
 
-    def __init__(self):
-        pass
+    def __init__(self, seed=None):
+        self._seed = self.seed(seed)
 
-    @classmethod
-    def generate_random_profile(cls):
+    def seed(self, seed=None):
+        """Seed the PRNG of this space and possibly the PRNGs of subspaces."""
+        self._np_random, seed = seeding.np_random(seed)
+        return [seed]
+
+    def generate_random_profile(self):
         profile = {
-            "type_": random.choice(cls.TYPES),
-            "year_ranges": random.sample(list(cls.YEAR_RANGE.keys()), random.randint(0, 2)),  # len(cls.YEAR_RANGE)
-            "genre": random.sample(cls.GENRES, random.randint(0, 2)),  # len(cls.GENRES)  # Include None as an option
-            "age_restriction": np.random.choice([None] + cls.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
-            "sampled_start_exp_idx": random.randint(0, 9),
-            "sampled_end_exp_idx": random.randint(0, 4)
+            "type_": self._np_random.choice(self.TYPES),
+            "year_ranges": self._np_random.choice(list(self.YEAR_RANGE.keys()), self._np_random.randint(0, 2+1)).tolist(),  # len(cls.YEAR_RANGE)
+            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 2+1)),  # len(cls.GENRES)  # Include None as an option
+            "age_restriction": self._np_random.choice([None] + self.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
+            "sampled_start_exp_idx": self._np_random.randint(0, 9+1),
+            "sampled_end_exp_idx": self._np_random.randint(0, 4+1)
         }
 
         # child-friendly and family-friendly should not be selected in the following genres:
@@ -259,14 +263,14 @@ class MovieRec(gym.Env):
         "90s": "90s",
         "80s": "80s",
     }
-    def __init__(self, feedback=0):
+    def __init__(self, feedback=0, seed=None):
         super().__init__()
 
         self.feedback_level = feedback
         assert self.feedback_level in {0, 0.5, 1}
 
         self.extractor = None
-        self.query_generator = RecommendationQueryGenerator()
+        self.query_generator = RecommendationQueryGenerator(seed=seed)
 
         self.profile = None
 
@@ -297,7 +301,9 @@ class MovieRec(gym.Env):
     def reset(self, **kwargs):
         if 'seed' in kwargs:
             self._seed = self.seed(kwargs['seed'])
-        rand_profile = RecommendationQueryGenerator.generate_random_profile()
+            self.query_generator = RecommendationQueryGenerator(seed=kwargs['seed'])
+
+        rand_profile = self.query_generator.generate_random_profile()
         self.profile = rand_profile
         # Profile:
         # {'type_': 'TV show',
@@ -356,10 +362,6 @@ class MovieRec(gym.Env):
                 raise ValueError(f"Invalid profile year: {profile_year}")
 
         success = any(checks)
-        # if not success:
-        #     feedback = f"but it is not from the {profile_year}."
-        #     if first_order:
-        #         feedback += f" I want movies in the {profile_year}."
 
         return success
 
@@ -814,7 +816,7 @@ def test_generate_query():
                                      year_ranges=["recent"], options=["stream"], genre=["Action", "Comedy"])
     print(query)
 
-    rand_profile = RecommendationQueryGenerator.generate_random_profile()
+    rand_profile = generator.generate_random_profile()
     query = generator.generate_query(**rand_profile)
     print(query)
 
