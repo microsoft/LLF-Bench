@@ -79,6 +79,8 @@ class LossLandscapeBase(gym.Env):
         return self.optimal_sol
 
     def reset(self, **kwargs):
+        if 'seed' in kwargs:
+            self._seed = self.seed(kwargs['seed'])
         # we sample the initial state from the uniform distribution
         x = self.np_random.uniform(self.x_low, self.x_high, size=2)
         # we round the floating point precision to 2 decimal places

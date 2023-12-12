@@ -10,22 +10,13 @@ from collections import Counter
 import numpy as np
 import requests
 
+from gym.utils import seeding
+
 from textwrap import dedent, indent
 
 from llfbench.utils.parser_utils import SimpleGuidanceParser
 from llfbench.envs.llf_env import Feedback
 
-"""
-Issue:
-The fp/fn are not super good here -- fp/fn and hp/hn are too similar right now.
-"""
-
-# 'hn' -> [Feedback(), Feedback()...]
-# These movies are not Action movies
-# These movies don't come from 1950s
-# 'hn'
-# have the unique hn patterns, and just loop through all hns
-# can have as many unique patterns for hn as you want...
 
 def get_details_via_omdb(title, verbose=False):
     url = "http://www.omdbapi.com/"
@@ -68,7 +59,6 @@ def get_details_via_omdb(title, verbose=False):
     show_type = data.get("Type", None)
     if show_type == "series":
         show_type = "show"
-
 
     if 'imdbRating' in data:
         reviews['imdbRating'] = data['imdbRating']
@@ -129,18 +119,13 @@ def verify_movie(title):
 
 
 class RecommendationQueryGenerator:
-    # PLATFORM = ["Hulu", "HBO Max", "Disney plus", "Netflix", "Amazon Prime Video",
-    #             "Crunchyroll", "Peacock", "YouTube", "Amazon Video", "Apple TV"]
     TYPES = ["movie", "TV show"]
     YEAR_RANGE = {
         "recent": "past few years",
         "2000s": "2000s",
         "90s": "90s",
         "80s": "80s",
-        # "classic": "classics"
     }
-    # OPTIONS = ["stream", "rent", "buy", "watch"]
-    # OPTIONS = [["stream"], ["stream", "rent"], ["rent", "buy"], ["watch"]]
     GENRES = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy', 'Crime', 'Documentary', 'Drama',
               'Fantasy', 'Film Noir', 'History', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi',
               'Sport', 'Superhero', 'Thriller', 'War', 'Western']
@@ -152,19 +137,13 @@ class RecommendationQueryGenerator:
     @classmethod
     def generate_random_profile(cls):
         profile = {
-            # "platforms": random.sample(cls.PLATFORM, random.randint(0, 3)), # len(cls.PLATFORM)
             "type_": random.choice(cls.TYPES),
             "year_ranges": random.sample(list(cls.YEAR_RANGE.keys()), random.randint(0, 2)),  # len(cls.YEAR_RANGE)
-            # "options": random.sample(cls.OPTIONS, 1)[0],  # cls.OPTIONS, random.randint(0, 2)  # len(cls.OPTIONS)
             "genre": random.sample(cls.GENRES, random.randint(0, 2)),  # len(cls.GENRES)  # Include None as an option
             "age_restriction": np.random.choice([None] + cls.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
             "sampled_start_exp_idx": random.randint(0, 9),
             "sampled_end_exp_idx": random.randint(0, 4)
         }
-        # we do a posthoc fix, because some platforms don't allow certain options
-        # these two platforms only have streaming options, can't purchase
-        # if len(set(profile['platforms']) - {'Netflix', 'Crunchyroll', "Amazon Prime Video", "Disney plus"}) == 0:
-        #     profile['options'] = ['stream']
 
         # child-friendly and family-friendly should not be selected in the following genres:
         not_child_friendly_genres = ['Crime', 'War', 'Romance']
@@ -194,7 +173,7 @@ class RecommendationQueryGenerator:
         else:
             return separator.join(items_list[:-1]) + last_separator + items_list[-1]
 
-    def generate_query(self, platforms=[], type_=None, year_ranges=[], options=[], genre=[],
+    def generate_query(self, type_=None, year_ranges=[], genre=[],
                        age_restriction=None, sampled_start_exp_idx=None, sampled_end_exp_idx=None):
 
         genre_text = "" if len(genre) == 0 else " " + self._list_to_string(genre, oxford_comma=False)
@@ -209,7 +188,6 @@ class RecommendationQueryGenerator:
             f"What are the top{age_res_text}{genre_text} {type_}s out there right now",
             f"I've been craving some great{age_res_text}{genre_text} {type_}s",
             f"Hit me with your best{age_res_text}{genre_text} {type_} suggestions",
-            # f"I need to binge-watch some{age_res_text}{genre_text} {type_}s",
             f"Help me find a new favorite{age_res_text}{genre_text} {type_}",
             f"Looking for some iconic{age_res_text}{genre_text} {type_}s"
         ]
@@ -230,18 +208,6 @@ class RecommendationQueryGenerator:
         if year_ranges:
             formatted_years = self._list_to_string([self.YEAR_RANGE[yr] for yr in year_ranges], oxford_comma=False)
             base_query += f" from the {formatted_years}"
-
-        # # Option (stream, rent, buy)
-        # if options:
-        #     formatted_options = self._list_to_string(options, oxford_comma=False)
-        #     base_query += f" to {formatted_options}"
-        #
-        # # Platform
-        # if platforms:
-        #     formatted_platforms = self._list_to_string(platforms, oxford_comma=False)
-        #     base_query += f" on {formatted_platforms}"
-        # else:
-        #     base_query += ""  # end_phrase #"?"
 
         if sampled_start_exp_idx in [0, 1, 2, 3, 4, 5]:
             base_query += f'?{end_phrase}'
@@ -317,6 +283,11 @@ class MovieRec(gym.Env):
         Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]
         """)
 
+    def seed(self, seed=None):
+        """Seed the PRNG of this space and possibly the PRNGs of subspaces."""
+        self._np_random, seed = seeding.np_random(seed)
+        return [seed]
+
     def initialize_text_extractor(self, content_extractor: RecContentExtractor):
         self.extractor = content_extractor
 
@@ -324,6 +295,8 @@ class MovieRec(gym.Env):
         return self.query_generator.generate_query(**self.profile)
 
     def reset(self, **kwargs):
+        if 'seed' in kwargs:
+            self._seed = self.seed(kwargs['seed'])
         rand_profile = RecommendationQueryGenerator.generate_random_profile()
         self.profile = rand_profile
         # Profile:

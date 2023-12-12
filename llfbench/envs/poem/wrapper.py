@@ -6,7 +6,7 @@ from llfbench.envs.poem.prompts import *
 
 class PoemGymWrapper(LLFWrapper):
 
-    INSTRUCTION_TYPES = ('b') #, 'p', 'c')
+    INSTRUCTION_TYPES = ('b')
     FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):

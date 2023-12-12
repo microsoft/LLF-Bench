@@ -1,3 +1,4 @@
+import random
 import re
 from string import punctuation
 
@@ -7,8 +8,11 @@ import syllables
 import sys
 import string
 
+from gym.utils import seeding
+
 from llfbench.utils.parser_utils import SimpleGuidanceParser
 from llfbench.envs.llf_env import Feedback
+
 
 class PoemUtil:
     # designed as a Mixin class
@@ -70,6 +74,7 @@ class PoemUtil:
     def seed(self, seed):
         pass
 
+
 class PoemExtractor(object):
     # use LLM to extract the poem
     # just in case more things were written
@@ -99,8 +104,9 @@ Only return the poem line by line, including space.
         response, info = self.llm.generate(messages)
         return response
 
+
 class Haiku(PoemUtil, gym.Env):
-    def __init__(self, feedback=0, silent=True, use_extractor=False):
+    def __init__(self, feedback=0, use_extractor=False, seed=None):
         self.assignment = f"Can you write me a haiku? A haiku is a poem that consists of three phrases composed of 17 syllables in a 5, 7, 5 pattern."
         self.form_name = 'Haiku'
         self.use_extractor = use_extractor
@@ -114,10 +120,17 @@ class Haiku(PoemUtil, gym.Env):
         self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
+        self._seed = self.seed(seed)
+
         super().__init__()
 
     def reset(self, **kwargs):
         return self.assignment
+
+    def seed(self, seed=None):
+        """Seed the PRNG of this space and possibly the PRNGs of subspaces."""
+        self._np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     def initialize_text_extractor(self, poem_extractor: PoemExtractor):
         self.extractor = poem_extractor
@@ -279,18 +292,19 @@ class Haiku(PoemUtil, gym.Env):
             feedback, didactic_feedback = self.produce_line_feedback(error_info, success_info)
             feedbacks.append(feedback)
 
-        terminal = False   # one step environment
+        terminal = False  # one step environment
 
         # observation, reward, terminated, info
         return self.assignment, frac, terminal, {'original_feedback': feedback,
                                                  'feedback': didactic_feedback,
                                                  'success': success}
 
+
 class Tanka(Haiku):
-    def __init__(self, feedback=0, silent=True, use_extractor=False):
+    def __init__(self, feedback=0, silent=True, use_extractor=False, seed=None):
         # We can extend this to add "theme" of the poem
         # This increases difficulty a little, but also hard to check if it's thematic or not.
-        super().__init__(feedback, silent, use_extractor)
+        super().__init__(feedback, silent, use_extractor, seed=seed)
         self.assignment = f"Can you write me a Tanka? A Tanka is a poem that consists of five lines composed of syllables in a 5-7-5-7-7 pattern."
         self.use_extractor = use_extractor
         self.feedback = feedback
@@ -300,10 +314,11 @@ class Tanka(Haiku):
 
 
 class LineSyllableConstrainedPoem(Haiku):
-    def __init__(self, syllable_req=[7, 7, 7], feedback=0, silent=True, use_extractor=False):
+    def __init__(self, syllable_req=[7, 7, 7], feedback=0, use_extractor=False,
+                 seed=None):
         # We can extend this to add "theme" of the poem
         # This increases difficulty a little, but also hard to check if it's thematic or not.
-        super().__init__(feedback, silent, use_extractor)
+        super().__init__(feedback, use_extractor, seed=seed)
         self.syllable_req_str = [str(i) for i in syllable_req]
         self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables for the lines in the poem should follow a {'-'.join(self.syllable_req_str)} pattern."
         self.use_extractor = use_extractor
@@ -311,8 +326,31 @@ class LineSyllableConstrainedPoem(Haiku):
         self.syllable_req = syllable_req
         self.form_name = 'poem'
 
+        self._seed = self.seed(seed)
+
+    def reset(self, **kwargs):
+        if 'seed' in kwargs:
+            self._seed = self.seed(kwargs['seed'])
+
+        # create a sampling space
+        # Haiku: 3, Tanka: 5, Sonnet: 14, Villanelle: 19, Ballad: 4, Ghazal: 15
+        number_of_lines = self._np_random.choice([3, 5, 14, 19, 4, 15])
+        # https://www.writing.upenn.edu/~afilreis/88/meter.html
+        syllable_sample_space = [5, 7, 8, 9, 10, 17]
+
+        syllable_req = []
+        for _ in range(number_of_lines):
+            syllable_req.append(self._np_random.choice(syllable_sample_space))
+
+        self.syllable_req_str = [str(i) for i in syllable_req]
+        self.syllable_req = syllable_req
+        self.assignment = f"Can you write me a poem? It should have {len(syllable_req)} lines. The number of syllables for the lines in the poem should follow a {'-'.join(self.syllable_req_str)} pattern."
+
+        return self.assignment
+
+
 class SyllableConstrainedPoem(PoemUtil, gym.Env):
-    def __init__(self, syllable=7, feedback=0, silent=True, use_extractor=False):
+    def __init__(self, syllable=7, feedback=0, use_extractor=False, seed=None):
 
         super().__init__()
         self.assignment = f"Can you produce a short poem where each line has {syllable} syllables?"
@@ -328,8 +366,24 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
+        self._seed = self.seed(seed)
+
     def reset(self, **kwargs):
+        if 'seed' in kwargs:
+            self._seed = self.seed(kwargs['seed'])
+
+        # https://www.writing.upenn.edu/~afilreis/88/meter.html
+        syllable_sample_space = [5, 7, 8, 9, 10, 17]
+        syllable = self._np_random.choice(syllable_sample_space)
+        self.syllable = syllable
+        self.assignment = f"Can you produce a short poem where each line has {syllable} syllables?"
+
         return self.assignment
+
+    def seed(self, seed=None):
+        """Seed the PRNG of this space and possibly the PRNGs of subspaces."""
+        self._np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     def initialize_text_extractor(self, poem_extractor: PoemExtractor):
         self.extractor = poem_extractor
@@ -354,14 +408,11 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         return success, success_line / total_line, error_info, success_info
 
     def step(self, a):
-        """
-        SyllableConstrainedPoem only has one error type
-        Which is the syllable count per line
-        """
         # observation, reward, terminal, info
         if self.use_extractor:
             if self.extractor is None:
-                raise Exception("Must pass in an extractor through initialize_text_extractor before using the extractor.")
+                raise Exception(
+                    "Must pass in an extractor through initialize_text_extractor before using the extractor.")
             a = self.extractor(a)
         success, frac, error_info, success_info = self.get_line_feedback(a)
 
@@ -371,12 +422,11 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
             return self.assignment, frac, False, {'frac': frac, 'original_feedback': feedback,
                                                   'feedback': didactic_feedback, 'success': True}
 
-
         if self.feedback == 0:
             feedback = "The generated poem is incorrect."
         elif self.feedback == 0.5:
             # we offer an explanation or error message (on exactly which line is at fault)
-            # Generated poem is incorrect because <which rule was violated, and where:> poem needs to have exactly 7 syllables in each line, but lines x,y do not.
+            # Generated poem is incorrect because <which rule was violated, and where> poem needs to have exactly 7 syllables in each line, but lines x,y do not.
             feedback = "The generated poem is incorrect.\n"
             feedback += f"This is because the poem needs to have exactly {self.syllable} syllables in each line"
             feedback += ", but lines " if len(error_info) > 1 else ", but line "
@@ -397,7 +447,7 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         else:
             raise ValueError(f"Invalid feedback level: {self.feedback}")
 
-        terminal = False   # one step environment
+        terminal = False  # one step environment
 
         didactic_feedback = Feedback()
         didactic_feedback.r = "The generated poem is incorrect."

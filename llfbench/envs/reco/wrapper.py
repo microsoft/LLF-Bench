@@ -25,7 +25,7 @@ class MovieRecGymWrapper(LLFWrapper):
         info['success'] = False
         instruction = self.reformat(instruction, movie_instruction, template=movie_instruction_template)
 
-        # interestingly, for movie rec
+        # For movie rec
         # obs is different/randomly sampled from a pool already
         # since a user can make multiple queries
 
@@ -61,15 +61,12 @@ class MovieRecGymWrapper(LLFWrapper):
                     paraphrased_feedback.r += feedback + '\n'
 
                 else:
-                    # design issue:
                     # if LLM suggestion is correct on the attribute, some feedback might not show up
                     # like, r is filled, but not hn
                     feedback_temp = eval(f"{attribute}_{feedback_type}_template")
                     feedback_prompts = eval(f"{attribute}_{feedback_type}")
                     feedback = self.reformat(didactic_feedback[attribute][feedback_type], feedback_prompts, template=feedback_temp)
 
-                    # We might want to do some minor grammar fix here
-                    # like "an" vs "a"
                     paraphrased_feedback[feedback_type] += feedback + '\n'
 
         if 'no_rec' in didactic_feedback:
