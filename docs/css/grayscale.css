@@ -347,14 +347,14 @@ a:focus {
 }
 
 ::-moz-selection {
-    text-shadow: #000000;
+    text-shadow: #ffffff;
     background: #000000;
     background: rgba(0, 0, 0, 0.99);
     color: #ffffff;
 }
 
 ::selection {
-    text-shadow: #000000;
+    text-shadow: #ffffff;
     background: #000000;
     background: rgba(0,0,0,0.99);
     color: #ffffff;
