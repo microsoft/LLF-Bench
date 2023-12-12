@@ -66,6 +66,18 @@ For `metaworld` option, it requires libGL, which can be installed by
 
     sudo apt-get install ffmpeg libsm6 libxext6
 
+For `optimization` option, it requires Jax, which can be installed by
+
+    pip install jax jaxlib
+
+For `reco` option, please follow the instruction here to register and get your own user key:
+
+https://www.omdbapi.com/apikey.aspx
+
+Then, you can set the environment variable `OMDB_API_KEY` to your key:
+```bash
+export OMDB_API_KEY=your_key
+```
 
 ## Examples
 
