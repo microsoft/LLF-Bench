@@ -41,9 +41,9 @@ Create conda env.
 
 Install the repo.
 
-    pip install -e.
+    pip install -e .
 or
-    pip install -e.[#option1,#option2,etc.]
+    pip install -e .[#option1,#option2,etc.]
 
 Some valid options:
 
