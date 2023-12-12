@@ -2,8 +2,9 @@
 
 This repository provides a collection of tasks for evaluating agents that learn from language feedback. The associated website and paper are:
 
-Website: https://microsoft.github.io/LLF-Bench/
-Paper: https://microsoft.github.io/LLF-Bench/llf_bench_paper.pdf
+**Website:** https://microsoft.github.io/LLF-Bench/
+
+**Paper:** https://microsoft.github.io/LLF-Bench/llf_bench_paper.pdf
 
 Each benchmark environment here follows the gym api.
 
