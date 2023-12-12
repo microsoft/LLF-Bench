@@ -143,7 +143,7 @@ class RecommendationQueryGenerator:
         profile = {
             "type_": self._np_random.choice(self.TYPES),
             "year_ranges": self._np_random.choice(list(self.YEAR_RANGE.keys()), self._np_random.randint(0, 2+1)).tolist(),  # len(cls.YEAR_RANGE)
-            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 2+1)),  # len(cls.GENRES)  # Include None as an option
+            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 1+1)),  # len(cls.GENRES)  # Include None as an option
             "age_restriction": self._np_random.choice([None] + self.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
             "sampled_start_exp_idx": self._np_random.randint(0, 9+1),
             "sampled_end_exp_idx": self._np_random.randint(0, 4+1)
