@@ -143,7 +143,7 @@ class RecommendationQueryGenerator:
         profile = {
             "type_": self._np_random.choice(self.TYPES),
             "year_ranges": self._np_random.choice(list(self.YEAR_RANGE.keys()), self._np_random.randint(0, 2+1)).tolist(),  # len(cls.YEAR_RANGE)
-            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 1+1)),  # len(cls.GENRES)  # Include None as an option
+            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 2+1)),  # len(cls.GENRES)  # Include None as an option
             "age_restriction": self._np_random.choice([None] + self.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
             "sampled_start_exp_idx": self._np_random.randint(0, 9+1),
             "sampled_end_exp_idx": self._np_random.randint(0, 4+1)
@@ -180,7 +180,7 @@ class RecommendationQueryGenerator:
     def generate_query(self, type_=None, year_ranges=[], genre=[],
                        age_restriction=None, sampled_start_exp_idx=None, sampled_end_exp_idx=None):
 
-        genre_text = "" if len(genre) == 0 else " " + self._list_to_string(genre, oxford_comma=False)
+        genre_text = "" if len(genre) == 0 else " " + self._list_to_string(genre, oxford_comma=False, last_separator=' and ')
         age_res_text = "" if age_restriction is None else " " + age_restriction
 
         expressions = [
@@ -451,37 +451,37 @@ class MovieRec(gym.Env):
 
         if len(error_items) == 0:
             didactic_feedback = Feedback(
-                r=f"The recommended {self.profile['type_']}s are all {self._list_to_string(profile_genres)}, nice!")
+                r=f"The recommended {self.profile['type_']}s are all {self._list_to_string(profile_genres, last_separator=' and ')}, nice!")
             return True, None, didactic_feedback, {'unsatisfied': []}
 
-        feedback = f"The recommendations are not all {self._list_to_string(profile_genres)} {self.profile['type_']}s."
+        feedback = f"The recommendations are not all {self._list_to_string(profile_genres, last_separator=' and ')} {self.profile['type_']}s."
 
         didactic_feedback = Feedback(r=feedback)
 
         if first_order:
             for item in error_items:
                 feedback += f" {item[0]} is {self._list_to_string(item[1])}."
-            feedback += f" I want {self.profile['type_']}s that are {self._list_to_string(profile_genres)}."
+            feedback += f" I want {self.profile['type_']}s that are {self._list_to_string(profile_genres, last_separator=' and ')}."
 
         if len(success_items) > 0:
-            hp = f"These {self.profile['type_']}s are indeed {self._list_to_string(profile_genres)}:"
+            hp = f"These {self.profile['type_']}s are indeed {self._list_to_string(profile_genres, last_separator=' and ')}:"
             for item in success_items:
                 hp += f" {item[0]} is {self._list_to_string(item[1])},"
             didactic_feedback.hp = hp
 
         if len(error_items) > 0:
-            hn = f"These {self.profile['type_']}s are not {self._list_to_string(profile_genres)}:"
+            hn = f"These {self.profile['type_']}s are not {self._list_to_string(profile_genres, last_separator=' and ')}:"
             for item in error_items:
                 hn += f" {item[0]} is {self._list_to_string(item[1])},"
             didactic_feedback.hn = hn
 
-        fp = f"Recommend {self.profile['type_']}s that are {self._list_to_string(profile_genres)}, like"
+        fp = f"Recommend {self.profile['type_']}s that are {self._list_to_string(profile_genres, last_separator=' and ')}, like"
         for item in success_items:
             fp += f" {item[0]},"
         fp += '.'
         didactic_feedback.fp = fp
 
-        fn = f"Do not recommend {self.profile['type_']}s that are not {self._list_to_string(profile_genres)}, not like"
+        fn = f"Do not recommend {self.profile['type_']}s that are not {self._list_to_string(profile_genres, last_separator=' and ')}, not like"
         for item in error_items:
             fn += f" {item[0]},"
         fn += '.'

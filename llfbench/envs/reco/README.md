@@ -27,7 +27,7 @@ The user can specify the attributes in the following way:
 
 1. Choose a type: movie or tv show
 2. Choose 0, 1, or 2 year ranges. Examples: "80s or 90s", "2000s", "80s or recent".
-3. Choose 0 or 1 genre. Examples: "action", "comedy".
+3. Choose 0, 1, or 2 genres. Examples: "action", "comedy", or "action and comedy".
 4. Choose 0 or 1 age-restriction: Examples: "None", "adult-only", or  'child-friendly'.
    However, if the genre is any of 'Crime', 'War', 'Romance', then we remove age-restriction if it's 'child-friendly'.
    If the genre is any of 'History', 'Biography', 'Documentary', 'Sport', 'Musical', then we remove age-restriction if it's 'R-rated'.
@@ -48,5 +48,6 @@ For each item, we check the following five attributes:
 3. **Year**: each item needs to match the year range specified by the user. If multiple year ranges are specified, then the item only needs to match one of them.
 4. **Genre**: each item can have multiple genres -- these genres need to be a superset of user specified genres. 
    - For example, if a movie is labeled as `Action` and `Comedy`, and the user preference genre is `Comedy`, this will be a match.
-   - We currently do not support user specifying multiple genres.
+   - For example, if a movie is labeled as `Action` and `Comedy`, and the user preference genre is `Comedy` and `War`, this will not be a match.
+   - You can explore some combinations of genres here: https://www.imdb.com/search/title/
 5. **Age-Restriction**: each item needs to match the age-restriction specified by the user.
