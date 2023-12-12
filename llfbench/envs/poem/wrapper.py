@@ -60,6 +60,23 @@ class PoemGymWrapper(LLFWrapper):
 
         return observation, reward, terminated, truncated, info
 
+    def fix_sentence_capitalization(self, sentence):
+        sentences = sentence.split(". ")
+        fixed_sentences = [s[0].capitalize() + s[1:] if s else '' for s in sentences]
+        fixed_sentence = ". ".join(fixed_sentences)
+        return fixed_sentence
+
+    def _verbalize_feedback(self, feedback_dict: Feedback) -> str:
+        """ Implement this in the subclass to get the desired feedback string.
+        """
+
+        feedback = []
+        for k, v in feedback_dict.asdict().items():
+            if v is not None:
+                line = self.fix_sentence_capitalization(f'{str(v)}')
+                feedback.append(line)
+        return ' '.join(feedback)
+
     @property
     def _poem_env(self):
         return self.env.env.env

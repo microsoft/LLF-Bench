@@ -26,7 +26,7 @@ def step_env(env_name, seed, config):
         action = 'test action'
         if 'llf-optimization' in env_name:
             action = 'x = [1.0, 2.0]'
-        elif 'llf-rec-MovieRec' in env_name:
+        elif 'llf-reco-MovieRec' in env_name:
             action = """[{"title": "John Wick"}]"""
     else:
         env.action_space.seed(seed)

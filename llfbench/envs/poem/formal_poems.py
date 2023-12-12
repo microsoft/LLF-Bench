@@ -329,7 +329,7 @@ class LineSyllableConstrainedPoem(Haiku):
 
         # create a sampling space
         # Haiku: 3, Tanka: 5, Sonnet: 14, Villanelle: 19, Ballad: 4, Ghazal: 15
-        number_of_lines = self._np_random.choice([3, 5, 14, 19, 4, 15])
+        number_of_lines = self._np_random.choice([3, 4, 5, 14, 15, 19])
         # https://www.writing.upenn.edu/~afilreis/88/meter.html
         syllable_sample_space = [5, 7, 8, 9, 10, 17]
 
@@ -445,7 +445,7 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         didactic_feedback = Feedback()
         didactic_feedback.r = "The generated poem is incorrect."
 
-        didactic_feedback.hn = "The poem needs to have exactly {self.syllable} syllables in all lines"
+        didactic_feedback.hn = f"The poem needs to have exactly {self.syllable} syllables in all lines"
         didactic_feedback.hn += ", but lines " if len(error_info) > 1 else ", but line "
         for tup in error_info:
             i, line, count, diff = tup
