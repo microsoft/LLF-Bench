@@ -166,7 +166,7 @@ class RecommendationQueryGenerator:
         return "an" if word[0] in vowels else "a"
 
     def _list_to_string(self, items_list, separator=', ', last_separator=' or ', oxford_comma=True):
-        if not items_list:
+        if items_list is None or items_list is False:
             return ""
 
         if len(items_list) == 1:
