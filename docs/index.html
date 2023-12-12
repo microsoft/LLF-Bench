@@ -83,13 +83,13 @@
                               </a>
                               <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                                 <p class="mb-1">Requires learning<br/><br/>
-                                <small class="text-muted">LLF-Bench includes environment that require learning no matter how smart the
-                                LLM, or any other foundation model is. This provides a way to evaluate learning in these agents.</small></p>
+                                <small class="text-muted">LLF-Bench includes environments that require learning no matter how smart the
+                                LLM, or any other foundation model is. This provides a way to evaluate learning in LLM-based agents.</small></p>
                               </a>
                              <a href="#" class="list-group-item list-group-item-action flex-column align-items-start">
                                 <p class="mb-1">Interactive learning<br/><br/>
                                 <small class="text-muted">LLF-Bench contains environments with which the agent can interact
-                                    enabling studying if agents can explore properly and learn from feedback. This is in contrast to offline
+                                    enabling the study of exploration and learning from feedback. This is in contrast to offline
                                     evaluation benchmarks for LLMs such as MMLU or Big Bench Hard.
                                 </small></p>
                               </a>
@@ -97,14 +97,14 @@
 
                          <div class="col-md-8">
 
-                             <p><b>What is LLF Bench?</b> LLF-Bench (Learning from Language Feedback Benchmark; pronounced as “elf-bench”), is a new benchmark
+                             <p><b>What is LLF-Bench?</b> LLF-Bench (Learning from Language Feedback Benchmark; pronounced as “elf bench”), is a new benchmark
                              to evaluate the ability of AI agents to interactively learn from just
-                             language feedback. The agent interacts with an environment in LLF-Bench, takes action, and get language feedback instead of
-                                rewards or action. LLF Bench consists of 8 diverse benchmarks.</p>
+                             language feedback. The agent interacts with an environment in LLF-Bench, takes action, and gets language feedback instead of
+                                rewards or action. LLF-Bench consists of 8 diverse benchmarks.</p>
 
                              <div class="row">
-                                 <button type="button" class="btn btn-primary" style="margin-left: 20px; margin-right: 50px;"><a href="https://github.com/microsoft/LLF-Bench" style="color: white" target="_blank"><b style="color: white">Github Page</b></a></button>
-                                 <button type="button" class="btn btn-success"><a href="llf_bench_paper.pdf" style="color: white" target="_blank"><b style="color: white">LLF Paper</b></a></button>
+                                 <button type="button" class="btn btn-primary" style="margin-left: 20px; margin-right: 50px;"><a href="https://github.com/microsoft/LLF-Bench" style="color: white" target="_blank"><b style="color: white">GitHub Page</b></a></button>
+                                 <button type="button" class="btn btn-success"><a href="llf_bench_paper.pdf" style="color: white" target="_blank"><b style="color: white">LLF-Bench White Paper</b></a></button>
                              </div>
 
                              <img src="images/llf-bench.png" style="margin-top: 10px; width:75%; height: auto; padding-left: 0px;"/>
@@ -112,7 +112,7 @@
 
                              <p>
                                   <pre>
-                                        # Clone the LLF-bench code
+                                        # Clone the LLF-bench code<br/>
                                         git clone https://github.com/microsoft/LLF-Bench.git<br/><br/>
 
                                         # Optional but recommended: create a conda environment.<br/>
@@ -127,20 +127,20 @@
                                   </pre>
                              </p>
 
-                            <p><b>How is it different from RL?</b> Reinforcement learning (RL) is another commonly used
-                             interactive learning setting. They key difference is that in RL, the agent is trained using
+                            <p><b>How is it different from RL?</b> Reinforcement learning (RL) is another commonly studied
+                             interactive learning setting. The key difference is that in RL, the agent is trained using
                              rewards, whereas in LLF (the paradigm upon which LLF-Bench) is based, uses language feedback instead of rewards.</p>
 
-                             <p><b>Why language feedback?</b> Language feedback has two main advantages over rewards and expert actions - the two
-                                 most commonly used feedbacks. Firstly, unlike rewards, language feedback is very expressive and
+                             <p><b>Why language feedback?</b> Language feedback has two main advantages over rewards and expert actions (which are the two
+                                 most commonly used feedbacks). Firstly, unlike rewards, language feedback is very expressive and
                                  consequently can pack a lot more information which can help the agent train faster, and unlike actions,
                                 language feedback can be more easily provided by non-expert humans. Secondly, language feedback is
                                 closer to how humans learn, and this makes it more natural for many settings.</p>
 
-                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main purpose behind LLF-Bench is to robust evaluation for LLM Agents.
-                            This is possible for two reasons: firstly, LLF-Bench provides a diverse set of environments where each environment provides sampled verbalization of the problem making it harder
-                            to prompt hack. Secondly, LLF-Bench includes environment that require learning, so no matter how good an LLM is, it cannot zero-shot
-                            solve LLF-Bench, and therefore, must show signs of learning a new task.</p>
+                            <p><b>Can LLF-Bench be used to evaluate LLMs?</b> Yes! In fact, that is one of the main purposes behind LLF-Bench -- to robustly evaluate LLM-based Agents.
+                            There are two reasons to prefer LLF-Bench for such evaluation: firstly, LLF-Bench provides a diverse set of environments where each environment provides sampled verbalizations of the problem making it harder
+                            to prompt hack. Secondly, LLF-Bench includes environments that require learning, so that no matter how good an LLM is, it cannot zero-shot
+                            solve those LLF-Bench environments. Therefore, LLF-agents must show signs of learning new information to be able to solve those environments.</p>
                          </div>
                      </div>
         		</div>
@@ -154,7 +154,7 @@
         	<h2>LLF Tasks</h2>
 
                <div class="row">
-                   <p style="text-align:left; margin-left: 16.66%; margin-top: 10px;">LLF-Bench includes the following 8 diverse set of problems:</p>
+                   <p style="text-align:left; margin-left: 16.66%; margin-top: 10px;">LLF-Bench includes the following set of 8 problems:</p>
 
                    <ul class="list-group list-group-flush col-md-8" style="text-align:left; margin-left: 16.66%;">
                        <li class="list-group-item">
@@ -164,7 +164,7 @@
                                </div>
                                <div class="col-md-8">
                                  <b>LLF-bandit</b> is a verbalized version of the classic multi-armed bandit problem, which we implement based on
-                                <a href="https://github.com/JKCooper2/gym-bandits/tree/master" target="_blank">gym-bandits</a>
+                                <a href="https://github.com/JKCooper2/gym-bandits/tree/master" target="_blank">gym-bandits</a>. 
                                 LLF-bandit tests the agent's learning ability in an unknown environment with a finite number of actions.
                                </div>
                            </div>
@@ -177,7 +177,7 @@
                                <div class="col-md-8">
                                    <b>LLF-poem</b> consists of a set of poem writing tasks, where the
                            agent needs to write a poem satisfying certain syllable- and line-constraints. These problems
-                           tests the agent's learning ability to infer and solve constraint satisfication problems.
+                           tests the agent's learning ability to infer and solve constraint satisfaction problems.
                                </div>
                            </div>
                        </li>
@@ -190,7 +190,7 @@
                                    <b>LLF-reco-movie</b> simulates a classic recommendation scenario
                                    where a user wants movie or TV show recommendations based on some preferences. The user
                                    specifies their preferences in text, and any recommendation made by the agent is matched to
-                                   a movie database for checking correct preference matching.
+                                   a movie database for checking whether the preferences are matched correctly.
                                </div>
                            </div>
                        </li>
@@ -226,7 +226,7 @@
                                    <img src="images/gridworld.png" style="width:200px;"/>
                                </div>
                                <div class="col-md-8">
-                                    <b>LLf-gridworld</b> evaluates the agent's ability to navigate in
+                                    <b>LLF-gridworld</b> evaluates the agent's ability to navigate in
                            a graph-based environment. Each node of the graph is a room and the edges are doors
                            connecting the rooms. The agent's goal is to navigate from the room it starts in to the room with treasure.
                                </div>
@@ -404,9 +404,8 @@
 
             <div class="container" id="bio" style="text-align:left;">
 
-                <p style="margin-top:20px;">LLF-Bench team includes the following people listed alphabetically. We are also thankful to various people
-                who provided feedback in the form of suggestions, Github issues, and reviews.</p>
-
+                <p style="margin-top:20px;">LLF-Bench team includes the following people listed alphabetically. We are also thankful to the many people
+                behind the scenes who provided support and feedback in the form of suggestions, Github issues, and reviews.</p>
 
                 <div class="row">
                   <div class="col-md-4">
