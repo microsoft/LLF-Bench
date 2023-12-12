@@ -1,10 +1,12 @@
 # LLF-Bench: Benchmark for Interactive Learning from Language Feedback
 
-This repository provides a collection of tasks for evaluating agents that learn from language feedback. The associated website and paper are:
+LLF Bench is a benchmark that provides a diverse collection of interactive learning problems where the agent gets language feedback instead of rewards (as in RL) or action feedback (as in imitation learning). The associated website and paper are:
 
 **Website:** https://microsoft.github.io/LLF-Bench/
 
 **Paper:** https://microsoft.github.io/LLF-Bench/llf_bench_paper.pdf
+
+<img src="docs/images/llf-bench.png" width="750">
 
 Each benchmark environment here follows the gym api.
 
