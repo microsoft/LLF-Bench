@@ -66,7 +66,7 @@ class UserAgent(Agent):
                 """)
 
             self.prompt_template += dedent(f"""\
-                The response should be in the following format, where <your action> is the final answer. You must follow this format!!!
+                The response should be in the following format, where <your action> is the final answer. You must follow this format!
 
                     Action: <your action>
 
