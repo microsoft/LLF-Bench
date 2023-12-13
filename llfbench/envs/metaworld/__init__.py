@@ -37,7 +37,7 @@ def make_env(env_name,
             self.env.set_task(task)
             return self.env.reset(seed=seed, options=options)
     env = Wrapper(env)
-    return MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
+    return TimeLimit(MetaworldWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type), max_episode_steps=30)
 
 
 for env_name in ENVIRONMENTS:
