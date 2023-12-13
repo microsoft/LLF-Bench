@@ -6,7 +6,7 @@ LLF Bench is a benchmark that provides a diverse collection of interactive learn
 
 **Paper:** https://microsoft.github.io/LLF-Bench/llf_bench_paper.pdf
 
-<img src="docs/images/llf-bench.png" width="750">
+<img src="https://microsoft.github.io/LLF-Bench/images/llf-bench.png" width="750">
 
 Each benchmark environment here follows the gym api.
 
