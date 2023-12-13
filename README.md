@@ -98,7 +98,7 @@ cumulative_reward = 0.0
 
 # First observation is acquired by resetting the environment
 
-observation = env.reset()
+observation, info = env.reset()
 
 while not done:
     # Observation is dict having 'observation', 'instruction', 'feedback'
