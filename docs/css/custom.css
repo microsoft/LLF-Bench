@@ -25,3 +25,8 @@ pre {
     user-select: none;
     -webkit-user-drag: none;
   }
+
+  .row {
+    margin-left: 0;
+    margin-right: 0;
+  }
