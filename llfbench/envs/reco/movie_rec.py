@@ -2,8 +2,10 @@ import os
 import gym
 import sys
 import json
+import pickle
 import string
 
+import datetime
 import random
 from collections import Counter
 
@@ -30,6 +32,10 @@ def get_details_via_omdb(title, verbose=False):
         print("We have automatically set the OMDB_API_KEY environment variable for you.")
 
         os.environ['OMDB_API_KEY'] = api_key
+
+    # hard-coded error correction:
+    if title == 'When Harry Met Sally':
+        title = 'When Harry Met Sally...'
 
     params = {
         "t": title,
@@ -115,7 +121,14 @@ def verify_movie(title):
 
     if data['release_year'] is not None:
         if '–' in data['release_year']:
-            data['release_year'] = data['release_year'].split("–")[1]
+            start_year, end_year = data['release_year'].split("–")
+            if end_year != '':
+                data['release_year'] = end_year
+            else:
+                # if no end year, we took the current year
+                today = datetime.date.today()
+                year = today.year
+                data['release_year'] = year
         data['release_year'] = int(data['release_year'])
 
     return data
@@ -146,7 +159,7 @@ class RecommendationQueryGenerator:
         profile = {
             "type_": self._np_random.choice(self.TYPES),
             "year_ranges": self._np_random.choice(list(self.YEAR_RANGE.keys()), self._np_random.randint(0, 2+1)).tolist(),  # len(cls.YEAR_RANGE)
-            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 2+1)),  # len(cls.GENRES)  # Include None as an option
+            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 2+1)).tolist(),  # len(cls.GENRES)  # Include None as an option
             "age_restriction": self._np_random.choice([None] + self.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
             "sampled_start_exp_idx": self._np_random.randint(0, 9+1),
             "sampled_end_exp_idx": self._np_random.randint(0, 4+1)
@@ -162,7 +175,20 @@ class RecommendationQueryGenerator:
         if len(set(profile['genre']).intersection(set(not_adult_only_genres))) > 0:
             profile['age_restriction'] = None
 
-        return profile
+        partial_profile = {
+            'type_': profile['type_'],
+            'sampled_start_exp_idx': profile['sampled_start_exp_idx'],
+            'sampled_end_exp_idx': profile['sampled_end_exp_idx']
+        }
+        non_empty_keys = [k for k, v in profile.items() if v is not None and v != [] and k not in partial_profile]
+        # we randomly occlude one attribute
+        hid_key = self._np_random.choice(non_empty_keys)
+
+        for k, v in profile.items():
+            if k != hid_key:
+                partial_profile[k] = v
+
+        return profile, partial_profile
 
     def _get_a_or_an(self, word):
         vowels = "AEIOUaeiou"
@@ -266,8 +292,12 @@ class MovieRec(gym.Env):
         "90s": "90s",
         "80s": "80s",
     }
-    def __init__(self, feedback=0, seed=None):
+    def __init__(self, feedback=0, seed=None,
+                 cached_data='factual_movie_data_2023_12_14.pkl',
+                 instruction_type='c'):
         super().__init__()
+
+        self.instruction_type = instruction_type
 
         self.feedback_level = feedback
         assert self.feedback_level in {0, 0.5, 1}
@@ -276,6 +306,7 @@ class MovieRec(gym.Env):
         self.query_generator = RecommendationQueryGenerator(seed=seed)
 
         self.profile = None
+        self.partial_profile = None
 
         self.action_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
@@ -284,8 +315,14 @@ class MovieRec(gym.Env):
 
         self.reward_range = (0, 1)
 
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        self.cached_movie_data = pickle.load(open(os.path.join(file_path, "factual_movie_data_2023_12_14.pkl"), "rb"))
+
         self.docstring = dedent("""
         You are a helpful assistant trying to recommend movies to your users according to what they want.
+        
+        Sometimes, your users don't fully tell you their preferences at the start, but once you make recommendations,
+        they will tell you truthfully what they like and don't like.
         
         Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]
         """)
@@ -298,16 +335,17 @@ class MovieRec(gym.Env):
     def initialize_text_extractor(self, content_extractor: RecContentExtractor):
         self.extractor = content_extractor
 
-    def generate_request_query(self):
-        return self.query_generator.generate_query(**self.profile)
+    def generate_request_query(self, profile):
+        return self.query_generator.generate_query(**profile)
 
     def reset(self, **kwargs):
         if 'seed' in kwargs:
             self._seed = self.seed(kwargs['seed'])
             self.query_generator = RecommendationQueryGenerator(seed=kwargs['seed'])
 
-        rand_profile = self.query_generator.generate_random_profile()
+        rand_profile, partial_profile = self.query_generator.generate_random_profile()
         self.profile = rand_profile
+        self.partial_profile = partial_profile
         # Profile:
         # {'type_': 'TV show',
         #  'year_ranges': ['recent', '2000s', '80s'],
@@ -317,7 +355,15 @@ class MovieRec(gym.Env):
         # profile is fixed
         # however, we can choose to partially hide some part of profile in the initial query
         # and reveal profile gradually in the feedback (through likes/dislikes, or explicit request)
-        return self.generate_request_query()
+
+        if self.instruction_type == 'c':
+            profile = self.profile
+        elif self.instruction_type == 'b':
+            profile = self.partial_profile
+        else:
+            raise Exception("Instruction type not supported")
+
+        return self.generate_request_query(profile)
 
     def extract_with_retry(self, a):
         retry = 3
@@ -681,7 +727,10 @@ class MovieRec(gym.Env):
 
         for movie_tup in rec_movie_data:
             title = movie_tup['title']
-            factual_movie_data[title] = verify_movie(title)
+            if title in self.cached_movie_data:
+                factual_movie_data[title] = self.cached_movie_data[title]
+            else:
+                factual_movie_data[title] = verify_movie(title)
 
         feedbacks, didactic_feedbacks, bad_recs = [], {}, []
         # now we check each movie one by one to see if they match our profile

@@ -13,8 +13,8 @@ Naming convention for envs:
 
 instruction_type:
     - (b) Basic (Goal, Syntax, Action Space)
-    - (p) Partial (Basic + Offline data (e.g., observation, action, feedback))
     - (c) Complete (Info sufficient to infer the optimal policy)
+    - (p) Practical: Contains instructions, and additionally includes feedback for previously executed actions.
 
 feedback_type;
     - (n) none

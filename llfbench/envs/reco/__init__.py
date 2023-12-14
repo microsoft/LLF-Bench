@@ -13,7 +13,7 @@ def make_env(env_name,
     """ Make the original env and wrap it with the LLFWrapper. """
     import importlib
     MovieCls = getattr(importlib.import_module("llfbench.envs.reco.movie_rec"), 'MovieRec')
-    env = MovieCls(**kwargs)  # `feedback` doesn't matter here, as we will override it.
+    env = MovieCls(instruction_type=instruction_type, **kwargs)  # `feedback` doesn't matter here, as we will override it.
     return MovieRecGymWrapper(env, instruction_type=instruction_type, feedback_type=feedback_type)
 
 register(

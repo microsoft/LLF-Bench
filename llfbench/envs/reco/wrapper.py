@@ -4,7 +4,7 @@ from llfbench.envs.reco.prompts import *
 from llfbench.envs.reco.movie_rec import MovieRec
 
 class MovieRecGymWrapper(LLFWrapper):
-    INSTRUCTION_TYPES = ('b')  # , 'p', 'c')
+    INSTRUCTION_TYPES = ('b', 'c')  # , 'p', 'c')
     FEEDBACK_TYPES = ('r', 'hp', 'hn', 'fp', 'fn')
 
     def __init__(self, env, instruction_type, feedback_type):
