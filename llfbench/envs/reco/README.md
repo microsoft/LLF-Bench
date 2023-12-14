@@ -51,3 +51,15 @@ For each item, we check the following five attributes:
    - For example, if a movie is labeled as `Action` and `Comedy`, and the user preference genre is `Comedy` and `War`, this will not be a match.
    - You can explore some combinations of genres here: https://www.imdb.com/search/title/
 5. **Age-Restriction**: each item needs to match the age-restriction specified by the user.
+
+## Instruction Type
+
+`b`: Partial user preference is given -- some preference is hidden from the agent during the initial request.
+
+`c`: Full user preference is given.
+
+## Feedback Logic
+
+For `fp`, `fn`, the simulated user will give some suggestions of itmes that satisfy constraint, but not joint constraint -- only single constraint.
+This means for attribute genre `Action`, the user will give some `Action` movies as examples, but will not 
+make sure these items also conform to other preferences such as `year`.

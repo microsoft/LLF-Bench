@@ -148,7 +148,7 @@ type_fp = (
     "Advise on {movie}s, similar to {rest}",
     "Offer recommendations for {movie}s, like {rest}",
     "Give examples of {movie}s, including {rest}",
-    "Provide me with {movie}s, akin to {rest}",
+    "Provide me with {movie}s, similar to {rest}",
 )
 
 type_fn_template = "Do not recommend items that are not {movie}s, like {rest}"
@@ -157,8 +157,8 @@ type_fn = (
     "Please don't propose items if they're not {movie}s, like {rest}",
     "Refrain from recommending non-{movie} items, for instance {rest}",
     "Steer clear of advising items that don't fall under {movie}s, including {rest}",
-    "Eschew offering recommendations for items not related to {movie}s, similar to {rest}",
-    "Exclude non-{movie} items from suggestions, akin to {rest}",
+    "Refrain from offering recommendations for items not related to {movie}s, similar to {rest}",
+    "Exclude non-{movie} items from suggestions, similar to {rest}",
     "Keep away from indicating items that are not {movie}s, resembling {rest}",
     "Omit items that aren't {movie}s from recommendations, such as {rest}"
 )
@@ -218,7 +218,7 @@ genre_fp = (
     "Advise on {movie}s with an {action_comedy} theme, similar to {rest}",
     "Give recommendations for {action_comedy} {movie}s, like {rest}",
     "Offer a list of {movie}s that are {action_comedy}, including {rest}",
-    "Identify {movie}s characterized as {action_comedy}, akin to {rest}",
+    "Identify {movie}s characterized as {action_comedy}, similar to {rest}",
     "Select {movie}s that exemplify the {action_comedy} genre, as in {rest}",
     "Choose {movie}s that are in the {action_comedy} category, like {rest}"
 )
@@ -230,8 +230,8 @@ genre_fn = (
     "Steer clear of proposing {movie}s that aren't {action_comedy}, in contrast to {rest}",
     "Exclude {movie}s that are not {action_comedy} from your suggestions, not as in {rest}",
     "Do not advise on {movie}s lacking {action_comedy} elements, not resembling {rest}",
-    "Omit {movie}s that do not classify as {action_comedy}, not akin to {rest}",
-    "Eschew offering {movie}s that diverge from the {action_comedy} type, not comparable to {rest}",
+    "Omit {movie}s that do not classify as {action_comedy}, not like to {rest}",
+    "Refrain from offering {movie}s that diverge from the {action_comedy} type, not comparable to {rest}",
     "Keep away from {movie}s that aren't representative of {action_comedy}, not following the example of {rest}"
 )
 
@@ -291,7 +291,7 @@ year_fp = (
     "Put forward {movie}s corresponding to {correct_years}, including {rest}",
     "Select {movie}s representative of {correct_years}, exemplified by {rest}",
     "Choose {movie}s which were made in {correct_years}, as in {rest}",
-    "Present {movie}s from the {correct_years} period, akin to {rest}"
+    "Present {movie}s from the {correct_years} period, like {rest}"
 )
 
 year_fn_template = "Do not recommend {movie}s that are not from {correct_years}, like {rest}"
@@ -301,7 +301,7 @@ year_fn = (
     "Steer clear of recommending {movie}s not produced during {correct_years}, similar to {rest}",
     "Exclude {movie}s from the recommendations if they're not from {correct_years}, including {rest}",
     "Do not put forward {movie}s that do not date back to {correct_years}, like {rest}",
-    "Eschew selecting {movie}s that aren't associated with {correct_years}, as in {rest}",
+    "Refrain from selecting {movie}s that aren't associated with {correct_years}, as in {rest}",
     "Omit {movie}s from your suggestions if they are not from the period of {correct_years}, exemplified by {rest}",
     "Please do not advise on {movie}s from years other than {correct_years}, such as {rest}"
 )
@@ -310,7 +310,7 @@ child_friendly_r_pos_template = "The recommended {movie}s are all {child_friendl
 child_friendly_r_pos = (
 "Every one of the suggested {movie}s is {child_friendly}, which is fantastic!",
     "All the {movie}s on the recommendation list are {child_friendly}, excellent!",
-    "Delighted to see that the recommended {movie}s are uniformly {child_friendly}, wonderful!",
+    "Delighted to see that the recommended {movie}s are entirely {child_friendly}, wonderful!",
     "The {movie}s you’ve recommended are indeed all {child_friendly}, terrific!",
     "It's great to find that each of the {movie}s recommended is {child_friendly}, splendid!",
     "The entire selection of recommended {movie}s is {child_friendly}, how delightful!",
@@ -344,7 +344,7 @@ child_friendly_hp = (
 child_friendly_hn_template = "These {movie}s are not {child_friendly}: {rest}"
 child_friendly_hn = (
     "Not every one of these {movie}s is {child_friendly}: {rest}",
-    "These {movie}s aren't uniformly {child_friendly}: {rest}",
+    "These {movie}s aren't entirely {child_friendly}: {rest}",
     "Some of these {movie}s do not qualify as {child_friendly}: {rest}",
     "Among these {movie}s, some are not {child_friendly}: {rest}",
     "A selection of these {movie}s is not {child_friendly}: {rest}",
@@ -359,7 +359,7 @@ child_friendly_fp = (
     "Advise on {movie}s deemed {child_friendly}, including {rest}",
     "Point me towards {movie}s that are known to be {child_friendly}, similar to {rest}",
     "Identify {movie}s appropriate for the {child_friendly} category, exemplified by {rest}",
-    "Curate a selection of {movie}s that fit the {child_friendly} criteria, akin to {rest}",
+    "Curate a selection of {movie}s that fit the {child_friendly} criteria, similar to {rest}",
     "Highlight {movie}s that are rated as {child_friendly}, such as {rest}"
 )
 
@@ -371,6 +371,6 @@ child_friendly_fn = (
     "Exclude {movie}s from the list if they are not {child_friendly}, exemplified by {rest}",
     "Omit {movie}s that do not have a {child_friendly} rating, similar to {rest}",
     "Please do not suggest {movie}s if they’re not {child_friendly}, such as {rest}",
-    "Eschew proposing {movie}s that aren’t considered {child_friendly}, including {rest}",
-    "Bypass {movie}s that aren’t labeled as {child_friendly}, like {rest}"
+    "Refrain from proposing {movie}s that aren’t considered {child_friendly}, including {rest}",
+    "Exclude {movie}s that aren’t labeled as {child_friendly}, like {rest}"
 )
