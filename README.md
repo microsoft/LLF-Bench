@@ -4,7 +4,7 @@ LLF Bench is a benchmark that provides a diverse collection of interactive learn
 
 **Website:** https://microsoft.github.io/LLF-Bench/
 
-**Paper:** https://microsoft.github.io/LLF-Bench/llf_bench_paper.pdf
+**Paper:** https://arxiv.org/abs/2312.06853
 
 <img src="https://microsoft.github.io/LLF-Bench/images/llf-bench.png" width="750">
 
