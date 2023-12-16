@@ -94,7 +94,11 @@ def verify_movie(title):
     data['non_exist'] = non_exist  # if we found some info here, then it's still good
 
     if 'imdbRating' in reviews:
-        data['IMDB'] = float(reviews['imdbRating'])
+        if 'imdbRating' in reviews:
+            if reviews['imdbRating'] != 'N/A':
+                data['IMDB'] = float(reviews['imdbRating'])
+            else:
+                data['IMDB'] = 0
     if 'Rotten Tomatoes' in reviews:
         data['Rotten Tomatoes'] = int(reviews['Rotten Tomatoes'].strip('%'))
 
@@ -290,7 +294,7 @@ class MovieRec(gym.Env):
         "80s": "80s",
     }
     def __init__(self, feedback=0, seed=None,
-                 cached_data='factual_movie_data_2023_12_14.pkl',
+                 cached_data='factual_movie_data_2023_12_16.pkl',
                  instruction_type='c'):
         super().__init__()
 
@@ -313,7 +317,7 @@ class MovieRec(gym.Env):
         self.reward_range = (0, 1)
 
         file_path = os.path.dirname(os.path.abspath(__file__))
-        self.cached_movie_data = pickle.load(open(os.path.join(file_path, "factual_movie_data_2023_12_14.pkl"), "rb"))
+        self.cached_movie_data = pickle.load(open(os.path.join(file_path, cached_data), "rb"))
         self.cached_movie_data_shuffled = list(self.cached_movie_data.items())
 
         self.docstring = dedent("""
