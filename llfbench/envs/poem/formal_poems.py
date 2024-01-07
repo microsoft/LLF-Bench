@@ -296,10 +296,11 @@ class Haiku(PoemUtil, gym.Env):
 
 
 class Tanka(Haiku):
-    def __init__(self, feedback=0, silent=True, use_extractor=False, seed=None):
+    def __init__(self, feedback=0, use_extractor=False, seed=None):
         # We can extend this to add "theme" of the poem
         # This increases difficulty a little, but also hard to check if it's thematic or not.
-        super().__init__(feedback, silent, use_extractor, seed=seed)
+        # feedback=0, use_extractor=False, seed=None
+        super().__init__(feedback, use_extractor, seed=seed)
         self.assignment = f"Can you write me a Tanka? A Tanka is a poem that consists of five lines composed of syllables in a 5-7-5-7-7 pattern."
         self.use_extractor = use_extractor
         self.feedback = feedback
