@@ -24,7 +24,7 @@ class Alfworld(gym.Env):
 
     def __init__(self, instruction_type, feedback_type):
 
-        config_file = "llfbench/envs/alfworld/base_config.yaml"
+        config_file = os.path.join(os.path.dirname(__file__), "base_config.yaml")
 
         # Read AI2Thor data
         os.environ["ALFWORLD_DATA"] = "alfworld_data"
