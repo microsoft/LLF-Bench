@@ -55,6 +55,11 @@ class EnvCompatibility(gym.wrappers.EnvCompatibility):
     def __getattr__(self, name: str) -> Any:  # The wrapped env should behave like the original env.
         return getattr(self.env, name)
 
+    def __getstate__(self):
+        return vars(self)
+
+    def __setstate__(self, state):
+        vars(self).update(state)
 
 class TextWrapper(gym.Wrapper):
     # This is a wrapper that can be applied on top of LLFWrapper to turn into a text-based env.

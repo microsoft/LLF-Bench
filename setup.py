@@ -11,6 +11,7 @@ setup(
     description='A gym environment for learning with language feedback.',
     long_description=open('README.md').read(),
     install_requires=[
+        "numpy<1.24.0",
         "tqdm",
         "gymnasium==0.29.1",
         "parse==1.19.1",

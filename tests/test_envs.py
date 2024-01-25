@@ -5,6 +5,7 @@ import random
 from tqdm import tqdm
 from llfbench.utils.utils import generate_combinations_dict
 from llfbench.envs.llf_env import LLFWrapper
+import copy
 
 
 def obs_space_contains_obs(obs, obs_space):
@@ -90,6 +91,7 @@ def test_env(env_name, seed=0):
     configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
     for config in configs:
         env = llfbench.make(env_name, **config)  # test llfbench.make
+        env_copy = copy.deepcopy(env)
         assert test_wrapper(env) # test LLFWrapper is used
         ouputs1 = step_env(env_name, seed, config=config)
         ouputs2 = step_env(env_name, seed, config=config)
