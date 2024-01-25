@@ -331,6 +331,8 @@ class MovieRec(gym.Env):
 
     def seed(self, seed=None):
         """Seed the PRNG of this space and possibly the PRNGs of subspaces."""
+        self.query_generator = RecommendationQueryGenerator(seed=seed)
+        random.seed(seed)
         self._np_random, seed = seeding.np_random(seed)
         return [seed]
 
