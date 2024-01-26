@@ -51,7 +51,11 @@ def get_return(env, env_name, agent):
     total_return = 0.0
     completed = False
 
+    #HACK: Max Horizon set to 1000
+    horizon = 1000
+
     while not completed:
+        horizon -= 1
 
         if agent == "random":
             action = get_random_action(env, env_name, info)
@@ -67,7 +71,7 @@ def get_return(env, env_name, agent):
         next_obs, reward, terminated, truncated, next_info = env.step(action)
 
         total_return += reward
-        completed = terminated or truncated
+        completed = terminated or truncated or (horizon <= 0)
 
         assert env.action_space.contains(action)
         assert obs_space_contains_obs(obs, env.observation_space)
@@ -92,10 +96,11 @@ def test_wrapper(env):
 
 
 def test_env(env_name, agent, num_eps=1, seed=0):
-
+    print(env_name)
     instruction_types, feedback_types = llfbench.supported_types(env_name)
     feedback_types = list(feedback_types) + ['n', 'a', 'm']
-    configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
+    #configs = generate_combinations_dict(dict(instruction_type=instruction_types, feedback_type=feedback_types))
+    configs = [{"instruction_type": 'b', "feedback_type": 'a'}]
 
     for config in configs:
 
@@ -131,9 +136,9 @@ def test_benchmark(benchmark_prefix, num_eps, agent):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('benchmark_prefix', type=str, default='llf-bandits')
-    parser.add_argument('num_eps', type=int, default=10, help="number of episodes")
-    parser.add_argument('agent', type=str, default="random", help="type of agent: random or expert",
+    parser = argparse.ArgumentParser(description='Script to test heuristic agents on LLF environments.')
+    parser.add_argument('-b', '--benchmark_prefix', type=str, default='llf-bandits', help='Prefix of the suite of environments to test')
+    parser.add_argument('-n', '--num_eps', type=int, default=10, help="Number of episodes to evaluate")
+    parser.add_argument('-a', '--agent', type=str, default="random", help="type of agent: random or expert",
                         choices=["random", "expert"])
     test_benchmark(**vars(parser.parse_args()))

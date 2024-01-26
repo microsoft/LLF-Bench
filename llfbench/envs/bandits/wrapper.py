@@ -19,7 +19,7 @@ class BanditGymWrapper(LLFWrapper):
 
     @property
     def reward_range(self):
-        return (0, 1.0)
+        return (-100, 100)
 
     def _reset(self, seed=None, options=None):
         options = options or {}
