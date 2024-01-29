@@ -18,14 +18,14 @@ setup(
         # "Cython==0.29.36",
         "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits",
         # poem
-        "cmudict",
-        "syllables",
-        # loss_landscape
+        "cmudict==1.0.13",
+        "syllables==1.0.9",
+        # optimization
         "jax",
         "jaxlib",
         # highway
         "highway-env",
-        # movie
+        # reco
         'requests==2.31.0'
     ],
     extras_require={

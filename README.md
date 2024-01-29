@@ -29,7 +29,7 @@ When a field is missing, its value is represented as None. For example, 'instruc
 
 ## Principle
 
-We design LLF-Bench as a benchmark to test the **learning** ability of interactive agents. We design each environment in LLF-Bench such that, from 'observation' and 'instruction' in `observation_dict`, it is sufficient (for a human) to tell when the task is indeed solved. Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems. However, we also design these environments such that 'observation' and 'instruction' are not sufficient for designing or efficiently learning the optimal policies. Each environment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, or termination, so that the agent cannot infer the optimal policy just based on 'instruction'. 
+We design LLF-Bench as a benchmark to test the **learning** ability of interactive agents. We design each environment in LLF-Bench such that, from 'observation' and 'instruction' in `observation_dict`, it is sufficient (for a human) to tell when the task is indeed solved. Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems. However, we also design these environments such that 'observation' and 'instruction' are not sufficient for designing or efficiently learning the optimal policies. Each environment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, or termination, so that the agent cannot infer the optimal policy just based on 'instruction'.
 
 These features are designed to test an agent's *learning* ability, especially, the ability to learn from language feedback. Language feedback can be viewed as a generalization of reward feedback in reinforcement learning. It can not only provide information about reward/success, but it can also convey expressive feedback such as explanations and suggestions. The language feedback is implemented as the field 'feedback' in `observation_dict`, which is to help the agent to learn better.
 
@@ -67,10 +67,6 @@ In addition, `alfworld` currently requires an older gym version. After installin
 For `metaworld` option, it requires libGL, which can be installed by
 
     sudo apt-get install ffmpeg libsm6 libxext6
-
-For `optimization` option, it requires Jax, which can be installed by
-
-    pip install jax jaxlib
 
 For `reco` option, please follow the instruction here to register and get your own user key:
 
@@ -128,7 +124,7 @@ print(f'Episode reward: {cumulative_reward}')
 
 ## Testing
 
-The `tests` folder in the repo contains a few helpful scripts for testing the functionality of LLF-Bench. 
+The `tests` folder in the repo contains a few helpful scripts for testing the functionality of LLF-Bench.
 - *test_agents.py*: Creates a `UserAgent` that prints the 'observation' and 'feedback' produced by an LLF-Bench environment to the console, and reads user input from the console as an 'action'.
 - *test_basic_agents.py*: For a subset of LLF-Bench environments that support either a finite action space or admit a pre-built expert optimal policy, this script creates a `RandomActionAgent` and `ExpertActionAgent` to test supported LLF-Bench environments.
 - *test_envs.py*: Syntactically tests environments added to the LLF-Bench environment registry so as to be compatible with the expected semantics of LLF-Bench. This is a useful script to run on any new environments that are added or existing environments are customized in the benchmark.
