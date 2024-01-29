@@ -48,7 +48,7 @@ def get_details_via_omdb(title, verbose=False):
             print(data["Error"])
             print(title)
         return title, reviews, None, "PG", None, None, None, non_exist
-    
+
     # allow fuzzy match
     # if data.get("Title") != title:
     #     return title, reviews, None, "PG", None, None, None, non_exist
@@ -159,11 +159,11 @@ class RecommendationQueryGenerator:
     def generate_random_profile(self):
         profile = {
             "type_": self._np_random.choice(self.TYPES),
-            "year_ranges": self._np_random.choice(list(self.YEAR_RANGE.keys()), self._np_random.randint(0, 2+1)).tolist(),  # len(cls.YEAR_RANGE)
-            "genre": self._np_random.choice(self.GENRES, self._np_random.randint(0, 2+1)).tolist(),  # len(cls.GENRES)  # Include None as an option
+            "year_ranges": self._np_random.choice(list(self.YEAR_RANGE.keys()), self._np_random.integers(0, 2+1)).tolist(),  # len(cls.YEAR_RANGE)
+            "genre": self._np_random.choice(self.GENRES, self._np_random.integers(0, 2+1)).tolist(),  # len(cls.GENRES)  # Include None as an option
             "age_restriction": self._np_random.choice([None] + self.AGE_RESTRICTED, 1, p=[0.4, 0.2, 0.2, 0.2]).tolist()[0],
-            "sampled_start_exp_idx": self._np_random.randint(0, 9+1),
-            "sampled_end_exp_idx": self._np_random.randint(0, 4+1)
+            "sampled_start_exp_idx": self._np_random.integers(0, 9+1),
+            "sampled_end_exp_idx": self._np_random.integers(0, 4+1)
         }
 
         # child-friendly and family-friendly should not be selected in the following genres:
@@ -322,10 +322,10 @@ class MovieRec(gym.Env):
 
         self.docstring = dedent("""
         You are a helpful assistant trying to recommend movies to your users according to what they want.
-        
+
         Sometimes, your users don't fully tell you their preferences at the start, but once you make recommendations,
         they will tell you truthfully what they like and don't like.
-        
+
         Please produce a valid json list with a dictionary: [{"title": "movie1"}, {"title": "movie2"}]
         """)
 
