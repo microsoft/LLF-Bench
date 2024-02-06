@@ -132,7 +132,7 @@ class MetaworldWrapper(LLFWrapper):
             if np.abs(desired_pos - self._current_pos).max() < self.p_control_threshold:
                 break
 
-        feedback_type = self.feedback_type
+        feedback_type = self._feedback_type
         # Some pre-computation of the feedback
         expert_action = self.expert_action
         moving_away = np.linalg.norm(expert_action[:3]-previous_pos) < np.linalg.norm(expert_action[:3]-self._current_pos)
@@ -168,6 +168,7 @@ class MetaworldWrapper(LLFWrapper):
             feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
         observation = self.textualize_observation(observation)
         info['success'] = bool(info['success'])
+
         return dict(instruction=None, observation=observation, feedback=feedback), float(reward), terminated, truncated, info
 
     def _reset(self, *, seed=None, options=None):
