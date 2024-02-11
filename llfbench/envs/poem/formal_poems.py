@@ -122,6 +122,8 @@ class Haiku(PoemUtil, gym.Env):
 
         self._seed = self.seed(seed)
 
+        self.docstring = dedent(self.assignment)
+
         super().__init__()
 
     def reset(self, **kwargs):
@@ -311,6 +313,8 @@ class Tanka(Haiku):
         self.syllable_req_str = [str(i) for i in self.syllable_req]
         self.form_name = 'Tanka'
 
+        self.docstring = dedent(self.assignment)
+
 
 class LineSyllableConstrainedPoem(Haiku):
     def __init__(self, syllable_req=[7, 7, 7], feedback=0, use_extractor=False,
@@ -324,6 +328,8 @@ class LineSyllableConstrainedPoem(Haiku):
         self.feedback = feedback
         self.syllable_req = syllable_req
         self.form_name = 'poem'
+
+        self.docstring = dedent(self.assignment)
 
         self._seed = self.seed(seed)
 
@@ -366,6 +372,8 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
         self.observation_space = gym.spaces.Text(sys.maxsize, charset=string.printable)
 
         self._seed = self.seed(seed)
+
+        self.docstring = dedent(self.assignment)
 
     def reset(self, **kwargs):
         if 'seed' in kwargs:
