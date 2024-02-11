@@ -289,6 +289,9 @@ class Haiku(PoemUtil, gym.Env):
 
         terminal = False  # one step environment
 
+        if type(success) == int:
+            success = success == 1
+
         # observation, reward, terminated, info
         return self.assignment, frac, terminal, {'original_feedback': feedback,
                                                  'feedback': didactic_feedback,
