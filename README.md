@@ -87,7 +87,7 @@ import llfbench as gym
 # Environments in the benchmark are registered following
 # the naming convention of llf-*
 
-env = gym.make('llf-Gridworld-v0')
+env = gym.make('llf-gridworld-v0')
 
 done = False
 cumulative_reward = 0.0
