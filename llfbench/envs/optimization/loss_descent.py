@@ -132,7 +132,7 @@ class LossLandscapeBase(gym.Env):
             didactic_feedback.r = f'You entered an invalid action: {action}'
             didactic_feedback.fp = didactic_feedback.r + f" Please enter a valid action within ({self.x_low, self.x_high})"
             didactic_feedback.fn = didactic_feedback.r + f" Do not enter a valid action outside of ({self.x_low, self.x_high})"
-            return None, -1000, True, {'success': False, 'feedback': didactic_feedback}
+            return None, -1000, True, {'success': False, 'feedback': didactic_feedback, 'original_feedback': didactic_feedback.r}
 
         if stop:
             success = np.abs(self.callable_func(self.prev_x) - self.min_y) < 1e-2
@@ -142,7 +142,8 @@ class LossLandscapeBase(gym.Env):
             else:
                 didactic_feedback['r'] += ' You have not reached the minimum!'
             return None, float(self.callable_func(self.prev_x)), True, {'success': success,
-                                                                'feedback': didactic_feedback}
+                                                                        'feedback': didactic_feedback,
+                                                                        'original_feedback': didactic_feedback.r}
 
         loss = self.callable_func(x)
 

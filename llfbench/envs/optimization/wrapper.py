@@ -31,7 +31,8 @@ class LossLandscapeGymWrapper(LLFWrapper):
         observation, reward, terminated, truncated, info = self.env.step(action)
         didactic_feedback = info['feedback']
         del info['feedback']
-        del info['original_feedback']
+        if 'original_feedback' in info:
+            del info['original_feedback']
 
         assert 'success' in info
 
