@@ -321,4 +321,13 @@ class LLFWrapper(gym.Wrapper):
         for k, v in feedback_dict.asdict().items():
             if v is not None:
                 feedback.append(f'{str(v)}')
-        return ' '.join(feedback)
+
+        paragraph = ""
+        for f in feedback:
+            if f[-1] == '\n':
+                paragraph += f
+            else:
+                paragraph += f + ' '
+        paragraph = paragraph[:-1]
+        # return ' '.join(feedback)
+        return paragraph

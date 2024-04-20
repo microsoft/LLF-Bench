@@ -117,15 +117,15 @@ type_r_neg = (
     "The recommendations span beyond just {movie}s."
 )
 
-type_hp_template = "These items are indeed all {movie}s: {rest}"
+type_hp_template = "These items are indeed {movie}s: {rest}"
 type_hp = (
     "Indeed, each of these items is a {movie}: {rest}",
-    "All of these items are, in fact, {movie}s: {rest}",
-    "It's confirmed that every item here is a {movie}: {rest}",
+    "All of these items are {movie}s: {rest}",
+    "I can confirm that every item here is a {movie}: {rest}",
     "Without exception, all these items are {movie}s: {rest}",
     "Each one of the items listed is definitely a {movie}: {rest}",
-    "True, the entire selection here consists of {movie}s: {rest}",
-    "Yes, all these items are categorized as {movie}s: {rest}",
+    "True, these are {movie}s: {rest}",
+    "Yes, these following items are categorized as {movie}s: {rest}",
     "Certainly, these items are all {movie}s: {rest}"
 )
 
@@ -136,7 +136,6 @@ type_hn = (
     "Not all items listed here are {movie}s: {rest}",
     "The items here aren't exclusively {movie}s: {rest}",
     "Among these items, not all are {movie}s: {rest}",
-    "There's a variety among these items; they're not all {movie}s: {rest}",
     "These items are a mix, with not every one being a {movie}: {rest}",
     "The collection here extends beyond just {movie}s: {rest}"
 )
@@ -354,13 +353,11 @@ child_friendly_hn = (
 child_friendly_fp_template = "Recommend {movie}s that are {child_friendly}, like {rest}"
 child_friendly_fp = (
     "Suggest {movie}s which are classified as {child_friendly}, such as {rest}",
-    "Propose a list of {movie}s that carry the {child_friendly} label, for instance {rest}",
+    "Give me some {movie}s that carry the {child_friendly} label, for instance {rest}",
     "Provide recommendations for {movie}s that have a {child_friendly} rating, like {rest}",
-    "Advise on {movie}s deemed {child_friendly}, including {rest}",
+    "Tell me {movie}s deemed {child_friendly}, including {rest}",
     "Point me towards {movie}s that are known to be {child_friendly}, similar to {rest}",
-    "Identify {movie}s appropriate for the {child_friendly} category, exemplified by {rest}",
     "Curate a selection of {movie}s that fit the {child_friendly} criteria, similar to {rest}",
-    "Highlight {movie}s that are rated as {child_friendly}, such as {rest}"
 )
 
 child_friendly_fn_template = "Do not recommend {movie}s that are not {child_friendly}, like {rest}"
