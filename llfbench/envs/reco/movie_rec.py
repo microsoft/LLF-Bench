@@ -850,8 +850,6 @@ class MovieRec(gym.Env):
             reward = 0
 
         feedbacks = [f for f in feedbacks if f is not None]
-        if reward < 0:
-            import pdb; pdb.set_trace()
 
         # title_to_num_rules_violation:
         # Counter({'Made up movie 1': 1, 'Made up movie 2': 1})
