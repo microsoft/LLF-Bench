@@ -31,8 +31,9 @@ def make_env(env_name,
         def env_name(self):
             return env_name
         def reset(self, *, seed=None, options=None):
-            random.seed(seed)
-            np.random.seed(seed)
+            if seed is not None:
+                random.seed(seed)
+                np.random.seed(seed)
             task = random.choice(benchmark.train_tasks)
             self.env.set_task(task)
             return self.env.reset(seed=seed, options=options)
