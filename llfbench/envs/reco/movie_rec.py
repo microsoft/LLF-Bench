@@ -298,7 +298,7 @@ class MovieRec(gym.Env):
         self.cached_movie_data_shuffled = list(self.cached_movie_data.items())
 
         self.docstring = dedent("""
-        You are a helpful assistant trying to recommend movies to your users according to what they want.
+        You are a helpful assistant trying to recommend movies or tv shows to your users according to what they want.
 
         Sometimes, your users don't fully tell you their preferences at the start, but once you make recommendations,
         they will tell you truthfully what they like and don't like.
