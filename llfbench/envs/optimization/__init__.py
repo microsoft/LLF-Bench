@@ -7,6 +7,11 @@ ENVIRONMENTS = (
     'McCormick',
     'Rosenbrock',
     'SixHumpCamel',
+    # === not recommended ===
+    'Bohachevsky',
+    'RotatedHyperEllipsoid',
+    'Matyas',
+    'ThreeHumpCamel'
 )
 
 def make_env(env_name,

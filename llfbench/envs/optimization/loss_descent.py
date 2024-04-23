@@ -68,6 +68,8 @@ class LossLandscapeBase(gym.Env):
         self.docstring = self.docstring.strip()
         self.docstring = self.docstring.format(self.x_low, self.x_high, self.horizon)
 
+        self.called_reset = False
+
     def get_min_reward(self):
         x_range = [self.x_low, self.x_high]
         y_max = [self.callable_func(np.array([x_range[i], x_range[j]])) for i in range(2) for j in range(2)]
@@ -94,6 +96,8 @@ class LossLandscapeBase(gym.Env):
         obs += "Please output the next x that will make this function output the smallest y.\n"
         obs += "Format: x = [x1, x2]\n"
         obs += "Output:"
+
+        self.called_reset = True
 
         return obs
 
@@ -124,6 +128,9 @@ class LossLandscapeBase(gym.Env):
             return np.array(numbers), False
 
     def step(self, action):
+        if not self.called_reset:
+            raise  Exception("must call env.reset() first before step()")
+
         # observation, reward, terminal, info
         didactic_feedback = Feedback(r="", hp="", hn="", fp="", fn="")
 
@@ -132,7 +139,7 @@ class LossLandscapeBase(gym.Env):
             didactic_feedback.r = f'You entered an invalid action: {action}'
             didactic_feedback.fp = didactic_feedback.r + f" Please enter a valid action within ({self.x_low, self.x_high})"
             didactic_feedback.fn = didactic_feedback.r + f" Do not enter a valid action outside of ({self.x_low, self.x_high})"
-            return None, -1000, True, {'success': False, 'feedback': didactic_feedback}
+            return None, -1, True, {'success': False, 'feedback': didactic_feedback, 'original_feedback': didactic_feedback.r}
 
         if stop:
             success = np.abs(self.callable_func(self.prev_x) - self.min_y) < 1e-2
@@ -142,7 +149,8 @@ class LossLandscapeBase(gym.Env):
             else:
                 didactic_feedback['r'] += ' You have not reached the minimum!'
             return None, float(self.callable_func(self.prev_x)), True, {'success': success,
-                                                                'feedback': didactic_feedback}
+                                                                        'feedback': didactic_feedback,
+                                                                        'original_feedback': didactic_feedback.r}
 
         loss = self.callable_func(x)
 
@@ -227,7 +235,10 @@ class LossLandscapeBase(gym.Env):
 
         self.prev_x = x
         self.left_attempts -= 1
-        return obs, float(-loss), False, {'feedback': didactic_feedback, 'original_feedback': feedback, "success": False}
+
+        r = np.clip(float(-loss), self.get_min_reward(), -self.min_y)
+
+        return obs, r, False, {'feedback': didactic_feedback, 'original_feedback': feedback, "success": False}
 
 
 # now we wrap all loss functions by inheriting this class
