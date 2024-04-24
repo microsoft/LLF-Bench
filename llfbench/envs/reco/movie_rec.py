@@ -203,9 +203,6 @@ class RecommendationQueryGenerator:
             for k, v in profile.items():
                 if k != hid_key:
                     partial_profile[k] = v
-        else:
-            #
-            partial_profile = copy.copy(profile)
 
         return profile, partial_profile
 
