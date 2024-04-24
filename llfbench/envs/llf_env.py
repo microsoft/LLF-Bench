@@ -264,7 +264,8 @@ class LLFWrapper(gym.Wrapper):
 
     def reset(self, *, seed : Union[int,None] = None, options : Union[Dict[str, Any],None] = None) -> Tuple[Union[str, Dict[str, str]], Dict[str, Any]]:
         """ Reset the environment and return the initial observation."""
-        np.random.seed(seed)  # for paraphrasing
+        if seed is not None:
+            np.random.seed(seed)  # for paraphrasing
         observation, info = self._reset(seed=seed, options=options)
         self.obs_check(observation)
         assert observation['feedback'] is None, "The feedback must be None in the initial observation."
