@@ -1,3 +1,4 @@
+import copy
 import os
 import gym
 import sys
@@ -194,12 +195,17 @@ class RecommendationQueryGenerator:
         }
         autowrap = lambda x: x if isinstance(x, list) else [x]
         non_empty_keys = [k for k, v in profile.items() if v is not None and len(autowrap(v)) != 0 and k not in partial_profile]
-        # we randomly occlude one attribute
-        hid_key = self._np_random.choice(non_empty_keys)
 
-        for k, v in profile.items():
-            if k != hid_key:
-                partial_profile[k] = v
+        if len(non_empty_keys) == 0:
+            # we randomly occlude one attribute
+            hid_key = self._np_random.choice(non_empty_keys)
+
+            for k, v in profile.items():
+                if k != hid_key:
+                    partial_profile[k] = v
+        else:
+            #
+            partial_profile = copy.copy(profile)
 
         return profile, partial_profile
 
