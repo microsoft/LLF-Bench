@@ -165,7 +165,7 @@ class LLFWrapper(gym.Wrapper):
             for f in feedback_type:
                 assert f in self.FEEDBACK_TYPES, f'Feedback type {f} is not supported.'
             self.__feedback_type = feedback_type
-        assert isinstance(self.__feedback_type, set) or self.__feedback_type in ('n', 'a', 'm')
+        assert isinstance(self.__feedback_type, set) or self.__feedback_type in ('n', 'a', 'm'), 'invalid feedback type.'
 
     def set_instruction_type(self, instruction_type: str):
         assert instruction_type in self.INSTRUCTION_TYPES, f'Instruction type {instruction_type} is not supported.'
@@ -189,7 +189,7 @@ class LLFWrapper(gym.Wrapper):
             feedback_type = set(self.FEEDBACK_TYPES)  # need to compute all
         if feedback_type == 'm': # using mixture  # TODO a better name
             feedback_type = set([np.random.choice(list(set(self.FEEDBACK_TYPES)))])  # str
-        assert isinstance(feedback_type, set)
+        assert isinstance(feedback_type, set), 'internal feedback_type must be a set.'
         # At this point, it should be a subset of FEEDBACK_TYPES.
         for f in feedback_type:
             assert f in self.FEEDBACK_TYPES, f'Feedback type {f} is not supported.'
@@ -209,7 +209,7 @@ class LLFWrapper(gym.Wrapper):
                   `prompts`.
                 - callable: it overrides format method.
         """
-        assert method == 'random' or type(method) == int or callable(method)
+        assert method == 'random' or type(method) == int or callable(method), 'method must be either random, int, or callable.'
         self._paraphrase_method = method
 
     def format(self, prompts: List[str], **kwargs) -> str:
@@ -291,7 +291,7 @@ class LLFWrapper(gym.Wrapper):
         self.obs_check(observation)
         if observation['feedback'] is not None:
             observation['feedback'] = self._verbalize_feedback(observation['feedback'])
-        assert 'success' in info
+        assert 'success' in info, "The info must contain a key 'success'."
         return observation, reward, terminal, truncated, info
 
     def _step(self, action: Any) -> Tuple[Union[str, Dict[str, Any]], float, bool, bool, Dict[str, Any]]:

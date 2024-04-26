@@ -97,7 +97,7 @@ class MetaworldWrapper(LLFWrapper):
     def p_control(self, action):
         """ Compute the desired control based on a position target (action[:3])
         using P controller provided in Metaworld."""
-        assert len(action)==4
+        assert len(action)==4, "The action should be a 4D vector."
         p_gain = P_GAINS[type(self.mw_policy)]
         if type(self.mw_policy) in [type(SawyerDrawerOpenV1Policy), type(SawyerDrawerOpenV2Policy)]:
             # This needs special cares. It's implemented differently.
