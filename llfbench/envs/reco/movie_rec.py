@@ -196,7 +196,7 @@ class RecommendationQueryGenerator:
         autowrap = lambda x: x if isinstance(x, list) else [x]
         non_empty_keys = [k for k, v in profile.items() if v is not None and len(autowrap(v)) != 0 and k not in partial_profile]
 
-        if len(non_empty_keys) == 0:
+        if len(non_empty_keys) != 0:
             # we randomly occlude one attribute
             hid_key = self._np_random.choice(non_empty_keys)
 
