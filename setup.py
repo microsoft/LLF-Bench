@@ -29,7 +29,7 @@ setup(
         'requests==2.31.0'
     ],
     extras_require={
-        'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@master#egg=metaworld'],
+        'metaworld': ['metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@c822f28#egg=metaworld'],
         'alfworld': [ 'alfworld>=0.3.0' ]
     }
 )
