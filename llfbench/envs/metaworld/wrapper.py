@@ -148,7 +148,7 @@ class MetaworldWrapper(LLFWrapper):
         # Target pos is in absolute position
         if self.control_relative_position:
             target_pos = expert_action.copy()
-            target_pos[:3] += self._current_pos  # relative position
+            target_pos[:3] += self._current_pos
         else:
             target_pos = expert_action
         moving_away = np.linalg.norm(target_pos[:3]-previous_pos) < np.linalg.norm(target_pos[:3]-self._current_pos)
@@ -181,7 +181,7 @@ class MetaworldWrapper(LLFWrapper):
                     _feedback = gripper_feedback
             feedback.hn = _feedback
         if 'fp' in feedback_type:  # suggest the expert goal
-            feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(expert_action))
+            feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(target_pos))
         observation = self.textualize_observation(observation)
         info['success'] = bool(info['success'])
 
