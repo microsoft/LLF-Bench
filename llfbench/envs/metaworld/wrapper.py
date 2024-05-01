@@ -10,6 +10,7 @@ from textwrap import dedent, indent
 from metaworld.policies.policy import move
 from metaworld.policies.action import Action
 from metaworld.policies import SawyerDrawerOpenV1Policy, SawyerDrawerOpenV2Policy, SawyerReachV2Policy
+import re
 
 class MetaworldWrapper(LLFWrapper):
 
@@ -174,7 +175,7 @@ class MetaworldWrapper(LLFWrapper):
     def _reset(self, *, seed=None, options=None):
         self._current_observation, info = self.env.reset(seed=seed, options=options)
         observation = self.textualize_observation(self._current_observation)
-        task = self.env.env_name.split('-')[0]
+        task = re.search(r'(.*)-v[0-9]', self.env.env_name).group(1)
         instruction = self.format(mw_instruction, task=task)
         info['success'] = False
         return dict(instruction=instruction, observation=observation, feedback=None), info
