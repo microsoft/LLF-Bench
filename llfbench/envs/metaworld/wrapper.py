@@ -30,6 +30,7 @@ class MetaworldWrapper(LLFWrapper):
             self._policy = getattr(module, f"Sawyer{self.env.env_name.title().replace('-','')}Policy")()
         self.p_control_time_out = 20 # timeout of the position tracking (for convergnece of P controller)
         self.p_control_threshold = 1e-4 # the threshold for declaring goal reaching (for convergnece of P controller)
+        self.control_relative_position = False
         self._current_observation = None
 
     @property
@@ -93,7 +94,13 @@ class MetaworldWrapper(LLFWrapper):
             desired_xyz = compute_goal(self.mw_policy._parse_obs(self.current_observation))
         # Get the desired grab effort from the MW scripted policy
         desired_grab = self.mw_policy.get_action(self.current_observation)[-1]  # TODO should be getting the goal
+        if self.control_relative_position:
+            desired_xyz = desired_xyz - self._current_pos
         return np.concatenate([desired_xyz, np.array([desired_grab])])
+
+    def control_mode(self, mode: str):
+        assert mode in ('absolute', 'relative'), "The control mode should be either 'absolute' or 'relative'."
+        self.control_relative_position = mode == 'relative'
 
     def p_control(self, action):
         """ Compute the desired control based on a position target (action[:3])
@@ -125,8 +132,10 @@ class MetaworldWrapper(LLFWrapper):
         # Run P controller until convergence or timeout
         # action is viewed as the desired position + grab_effort
         previous_pos = self._current_pos  # the position of the hand before moving
+        if self.control_relative_position:
+                action[:3] += self._current_pos  # turn relative position to absolute position
         for _ in range(self.p_control_time_out):
-            control = self.p_control(action)
+            control = self.p_control(action)  # this controls the hand to move an absolute position
             observation, reward, terminated, truncated, info = self.env.step(control)
             self._current_observation = observation
             desired_pos = action[:3]
@@ -135,11 +144,17 @@ class MetaworldWrapper(LLFWrapper):
 
         feedback_type = self._feedback_type
         # Some pre-computation of the feedback
-        expert_action = self.expert_action
-        moving_away = np.linalg.norm(expert_action[:3]-previous_pos) < np.linalg.norm(expert_action[:3]-self._current_pos)
-        if expert_action[3] > 0.5 and action[3] < 0.5:  # the gripper should be closed instead.
+        expert_action = self.expert_action  # absolute or relative
+        # Target pos is in absolute position
+        if self.control_relative_position:
+            target_pos = expert_action.copy()
+            target_pos[:3] += self._current_pos  # relative position
+        else:
+            target_pos = expert_action
+        moving_away = np.linalg.norm(target_pos[:3]-previous_pos) < np.linalg.norm(target_pos[:3]-self._current_pos)
+        if target_pos[3] > 0.5 and action[3] < 0.5:  # the gripper should be closed instead.
             gripper_feedback = self.format(close_gripper_feedback)
-        elif expert_action[3] < 0.5 and action[3] > 0.5:  #the gripper should be open instead.
+        elif target_pos[3] < 0.5 and action[3] > 0.5:  #the gripper should be open instead.
             gripper_feedback = self.format(open_gripper_feedback)
         else:
             gripper_feedback = None
