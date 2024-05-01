@@ -1,6 +1,6 @@
 
 mw_instruction = (
-    "Your job is to control a Sawyer robot arm to solve a {task} task. You will get observations of the robot state and the world state in the form of json strings. Your objective is to provide control inputs to the robot to achieve the task's goal state over multiple time steps. Your actions are 4-dim vectors, where the first 3 dimensions control the movement of the robot's end effector in the x, y, and z directions, and the last dimension controls the gripper state (0 means opening it, and 1 means closing it). You action at each step sets the robot's target pose for that step in absolute coordinate. The robot will move towards that pose using a P controller.",
+    "Your job is to control a Sawyer robot arm to solve a {task} task. You will get observations of the robot state and the world state in the form of json strings. Your objective is to provide control inputs to the robot to achieve the task's goal state over multiple time steps. Your actions are 4-dim vectors, where the first 3 dimensions control the movement of the robot's end effector in the x, y, and z directions, and the last dimension controls the gripper state (0 means opening it, and 1 means closing it). You action at each step sets the robot's target pose for that step in {mode} coordinate. The robot will move towards that pose using a P controller.",
 )
 
 r_feedback = (
