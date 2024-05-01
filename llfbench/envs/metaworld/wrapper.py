@@ -191,7 +191,8 @@ class MetaworldWrapper(LLFWrapper):
         self._current_observation, info = self.env.reset(seed=seed, options=options)
         observation = self.textualize_observation(self._current_observation)
         task = re.search(r'(.*)-v[0-9]', self.env.env_name).group(1)
-        instruction = self.format(mw_instruction, task=task)
+        mode = 'relative' if self.control_relative_position else 'absolute'
+        instruction = self.format(mw_instruction, task=task, mode=mode)
         info['success'] = False
         return dict(instruction=instruction, observation=observation, feedback=None), info
 
