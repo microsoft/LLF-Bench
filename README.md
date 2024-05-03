@@ -52,17 +52,20 @@ Some valid options:
     metaworld: for using metaworld envs
     alfworld: for using alfworld envs
 
-For example, to use metaworld, install the repo by `pip install -e.[metaworld]`.
+For example, to use metaworld, install the repo by `pip install -e .[metaworld]`. 
 
-Note that the `alfworld` option requires building/compiling from source files. Please ensure that your development environment has the appropriate utilities for C/C++ development (cmake, C compiler, etc.). On Linux or WSL, this can be accomplished by
+### Special Instructions for running Alfworld
 
-    sudo apt-get update
-    sudo apt-get install cmake build-essential
+Alfworld requires python3.9 so please use python3.9 when creating the conda environment. Activate the conda environment, clone the LLFbench repo and install it using
 
-In addition, `alfworld` currently requires an older gym version. After installing llfbench, please downgrade the gym version to 0.15.4 by running
+`pip install -e .[alfworld]`
 
-    pip install gym==0.15.4
+When the first time you will run the alfworld environment, it will download additional files. You dont need to do any of this. Alfworld also uses a config.yaml file
+that changes the environment. We use the config yaml file provided here: [llfbench/envs/alfworld/base_config.yaml](https://github.com/microsoft/LLF-Bench/blob/main/llfbench/envs/alfworld/base_config.yaml). If you get some path errors, please ensure the source directory is referencing this file correctly. This is done in the code [here](https://github.com/microsoft/LLF-Bench/blob/main/llfbench/envs/alfworld/alfworld.py#L47). 
 
+### Special Instructions for running Metaworld
+
+You should use python3.8 and install the repo with metaworld by running `pip install -e .[metaworld]`. 
 
 For `metaworld` option, it requires libGL, which can be installed by
 
