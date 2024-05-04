@@ -95,8 +95,8 @@ class Alfworld(gym.Env):
     @staticmethod
     def _get_expert_action(infos):
 
-        if "expert_plan" in infos and len(infos["expert_plan"]) == 1 and len(infos["expert_plan"][0]) == 1:
-            return infos["expert_plan"][0][0]
+        if "extra.expert_plan" in infos and len(infos["extra.expert_plan"]) == 1 and len(infos["extra.expert_plan"][0]) == 1:
+            return infos["extra.expert_plan"][0][0]
         else:
             return None
 
@@ -106,7 +106,7 @@ class Alfworld(gym.Env):
             self.seed(seed)
 
         # Obs is text and info is a dict with the following keys:
-        #   'won', 'extra.gamefile', 'expert_type', 'admissible_commands', 'expert_plan'
+        #   'won', 'extra.gamefile', 'expert_type', 'admissible_commands', 'extra.expert_plan'
         obs, infos = self.env.reset()
 
         # Extract single item from batch
