@@ -14,7 +14,7 @@ class PoemGymWrapper(LLFWrapper):
 
     @property
     def reward_range(self):
-        return (0.0, 1.0)
+        return (-1.0, 0.0)
 
     def _reset(self, *, seed=None, options=None):  # TODO types of instructions
         instruction, info = self.env.reset(seed=seed, options=options)
@@ -31,6 +31,7 @@ class PoemGymWrapper(LLFWrapper):
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
+        reward -= 1.0  # so that early stopping due to success would give the right return
         didactic_feedback = info['feedback']
         del info['feedback']
         del info['original_feedback']

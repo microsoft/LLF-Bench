@@ -44,3 +44,7 @@ class GridworldWrapper(LLFWrapper):
         self.env.instruction_type = self.instruction_type
         self.env.feedback_type = self._feedback_type
         return self.env.step(action)
+
+    @property
+    def reward_range(self):
+        return (0.0, 1.0)

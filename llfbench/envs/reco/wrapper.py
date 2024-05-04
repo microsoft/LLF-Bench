@@ -24,6 +24,7 @@ class MovieRecGymWrapper(LLFWrapper):
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
+        reward -= 1.0  # so that early stopping due to success would give the right return
         didactic_feedback = info['feedback']
         del info['original_feedback']
         del info['feedback']
@@ -79,4 +80,4 @@ class MovieRecGymWrapper(LLFWrapper):
 
     @property
     def reward_range(self):
-        return self._movie_rec_env.reward_range
+        return (r-1 for r in self._movie_rec_env.reward_range)

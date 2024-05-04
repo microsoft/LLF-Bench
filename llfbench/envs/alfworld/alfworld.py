@@ -41,10 +41,11 @@ class Alfworld(gym.Env):
         sys.argv = [old_sys_argv[0], config_file]
 
         import alfworld.agents.environment as environment
-        import alfworld.agents.modules.generic as generic
+        # import alfworld.agents.modules.generic as generic
 
         # load config
-        self.config = generic.load_config()
+        self.load_config() # self.config = generic.load_config()
+
         self.env_type = self.config['env']['type']  # 'AlfredTWEnv' or 'AlfredThorEnv' or 'AlfredHybrid'
 
         # setup environment
@@ -70,6 +71,32 @@ class Alfworld(gym.Env):
 
     def seed(self, seed):
         self.env.seed(seed)
+
+
+    def load_config(self):
+        # copied from alfworld.agents.modules.generic.load_config
+        import yaml, argparse
+        parser = argparse.ArgumentParser()
+        config_path = os.path.abspath(__file__).replace("alfworld.py", "base_config.yaml")  # XXX default config file
+        parser.add_argument("config_file", help="path to config file", default=config_path)
+        parser.add_argument("-p", "--params", nargs="+", metavar="my.setting=value", default=[],
+                            help="override params of the config file,"
+                                " e.g. -p 'training.gamma=0.95'")
+        args = parser.parse_args()
+        args.config_file = config_path
+        assert os.path.exists(args.config_file), "Invalid config file"
+        with open(args.config_file) as reader:
+            config = yaml.safe_load(reader)
+        # Parse overriden params.
+        for param in args.params:
+            fqn_key, value = param.split("=")
+            entry_to_change = config
+            keys = fqn_key.split(".")
+            for k in keys[:-1]:
+                entry_to_change = entry_to_change[k]
+            entry_to_change[keys[-1]] = value
+        # print(config)
+        self.config  = config
 
     def _generate_instruction(self, reset_obs):
 
@@ -205,7 +232,6 @@ class Alfworld(gym.Env):
                 feedback.fp = self.format(no_feedback)
             else:
                 feedback.fp = self.format(follow_opt_action_descp, opt_action=opt_action)
-
         return feedback
 
     def step(self, action):
