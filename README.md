@@ -167,6 +167,9 @@ Performance of basic agents using different LLMs, where the agents receive **all
 Performance of basic agents using different LLMs, where th agents receive **only reward, hindsight positive, and hindsight negative feedback** and append the observation and feedback history to their contexts after each step. These numbers can be viewed as **"baseline"** performance.
 
 
+Details: For GPT-3.5-Turbo and GPT-4, the statistics are computed over 10 episodes for all problem sets except Alfworld, for which, due to high problem instance variability, we used 50 episodes. For other language models, 50 episodes are used for all problem sets. For Metaworld, Alfworld, and Gridworld, the mean return is defined as the policy's success rate, which uniquely determines the standard error. Therefore, for the problems from these three problem sets, the st.e. is shown in gray.
+
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
