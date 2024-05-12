@@ -6,16 +6,17 @@ LLF Bench is a benchmark that provides a diverse collection of interactive learn
 
 **Paper:** https://arxiv.org/abs/2312.06853
 
-# Table of Contents
-1. [Overview](#overview)
-2. [Design principles](#design-principles)
-3. [Installation](#installation)
-4. [Special Instructions for running Alfworld](#special-instructions-for-running-alfworld)
-5. [Special Instructions for running Metaworld](#special-instructions-for-running-metaworld)
-6. [Examples](#examples)
-7. [Testing](#testing)
-8. [Contributing](#contributing)
-9. [Trademarks](#trademarks)
+## *Table of Contents*
+1. [**Overview**](#overview)
+2. [**Design principles**](#design-principles)
+3. [**Installation**](#installation)
+4. [**Special Instructions for running Alfworld**](#special-instructions-for-running-alfworld)
+5. [**Special Instructions for running Metaworld**](#special-instructions-for-running-metaworld)
+6. [**Examples**](#examples)
+7. [**Testing**](#testing)
+8. [**Baseline and skyline results**](#baseline-and-skyline-results)
+9. [**Contributing**](#contributing)
+10. [**Trademarks**](#trademarks)
 
 
 ## Overview
@@ -146,6 +147,24 @@ The `tests` folder in the repo contains a few helpful scripts for testing the fu
 - *test_agents.py*: Creates a `UserAgent` that prints the 'observation' and 'feedback' produced by an LLF-Bench environment to the console, and reads user input from the console as an 'action'.
 - *test_basic_agents.py*: For a subset of LLF-Bench environments that support either a finite action space or admit a pre-built expert optimal policy, this script creates a `RandomActionAgent` and `ExpertActionAgent` to test supported LLF-Bench environments.
 - *test_envs.py*: Syntactically tests environments added to the LLF-Bench environment registry so as to be compatible with the expected semantics of LLF-Bench. This is a useful script to run on any new environments that are added or existing environments are customized in the benchmark.
+
+## Baseline and skyline results
+
+
+***<span style="color:red">Last updated: 05.13.2024</span>***
+
+
+<img src="./all_feedback.jpg" width="750">
+
+Performance of basic agents using different LLMs, where the agents receive **all types feedback** and append the observation and feedback history to their contexts after each step. These numbers can be viewed as **"skyline"** performance, since receiving all feedback types typically provides all information to solve the problem near-optimally.
+&nbsp;
+&nbsp;
+
+
+
+<img src="./partial_feedback.jpg" width="750">
+
+Performance of basic agents using different LLMs, where th agents receive **only reward, hindsight positive, and hindsight negative feedback** and append the observation and feedback history to their contexts after each step. These numbers can be viewed as **"baseline"** performance.
 
 
 ## Contributing
