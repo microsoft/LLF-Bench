@@ -6,7 +6,23 @@ LLF Bench is a benchmark that provides a diverse collection of interactive learn
 
 **Paper:** https://arxiv.org/abs/2312.06853
 
+## *Table of Contents*
+1. [**Overview**](#overview)
+2. [**Design principles**](#design-principles)
+3. [**Installation**](#installation)
+4. [**Special Instructions for running Alfworld**](#special-instructions-for-running-alfworld)
+5. [**Special Instructions for running Metaworld**](#special-instructions-for-running-metaworld)
+6. [**Examples**](#examples)
+7. [**Testing**](#testing)
+8. [**Baseline and skyline results**](#baseline-and-skyline-results)
+9. [**Contributing**](#contributing)
+10. [**Trademarks**](#trademarks)
+
+
+## Overview
+
 <img src="https://microsoft.github.io/LLF-Bench/images/llf-bench.png" width="750">
+
 
 Each benchmark environment here follows the gym api.
 
@@ -27,7 +43,7 @@ When a field is missing, its value is represented as None. For example, 'instruc
 `info` returns an additional info dict of the environment.
 
 
-## Principle
+## Design principles
 
 We design LLF-Bench as a benchmark to test the **learning** ability of interactive agents. We design each environment in LLF-Bench such that, from 'observation' and 'instruction' in `observation_dict`, it is sufficient (for a human) to tell when the task is indeed solved. Therefore, a policy that operates based purely on 'observation' and 'instruction' can solve these problems. However, we also design these environments such that 'observation' and 'instruction' are not sufficient for designing or efficiently learning the optimal policies. Each environment here is designed to have some ambiguities and latent characteristics in the dynamics, reward, or termination, so that the agent cannot infer the optimal policy just based on 'instruction'.
 
@@ -52,7 +68,7 @@ Some valid options:
     metaworld: for using metaworld envs
     alfworld: for using alfworld envs
 
-For example, to use metaworld, install the repo by `pip install -e .[metaworld]`. 
+For example, to use metaworld, install the repo by `pip install -e .[metaworld]`.
 
 ### Special Instructions for running Alfworld
 
@@ -61,11 +77,11 @@ Alfworld requires python3.9 so please use python3.9 when creating the conda envi
 `pip install -e .[alfworld]`
 
 When the first time you will run the alfworld environment, it will download additional files. You dont need to do any of this. Alfworld also uses a config.yaml file
-that changes the environment. We use the config yaml file provided here: [llfbench/envs/alfworld/base_config.yaml](https://github.com/microsoft/LLF-Bench/blob/main/llfbench/envs/alfworld/base_config.yaml). If you get some path errors, please ensure the source directory is referencing this file correctly. This is done in the code [here](https://github.com/microsoft/LLF-Bench/blob/main/llfbench/envs/alfworld/alfworld.py#L47). 
+that changes the environment. We use the config yaml file provided here: [llfbench/envs/alfworld/base_config.yaml](https://github.com/microsoft/LLF-Bench/blob/main/llfbench/envs/alfworld/base_config.yaml). If you get some path errors, please ensure the source directory is referencing this file correctly. This is done in the code [here](https://github.com/microsoft/LLF-Bench/blob/main/llfbench/envs/alfworld/alfworld.py#L47).
 
 ### Special Instructions for running Metaworld
 
-You should use python3.8 and install the repo with metaworld by running `pip install -e .[metaworld]`. 
+You should use python3.8 and install the repo with metaworld by running `pip install -e .[metaworld]`.
 
 For `metaworld` option, it requires libGL, which can be installed by
 
@@ -131,6 +147,27 @@ The `tests` folder in the repo contains a few helpful scripts for testing the fu
 - *test_agents.py*: Creates a `UserAgent` that prints the 'observation' and 'feedback' produced by an LLF-Bench environment to the console, and reads user input from the console as an 'action'.
 - *test_basic_agents.py*: For a subset of LLF-Bench environments that support either a finite action space or admit a pre-built expert optimal policy, this script creates a `RandomActionAgent` and `ExpertActionAgent` to test supported LLF-Bench environments.
 - *test_envs.py*: Syntactically tests environments added to the LLF-Bench environment registry so as to be compatible with the expected semantics of LLF-Bench. This is a useful script to run on any new environments that are added or existing environments are customized in the benchmark.
+
+## Baseline and skyline results
+
+
+***<span style="color:red">Last updated: 05.13.2024</span>***
+
+
+<img src="./all_feedback.jpg" width="750">
+
+Performance of basic agents using different LLMs, where the agents receive **all types feedback** and append the observation and feedback history to their contexts after each step. These numbers can be viewed as **"skyline"** performance, since receiving all feedback types typically provides all information to solve the problem near-optimally.
+&nbsp;
+&nbsp;
+
+
+
+<img src="./partial_feedback.jpg" width="750">
+
+Performance of basic agents using different LLMs, where th agents receive **only reward, hindsight positive, and hindsight negative feedback** and append the observation and feedback history to their contexts after each step. These numbers can be viewed as **"baseline"** performance.
+
+
+Details: For GPT-3.5-Turbo and GPT-4, the statistics are computed over 10 episodes for all problem sets except Alfworld, for which, due to high problem instance variability, we used 50 episodes. For other language models, 50 episodes are used for all problem sets. For Metaworld, Alfworld, and Gridworld, the mean return is defined as the policy's success rate, which uniquely determines the standard error. Therefore, for the problems from these three problem sets, the st.e. is shown in gray.
 
 
 ## Contributing
