@@ -29,6 +29,7 @@ class LossLandscapeGymWrapper(LLFWrapper):
 
     def _step(self, action):
         observation, reward, terminated, truncated, info = self.env.step(action)
+        reward /= 100  # the loss can get quite large, so we scale it down by a fixed ratio
         didactic_feedback = info['feedback']
         del info['feedback']
         if 'original_feedback' in info:
