@@ -182,20 +182,24 @@ class MetaworldWrapper(LLFWrapper):
             feedback.hn = _feedback
         if 'fp' in feedback_type:  # suggest the expert goal
             feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(target_pos))
-        observation = self.textualize_observation(observation)
+        observation = self._format_obs(observation)
         info['success'] = bool(info['success'])
 
         return dict(instruction=None, observation=observation, feedback=feedback), float(reward), terminated, truncated, info
 
     def _reset(self, *, seed=None, options=None):
         self._current_observation, info = self.env.reset(seed=seed, options=options)
-        observation = self.textualize_observation(self._current_observation)
+        observation = self._format_obs(self._current_observation)
         task = re.search(r'(.*)-v[0-9]', self.env.env_name).group(1)
         mode = 'relative' if self.control_relative_position else 'absolute'
         instruction = self.format(mw_instruction, task=task, mode=mode)
         info['success'] = False
         return dict(instruction=instruction, observation=observation, feedback=None), info
 
+    def _format_obs(self, observation):
+        text = self.textualize_observation(observation)
+        image = (self.env.render()[::-1] if self.env.render_mode is not None else None)
+        return text if image is None else dict(text=text, image=image)
 
     def textualize_expert_action(self, action):
         """ Parse action into text. """

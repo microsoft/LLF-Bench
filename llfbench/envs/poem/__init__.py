@@ -13,8 +13,9 @@ ENVIRONMENTS = (
 def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
-             **kwargs
-                  ):
+             visual=False,
+             **kwargs):
+    assert visual == False, "poem environments have no visual observations"
     """ Make the original env and wrap it with the LLFWrapper. """
     import importlib
     PoemCls = getattr(importlib.import_module("llfbench.envs.poem.formal_poems"), env_name)
@@ -27,5 +28,5 @@ for env_name in ENVIRONMENTS:
     register(
         id=f"llf-poem-{env_name}-v0",
         entry_point='llfbench.envs.poem:make_env',
-        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
+        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b', visual=False)
     )

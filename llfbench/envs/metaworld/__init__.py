@@ -12,14 +12,16 @@ import numpy as np
 
 BENCHMARK = metaworld.MT1
 ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
+#VISUAL = '-visual'
 
 def make_env(env_name,
              instruction_type='b',
              feedback_type='a',
-             ):
+             visual=False):
     """ Make the original env and wrap it with the LLFWrapper. """
     benchmark = BENCHMARK(env_name)
-    env = benchmark.train_classes[env_name]()
+    env = benchmark.train_classes[env_name](render_mode=('rgb_array' if visual else None))
+    env.camera_name = 'corner2'
     class Wrapper(gym.Wrapper):
          # a small wrapper to make sure the task is set
          # and to make the env compatible with the old gym api
@@ -46,5 +48,5 @@ for env_name in ENVIRONMENTS:
     register(
         id=f"llf-metaworld-{env_name}",
         entry_point='llfbench.envs.metaworld:make_env',
-        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
+        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b', visual=False)
     )

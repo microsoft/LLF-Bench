@@ -11,8 +11,8 @@ ENVIRONMENTS = (
 def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
-             ):
-
+             visual=False):
+    assert visual == False, "The gridworld environment has no visual observations"
     """ Make the original env and wrap it with the LLFWrapper. """
     env = Gridworld(instruction_type=instruction_type, feedback_type=feedback_type)
     # we don't pass arguments here, because _reset in BanditGymWrapper calls __init__ of the env without arguments.
@@ -24,5 +24,5 @@ for env_name in ENVIRONMENTS:
     register(
         id=f"llf-{env_name}",
         entry_point='llfbench.envs.gridworld:make_env',
-        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b')
+        kwargs=dict(env_name=env_name, feedback_type='a', instruction_type='b', visual=False)
     )

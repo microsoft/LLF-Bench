@@ -9,7 +9,9 @@ environments = [
 def make_env(env_name,
              instruction_type='b',
              feedback_type='r',
+             visual=False,
              **kwargs):
+    assert visual == False, "The recommendation environment has no visual observations"
     """ Make the original env and wrap it with the LLFWrapper. """
     import importlib
     MovieCls = getattr(importlib.import_module("llfbench.envs.reco.movie_rec"), 'MovieRec')
@@ -19,5 +21,5 @@ def make_env(env_name,
 register(
     id=f"llf-reco-{environments[0]}-v0",
     entry_point='llfbench.envs.reco:make_env',
-    kwargs=dict(env_name=environments[0], feedback_type='a', instruction_type='b')
+    kwargs=dict(env_name=environments[0], feedback_type='a', instruction_type='b', visual=False)
 )
