@@ -169,6 +169,80 @@ Performance of basic agents using different LLMs, where th agents receive **only
 
 Details: For GPT-3.5-Turbo and GPT-4, the statistics are computed over 10 episodes for all problem sets except Alfworld, for which, due to high problem instance variability, we used 50 episodes. For other language models, 50 episodes are used for all problem sets. For Metaworld, Alfworld, and Gridworld, the mean return is defined as the policy's success rate, which uniquely determines the standard error. Therefore, for the problems from these three problem sets, the st.e. is shown in gray.
 
+## Dataset Metadata
+The following table is necessary for this dataset to be indexed by search
+engines such as <a href="https://g.co/datasetsearch">Google Dataset Search</a>.
+<div itemscope itemtype="http://schema.org/Dataset">
+<table>
+  <tr>
+    <th>property</th>
+    <th>value</th>
+  </tr>
+  <tr>
+    <td>name</td>
+    <td><code itemprop="name">LLF-Bench: Benchmark for Interactive Learning from Language Feedback</code></td>
+  </tr>
+  <tr>
+    <td>alternateName</td>
+    <td><code itemprop="alternateName">LLF-Bench</code></td>
+  </tr>
+  <tr>
+    <td>url</td>
+    <td><code itemprop="url">https://microsoft.github.io/LLF-Bench/</code></td>
+  </tr>
+  <tr>
+    <td>description</td>
+    <td><code itemprop="description">LLF Bench is a benchmark that provides a diverse collection of interactive learning problems where the agent gets language feedback instead of rewards (as in RL) or action feedback (as in imitation learning). </code></td>
+  </tr>
+  <tr>
+    <td>provider</td>
+    <td>
+      <div itemscope itemtype="http://schema.org/Organization" itemprop="provider">
+        <table>
+          <tr>
+            <th>property</th>
+            <th>value</th>
+          </tr>
+          <tr>
+            <td>name</td>
+            <td><code itemprop="name">Microsoft</code></td>
+          </tr>
+          <tr>
+            <td>sameAs</td>
+            <td><code itemprop="sameAs">https://microsoft.com//</code></td>
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td>license</td>
+    <td>
+      <div itemscope itemtype="http://schema.org/CreativeWork" itemprop="license">
+        <table>
+          <tr>
+            <th>property</th>
+            <th>value</th>
+          </tr>
+          <tr>
+            <td>name</td>
+            <td><code itemprop="name">MIT License</code></td>
+          </tr>
+          <tr>
+            <td>url</td>
+            <td><code itemprop="url">https://github.com/microsoft/LLF-Bench/blob/main/LICENSE/</code></td>
+          </tr>
+        </table>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td>citation</td>
+    <td><code itemprop="citation">Cheng, C. A., Kolobov, A., Misra, D., Nie, A., & Swaminathan, A. (2023). Llf-bench: Benchmark for interactive learning from language feedback. arXiv preprint arXiv:2312.06853.</code></td>
+  </tr>
+</table>
+</div>
+
 
 ## Contributing
 
