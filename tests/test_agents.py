@@ -78,7 +78,7 @@ def get_parser():
     parser.add_argument('--n_episodes', type=int, default=10)
     parser.add_argument('--save_path', type=str, default="results")
     parser.add_argument('--logname', type=str, default="log.txt")
-    parser.add_argument('--horizon', type=int, default=1000)
+    parser.add_argument('--horizon', type=int, default=30)
     parser.add_argument('--env_name', type=str, default='all')
     parser.add_argument('--seed', type=int, default=0)
     parser.add_argument('--n_workers', type=int, default=1)
