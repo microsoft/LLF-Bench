@@ -1,5 +1,6 @@
 import random
 import numpy as np
+from urllib.error import HTTPError
 
 # print with colors (modified from Huihan's lflf)
 def print_color(message, color=None, logger=None):
@@ -76,59 +77,64 @@ def set_seed(seed, env=None):
     #if env is not None:
     #    env.reset(seed)
 
-def rollout(agent, env, *, horizon, return_full_information=False, log_data=False, seed=None):
+def rollout(agent, env, *, horizon, return_full_information=False, log_data=False, seed=None, sparse_reward=False):
     """ A basic agent evaluation loop. """
 
-    if return_full_information:
-        assert hasattr(env,'get_full_information')
+    observation, info = env.reset()
+    agent.reset(observation['instruction'])
 
-    observation = env.reset(seed=seed)
-
-    default_docstring = 'This is an interactive decision making problem with language feedback.'
-
-    docstring = getattr(env, 'docstring', observation if isinstance(observation, str) else default_docstring)
-
-    agent.reset(docstring)
-
-    info = {}
     sum_of_rewards = 0.0
-    data = dict(observations=[observation], actions=[], rewards=[], dones=[], infos=[])
+    data = dict(observations=[observation['observation']], actions=[], rewards=[], dones=[], truncated=[], infos=[])
 
+    #print("Initial Observation", observation['observation'])
     for i in range(horizon):
-
-        feedback = info.get('feedback', None)
-
-        if return_full_information:  # Oracle: the agent gets privileged information
-            full_information = info.get('full_information', env.get_full_information())
-            action = agent.act(observation, feedback, full_information=full_information)
-        else:                       # Regular agent
-            action = agent.act(observation, feedback)
+        try:
+            action = agent.act(observation['observation'], observation['feedback'])
+        except (RuntimeError) as e:
+            assert "Google GenAI exception" in str(e)  # traj fails
+            break
 
         new_observation, reward, terminated, truncated, info = env.step(action)
-
         observation = new_observation
 
         if log_data:
-            for k in data.keys():
-                data[k].append(locals()[k[:-1]])  # removing s at the end
-        sum_of_rewards += reward
+            data['observations'].append(observation['observation'])
+            data['actions'].append(action)
+            data['rewards'].append(reward)
+            data['dones'].append(terminated)
+            data['truncated'].append(truncated)
+            data['infos'].append(info)
 
-        if terminated or truncated or info['success']:
-            print("EPISODE DONE! Terminated: {}, truncated: {}, success: {}".format(terminated, truncated, info['success']))
+        if sparse_reward:
+            if 'success' in info and info['success']:
+                sum_of_rewards += 1
+        else:
+            sum_of_rewards += reward
+
+        if 'success' in info and info['success']:
+            print('SUCCESS!')
+            break
+
+        if terminated or truncated:
+            if sparse_reward:
+                print('FAILURE!')
             break
 
     return sum_of_rewards, data
 
 
 def evaluate_agent(agent, env, *, horizon, n_episodes, return_full_information=False, log_data=False,
-                   n_workers=1, seed=None):
+                   n_workers=1, seed=None, sparse_reward=False):
     """ Evaluate an agent with n_episodes rollouts. """
+
+    env.reset(seed=seed)
 
     _rollout = lambda: rollout(agent, env,
                                horizon=horizon,
                                log_data=log_data,
                                return_full_information=return_full_information,
-                               seed=seed)
+                               seed=seed,
+                               sparse_reward=sparse_reward)
 
     if n_workers > 1:
         import ray

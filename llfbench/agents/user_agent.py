@@ -1,8 +1,8 @@
 from textwrap import dedent, indent
-import sys
 
-from llfbench.agents.abstract_agent import Agent
-from llfbench.agents.utils import extract_action, ReplayBuffer, print_color
+from llfbench.agents.abstract_agent import BasicAgent
+from llfbench.agents.utils import print_color
+
 
 def get_multiline_input(prompt="Enter text (press Enter twice to finish):\n"):
     lines = []
@@ -13,13 +13,14 @@ def get_multiline_input(prompt="Enter text (press Enter twice to finish):\n"):
         lines.append(line)
     return '\n'.join(lines)
 
-class UserAgent(Agent):
+
+class UserAgent(BasicAgent):
 
     NAME = "UserAgent"
 
     def __init__(self,
                  verbose=False,
-                 buffer_size=1000,
+                 buffer_size=20,
                  ignore_observation=False,
                  prompt_template=None):
         """
@@ -29,13 +30,9 @@ class UserAgent(Agent):
                 ignore_observation: whether to ignore the observation (for bandit setting)
                 prompt_template: A prompt template with two parameters if ignore_observation is True and 3 otherwise
         """
-        super().__init__()
-        self.verbose = verbose
-        self.buffer = ReplayBuffer(buffer_size)
+        super().__init__(verbose, buffer_size, prompt_template)
         self.ignore_observation = ignore_observation
-        if prompt_template is not None:
-            self.prompt_template = prompt_template
-        else:
+        if self.prompt_template is None:
             if ignore_observation:
                 self.prompt_template = dedent("""\
                     You're presented with the problem below:
@@ -59,7 +56,7 @@ class UserAgent(Agent):
 
                     {}
 
-                    You are currently observing the following {}.
+                    You are currently observing the following: {}.
 
                     Choose your action according to the problem description, your past history of actions, and your
                     current observation.
@@ -68,13 +65,10 @@ class UserAgent(Agent):
             self.prompt_template += dedent(f"""\
                 The response should be in the following format, where <your action> is the final answer. You must follow this format!
 
-                    Action: <your action>
+                    <your action>
 
                 """)
 
-    def reset(self, docstring):
-        self.docstring = docstring
-        self.buffer.reset()
 
     @property
     def world_info(self):
@@ -102,6 +96,7 @@ class UserAgent(Agent):
 
         return world_info
 
+
     def act(self, observation, feedback, **kwargs):
 
         # update with the latest feedback (ignored in the first call)
@@ -114,9 +109,7 @@ class UserAgent(Agent):
         else:
             user_prompt = self.prompt_template.format(self.docstring, world_info, observation)
 
-        print(user_prompt)
         response = get_multiline_input()
-        #response = input(user_prompt)
 
         action = response.split('Action:')[-1]
 
