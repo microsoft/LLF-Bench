@@ -4,11 +4,13 @@ import pickle
 import argparse
 import logging
 
+from llfbench.agents.basic_ai_agent import BasicAIAgent
 from llfbench.agents.user_agent import UserAgent
 from llfbench.agents.utils import set_seed, evaluate_agent, print_color
+from llfbench.agents.llm import make_llm
 
-import llfbench as gym
 import gymnasium
+import llfbench as gym
 
 def main(args):
 
@@ -16,28 +18,42 @@ def main(args):
     horizon = args.horizon
 
     all_envs = []
+    VISUAL = '-visual'
+
     for env_name in gymnasium.envs.registry:
-        if ((args.env_name == 'all') and env_name.startswith('llf-')) or env_name.startswith(args.env_name):
-            all_envs.append(env_name)
+        if ((args.env_name == 'all') and env_name.startswith('llf-')) or (env_name.startswith(args.env_name) and not env_name.endswith(VISUAL)):
+            all_envs.append(tuple([env_name, False]))
+        elif args.env_name.endswith(VISUAL) and env_name.startswith(args.env_name[:args.env_name.rfind(VISUAL)]):
+            all_envs.append(tuple([env_name, True])) #env_name + VISUAL)
     print("Evaluating on the following environments:", all_envs)
-    for env_name in all_envs:
+    print("Number of environments:", len(all_envs))
+    for env_name, visual in all_envs:
         # Create the environment
-        env = gym.make(env_name)
+        env = gym.make(env_name,
+                       instruction_type='b',
+                       feedback_type='a' if not args.ignore_fp else ['r', 'hp', 'hn'], # ['r', 'hp', 'hn'], # ['fp', 'r'],
+                       visual=visual)
         env = gym.envs.env_wrappers.TextWrapper(env)
 
         set_seed(args.seed, env)
 
-        agent = None
-        if args.agent == 'UserAgent':
+        if args.agent == 'BasicAIAgent':
+            # Basic agent
+            system_prompt = BasicAIAgent.system_prompt
+            llm = make_llm(args.model, system_prompt=system_prompt)
+            gpt_agent = BasicAIAgent(llm, verbose=args.verbose)
+        elif args.agent == 'UserAgent':
             # User agent
-            agent = UserAgent(verbose=args.verbose)
+            gpt_agent = UserAgent(verbose=args.verbose)
 
-        scores = evaluate_agent(agent=agent,
+        scores, data = evaluate_agent(agent=gpt_agent,
                                 env=env,
                                 horizon=horizon,
                                 n_episodes=n_episodes,
-                                n_workers=1)
-                                #seed=args.seed)
+                                n_workers=args.n_workers,
+                                seed=args.seed,
+                                log_data=True,
+                                sparse_reward=args.sparse_reward)
 
         print_color('Agent: mean score {:.2f}, std {:.2f}'.format(scores.mean(), scores.std()),
                     color='red')
@@ -47,7 +63,8 @@ def main(args):
             "setting": {k: v for k, v in vars(args).items()},
             "scores": scores,
             "mean_score": scores.mean(),
-            "std_score": scores.std()
+            "std_score": scores.std(),
+            'data': data,
         }
 
         with open(f"{args.save_path}/results.pkl", "wb") as f:
@@ -61,11 +78,15 @@ def get_parser():
     parser.add_argument('--n_episodes', type=int, default=10)
     parser.add_argument('--save_path', type=str, default="results")
     parser.add_argument('--logname', type=str, default="log.txt")
-    parser.add_argument('--horizon', type=int, default=10)
+    parser.add_argument('--horizon', type=int, default=30)
     parser.add_argument('--env_name', type=str, default='all')
     parser.add_argument('--seed', type=int, default=0)
+    parser.add_argument('--n_workers', type=int, default=1)
     parser.add_argument('--verbose', action='store_true')
-    parser.add_argument('--agent', type=str, default='UserAgent', choices=['UserAgent'])
+    parser.add_argument('--agent', type=str, default='BasicAIAgent', choices=['BasicAIAgent', 'UserAgent'])
+    parser.add_argument('--model', type=str, default='gpt-35-turbo')
+    parser.add_argument("--sparse_reward", action="store_true")
+    parser.add_argument('--ignore_fp', action='store_true')
 
     return parser
 
@@ -76,7 +97,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     exp = f"experiment_env_{args.env_name}_" \
-          f"episodes_{args.n_episodes}_horizon_{args.horizon}"
+          f"episodes_{args.n_episodes}_horizon_{args.horizon}_model_{args.model.replace(':', '_')}"
 
     exp_folder = f"{args.save_path}/{exp}"
 

@@ -15,6 +15,8 @@ setup(
         "tqdm",
         "gymnasium==0.29.1",
         "parse==1.19.1",
+        "openai==0.28",
+        "pyautogen==0.1",
         # "Cython==0.29.36",
         "gym-bandits@git+https://github.com/JKCooper2/gym-bandits#egg=gym-bandits",
         # poem
