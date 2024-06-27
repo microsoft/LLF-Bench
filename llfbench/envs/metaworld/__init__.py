@@ -17,10 +17,12 @@ ENVIRONMENTS = tuple(BENCHMARK.ENV_NAMES)
 def make_env(env_name,
              instruction_type='b',
              feedback_type='a',
-             visual=False):
+             visual=False,
+             ):
+
     """ Make the original env and wrap it with the LLFWrapper. """
     benchmark = BENCHMARK(env_name)
-    env = benchmark.train_classes[env_name](render_mode=('rgb_array' if visual else None))
+    env = benchmark.train_classes[env_name](render_mode=None) #'rgb_array')
     env.camera_name = 'corner2'
     class Wrapper(gym.Wrapper):
          # a small wrapper to make sure the task is set
@@ -29,6 +31,16 @@ def make_env(env_name,
             super().__init__(env)
             self.env.max_path_length = float('inf')
             # We remove the internal time limit. We will redefine the time limit in the wrapper.
+            self._render_video = False
+            self.visual = visual
+            if visual:
+                self.env.render_mode = 'rgb_array'
+
+        def render_video(self, value):
+            self._render_video = value
+            if value:
+                self.env.render_mode = 'rgb_array'
+
         @property
         def env_name(self):
             return env_name

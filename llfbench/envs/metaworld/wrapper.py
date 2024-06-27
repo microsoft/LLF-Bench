@@ -134,11 +134,14 @@ class MetaworldWrapper(LLFWrapper):
         previous_pos = self._current_pos  # the position of the hand before moving
         if self.control_relative_position:
                 action[:3] += self._current_pos  # turn relative position to absolute position
+
+        video = []
         for _ in range(self.p_control_time_out):
             control = self.p_control(action)  # this controls the hand to move an absolute position
             observation, reward, terminated, truncated, info = self.env.step(control)
             self._current_observation = observation
             desired_pos = action[:3]
+            video.append(self.env.render()[::-1] if self.env._render_video else None)
             if np.abs(desired_pos - self._current_pos).max() < self.p_control_threshold:
                 break
 
@@ -184,7 +187,7 @@ class MetaworldWrapper(LLFWrapper):
             feedback.fp = self.format(fp_feedback, expert_action=self.textualize_expert_action(target_pos))
         observation = self._format_obs(observation)
         info['success'] = bool(info['success'])
-
+        info['video'] = video if self.env._render_video else None
         return dict(instruction=None, observation=observation, feedback=feedback), float(reward), terminated, truncated, info
 
     def _reset(self, *, seed=None, options=None):
@@ -194,11 +197,12 @@ class MetaworldWrapper(LLFWrapper):
         mode = 'relative' if self.control_relative_position else 'absolute'
         instruction = self.format(mw_instruction, task=task, mode=mode)
         info['success'] = False
+        info['video'] = [self.env.render()[::-1]] if self.env._render_video else None
         return dict(instruction=instruction, observation=observation, feedback=None), info
 
     def _format_obs(self, observation):
         text = self.textualize_observation(observation)
-        image = (self.env.render()[::-1] if self.env.render_mode is not None else None)
+        image = (self.env.render()[::-1] if self.env.visual else None)
         return text if image is None else dict(text=text, image=image)
 
     def textualize_expert_action(self, action):

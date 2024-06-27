@@ -1,14 +1,14 @@
-from distutils.core import setup
+import setuptools
 
-setup(
+setuptools.setup(
     name='llfbench',
     version='0.1.0',
     author='LLF-Bench Team',
     author_email='chinganc@microsoft.com',
-    packages=['llfbench'],
+    packages=setuptools.find_packages(include=["llfbench*"], exclude=["tests*"]),
     url='https://github.com/microsoft/LLF-Bench',
     license='MIT LICENSE',
-    description='A gym environment for learning with language feedback.',
+    description='A Gym environment for Learning from Language Feedback (LLF).',
     long_description=open('README.md').read(),
     install_requires=[
         "numpy<1.24.0",
