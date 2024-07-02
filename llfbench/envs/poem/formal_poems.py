@@ -333,7 +333,7 @@ class LineSyllableConstrainedPoem(Haiku):
 
         self._seed = self.seed(seed)
 
-    def reset(self, syllable_req=None, *kwargs):
+    def reset(self, syllable_req=None, **kwargs):
         if 'seed' in kwargs:
             self._seed = self.seed(kwargs['seed'])
 
