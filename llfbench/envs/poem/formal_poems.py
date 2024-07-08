@@ -333,7 +333,7 @@ class LineSyllableConstrainedPoem(Haiku):
 
         self._seed = self.seed(seed)
 
-    def reset(self, syllable_req=None, **kwargs):
+    def reset(self, **kwargs):
         if 'seed' in kwargs:
             self._seed = self.seed(kwargs['seed'])
 
@@ -343,10 +343,9 @@ class LineSyllableConstrainedPoem(Haiku):
         # https://www.writing.upenn.edu/~afilreis/88/meter.html
         syllable_sample_space = [5, 7, 8, 9, 10, 17]
 
-        if syllable_req is None:
-            syllable_req = []
-            for _ in range(number_of_lines):
-                syllable_req.append(self._np_random.choice(syllable_sample_space))
+        syllable_req = []
+        for _ in range(number_of_lines):
+            syllable_req.append(self._np_random.choice(syllable_sample_space))
 
         self.syllable_req_str = [str(i) for i in syllable_req]
         self.syllable_req = syllable_req
@@ -376,13 +375,13 @@ class SyllableConstrainedPoem(PoemUtil, gym.Env):
 
         self.docstring = self.assignment
 
-    def reset(self, syllable=None, **kwargs):
+    def reset(self, **kwargs):
         if 'seed' in kwargs:
             self._seed = self.seed(kwargs['seed'])
 
         # https://www.writing.upenn.edu/~afilreis/88/meter.html
         syllable_sample_space = [5, 7, 8, 9, 10, 17]
-        syllable = self._np_random.choice(syllable_sample_space) if syllable is None else syllable
+        syllable = self._np_random.choice(syllable_sample_space)
         self.syllable = syllable
         self.assignment = f"Can you produce a short poem where each line has {syllable} syllables?"
 
