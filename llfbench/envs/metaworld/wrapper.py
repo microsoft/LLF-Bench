@@ -133,6 +133,7 @@ class MetaworldWrapper(LLFWrapper):
         # action is viewed as the desired position + grab_effort
         previous_pos = self._current_pos  # the position of the hand before moving
         if self.control_relative_position:
+                action = action.copy()
                 action[:3] += self._current_pos  # turn relative position to absolute position
 
         video = []
