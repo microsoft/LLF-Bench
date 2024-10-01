@@ -80,4 +80,4 @@ class MovieRecGymWrapper(LLFWrapper):
 
     @property
     def reward_range(self):
-        return (r-1 for r in self._movie_rec_env.reward_range)
+        return [r-1 for r in self._movie_rec_env.reward_range]
