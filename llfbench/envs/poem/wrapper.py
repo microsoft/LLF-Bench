@@ -25,11 +25,11 @@ class PoemGymWrapper(LLFWrapper):
             instruction = self.reformat(instruction, tanka_b_instruction)
         elif type(self._poem_env) == LineSyllableConstrainedPoem:
             instruction = self.reformat(instruction, line_syllable_constrained_poem_b_instruction)
-            if 'syllable_req' in options:
+            if options is not None and 'syllable_req' in options:
                 self.env.syllable_req = options['syllable_req']
         elif type(self._poem_env) == SyllableConstrainedPoem:
             instruction = self.reformat(instruction, syllable_constrained_poem_b_instruction)
-            if 'syllable' in options:
+            if options is not None and  'syllable' in options:
                 self.env.syllable = options['syllable']
         return dict(instruction=instruction, observation=None, feedback=None), info
 
